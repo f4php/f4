@@ -1,6 +1,7 @@
 {
     "name": "f4php/f4",
     "description": "The skeleton application for F4, a lightweight webapp framework",
+    "keywords": ["f4","framework"],
     "type": "project",
     "license": "MIT",
     "autoload": {
