@@ -1,0 +1,21 @@
+{
+    "name": "f4php/f4",
+    "description": "The skeleton application for F4, a lightweight webapp framework",
+    "type": "project",
+    "license": "MIT",
+    "autoload": {
+        "psr-4": {
+            "F4\\": "src/"
+        }
+    },
+    "authors": [
+        {
+            "name": "Dennis Kreminsky",
+            "email": "dennis@kreminsky.com"
+        }
+    ],
+    "require": {
+        "f4php/framework": "^1.0",
+        "php": "^8.3"
+    }
+}
