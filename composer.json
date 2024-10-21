@@ -16,7 +16,7 @@
         }
     ],
     "require": {
-        "f4php/framework": "^1.0",
+        "f4php/framework": "dev-main",
         "php": "^8.3"
     }
 }
