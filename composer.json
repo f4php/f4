@@ -12,16 +12,6 @@
       "App\\": "src/App"
     }
   },
-  "repositories": [
-    {
-        "type": "path",
-        "url": "../framework"
-    },
-    {
-        "type": "path",
-        "url": "../checkmate"
-    }
-  ],
   "authors": [
     {
       "name": "Dennis Kreminsky",
@@ -32,8 +22,7 @@
     "php": "^8.3",
     "symfony/console": "^7.1",
     "composer-runtime-api": "*",
-    "f4php/framework": "dev-main",
-    "f4php/checkmate": "dev-main"
+    "f4php/framework": "^0.1.37"
   },
   "config": {
     "optimize-autoloader": true,

@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "cfc52b76c8d9c63d5a815dc2fdb49a5d",
+    "content-hash": "48e4a64e3139dae5bf6866389138ba96",
     "packages": [
         {
             "name": "cekurte/environment",
@@ -144,61 +144,6 @@
             "time": "2024-11-12T16:29:46+00:00"
         },
         {
-            "name": "f4php/checkmate",
-            "version": "dev-main",
-            "dist": {
-                "type": "path",
-                "url": "../checkmate",
-                "reference": "cad0a375b4da2e5347330c5b1367913245798cc3"
-            },
-            "require": {
-                "composer/pcre": "^3.3",
-                "guzzlehttp/guzzle": "^7.0"
-            },
-            "require-dev": {
-                "phpstan/phpstan": "^2.0",
-                "phpstan/phpstan-phpunit": "^2.0",
-                "phpunit/phpunit": "^12"
-            },
-            "type": "library",
-            "autoload": {
-                "psr-4": {
-                    "F4\\": "src/F4"
-                }
-            },
-            "autoload-dev": {
-                "psr-4": {
-                    "F4\\": "tests/F4"
-                }
-            },
-            "scripts": {
-                "test": [
-                    "phpunit --bootstrap tests/F4/Config.php --display-warnings --display-phpunit-deprecations --fail-on-deprecation tests"
-                ],
-                "phpstan": [
-                    "phpstan --level=1 analyse src tests"
-                ]
-            },
-            "license": [
-                "MIT"
-            ],
-            "authors": [
-                {
-                    "name": "Dennis Kreminsky",
-                    "email": "dennis@kreminsky.com"
-                }
-            ],
-            "description": "Checkmate is a user verification package for F4, a lightweight web development framework",
-            "keywords": [
-                "f4",
-                "framework",
-                "user verification"
-            ],
-            "transport-options": {
-                "relative": true
-            }
-        },
-        {
             "name": "f4php/db",
             "version": "v0.3.2",
             "source": {
@@ -254,11 +199,17 @@
         },
         {
             "name": "f4php/framework",
-            "version": "dev-main",
-            "dist": {
-                "type": "path",
-                "url": "../framework",
+            "version": "v0.1.37",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/f4php/framework.git",
                 "reference": "7e1db68666c2b944ae175d94230090ccebae33b4"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/f4php/framework/zipball/7e1db68666c2b944ae175d94230090ccebae33b4",
+                "reference": "7e1db68666c2b944ae175d94230090ccebae33b4",
+                "shasum": ""
             },
             "require": {
                 "cekurte/environment": "^0.3.0",
@@ -286,26 +237,14 @@
             },
             "type": "library",
             "autoload": {
-                "psr-4": {
-                    "F4\\": "src/F4"
-                },
                 "files": [
                     "src/functions.php"
-                ]
-            },
-            "autoload-dev": {
+                ],
                 "psr-4": {
-                    "F4\\": "tests/F4"
+                    "F4\\": "src/F4"
                 }
             },
-            "scripts": {
-                "test": [
-                    "phpunit --bootstrap tests/F4/Config.php --display-warnings --display-phpunit-deprecations --fail-on-deprecation tests"
-                ],
-                "stan": [
-                    "phpstan --level=3 analyse src tests"
-                ]
-            },
+            "notification-url": "https://packagist.org/downloads/",
             "license": [
                 "MIT"
             ],
@@ -320,9 +259,11 @@
                 "f4",
                 "framework"
             ],
-            "transport-options": {
-                "relative": true
-            }
+            "support": {
+                "issues": "https://github.com/f4php/framework/issues",
+                "source": "https://github.com/f4php/framework/tree/v0.1.37"
+            },
+            "time": "2025-12-14T13:57:48+00:00"
         },
         {
             "name": "f4php/hookmanager",
@@ -2453,10 +2394,7 @@
     "packages-dev": [],
     "aliases": [],
     "minimum-stability": "dev",
-    "stability-flags": {
-        "f4php/checkmate": 20,
-        "f4php/framework": 20
-    },
+    "stability-flags": {},
     "prefer-stable": true,
     "prefer-lowest": false,
     "platform": {
