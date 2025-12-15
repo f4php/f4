@@ -42,6 +42,9 @@
   "scripts": {
     "post-update-cmd": "npm update",
     "post-install-cmd": "npm install",
+    "post-create-project-cmd": [
+      "composer run create-config > config/local.php"
+    ],
     "create-config": "@php scripts/create-config.php",
     "serve": "@php -S `composer config extra.f4.environments.local.server` -t public/"
   },
