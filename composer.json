@@ -19,7 +19,7 @@
     }
   ],
   "require": {
-    "php": "^8.3",
+    "php": "^8.4",
     "symfony/console": "^7.1",
     "composer-runtime-api": "*",
     "f4php/framework": "^0.1.37"
