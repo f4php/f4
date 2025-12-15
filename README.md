@@ -8,8 +8,8 @@ To configure and run your app using F4 you will need:
 
 - composer
 - node/npm
-- php version 8.3 or higher
-- postgresql version 13 or higher
+- php version 8.4.1 or higher
+- postgresql version 16 or higher
 
 # Quick start
 
