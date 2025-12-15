@@ -19,14 +19,9 @@ To start developing your app called `myapp` with F4, use the following composer 
 $ composer create-project f4php/f4 myapp
 ```
 
-then initialize the dependencies by running:
-```
-$ composer install
-$ npm install
-```
 and... that's it, you are good to go! 
 
-Proceed by starting a developemnt server and playing with included Web Application Developer's Guide.
+Proceed by starting a developemnt server and playing with included Tutorial app.
 
 # Development Server
 
@@ -86,7 +81,7 @@ namespace F4;
 
 class Config extends AbstractConfig
 {
-    public const array MODULES = [App\Example::class];
+    public const array MODULES = [\App\TutorialModule::class];
 }
 ```
 Feel free to examine `F4\AbstractConfig` class for all the configuration options supported by F4 Core.
