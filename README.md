@@ -81,7 +81,7 @@ namespace F4;
 
 class Config extends AbstractConfig
 {
-    public const array MODULES = [\App\TutorialModule::class];
+    public const array MODULES = [\App\Tutorial\TutorialModule::class];
 }
 ```
 Feel free to examine `F4\AbstractConfig` class for all the configuration options supported by F4 Core.
