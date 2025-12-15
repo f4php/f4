@@ -1,0 +1,813 @@
+extends ../tutorial.pug
+
+block title
+  | Chapter 1: Hello World - F4 Framework Tutorial
+
+block content
+  .chapter-header
+    .chapter-number Chapter 1
+    h1 Hello World
+    p.description Learn the basics of routing and template rendering in F4
+
+  .content-section
+    h2 Introduction
+
+    p Welcome to your first F4 framework lesson! In this chapter, you'll learn the fundamental building blocks of F4 applications: Modules and Routes. Understanding these concepts is essential for everything that follows.
+
+    h3 What We'll Cover
+
+    ul
+      li Understanding Modules and ModuleInterface
+      li Accessing the $f4 CoreAPI object
+      li Registering modules in configuration
+      li Creating routes with Route::get()
+      li Returning data from route handlers
+      li Understanding the request-response cycle
+      li Setting templates for your routes
+      li Accessing data in Pug templates
+
+  .content-section
+    h2 Understanding Modules
+
+    p In F4, <strong>all route definitions must be placed inside a Module</strong>. A Module is a class that implements <code>F4\ModuleInterface</code> and serves as a container for related routes, middleware, and application logic.
+
+    h3 Why Modules?
+
+    p Modules provide:
+
+    ul
+      li <strong>Organization</strong> - Group related routes together (e.g., AuthModule, BlogModule, AdminModule)
+      li <strong>Lifecycle hooks</strong> - Initialize resources when the module is loaded
+      li <strong>Access to CoreAPI</strong> - Receive the <code>$f4</code> object to register routes and access framework features
+      li <strong>Encapsulation</strong> - Keep your application organized and maintainable
+
+    .info-box
+      strong Important:
+      |  
+      | Routes defined outside of a module will NOT work. The module pattern is how F4 initializes your application.
+
+  .content-section
+    h2 Creating a Module
+
+    p Let's look at a complete module example:
+
+    pre
+      code.
+        <span class="keyword">namespace</span> <span class="variable">App</span>\<span class="variable">Tutorial</span>;
+
+        <span class="keyword">use</span> <span class="variable">F4</span>\<span class="variable">Core</span>\<span class="variable">CoreApiInterface</span>;
+        <span class="keyword">use</span> <span class="variable">F4</span>\<span class="variable">Core</span>\<span class="variable">Route</span>;
+        <span class="keyword">use</span> <span class="variable">F4</span>\<span class="variable">ModuleInterface</span>;
+
+        <span class="keyword">class</span> <span class="variable">TutorialModule</span> <span class="keyword">implements</span> <span class="variable">ModuleInterface</span>
+        {
+            <span class="keyword">public function</span> <span class="function">__construct</span>(<span class="variable">CoreApiInterface</span> &<span class="variable">$f4</span>)
+            {
+                <span class="comment">// Register routes here</span>
+                <span class="variable">$f4</span>-><span class="function">addRoute</span>(<span class="variable">Route</span>::<span class="function">get</span>(<span class="string">'/hello'</span>, <span class="keyword">function</span>() {
+                    <span class="keyword">return</span> [<span class="string">'message'</span> => <span class="string">'Hello World!'</span>];
+                })-><span class="function">setTemplate</span>(<span class="string">'hello.pug'</span>));
+            }
+        }
+
+    h3 Key Components
+
+    table
+      thead
+        tr
+          th Element
+          th Purpose
+      tbody
+        tr
+          td
+            code implements ModuleInterface
+          td Required interface for all modules
+        tr
+          td
+            code __construct(CoreApiInterface &$f4)
+          td Constructor receives reference to F4 CoreAPI
+        tr
+          td
+            code &$f4
+          td Reference parameter - changes to <code>$f4</code> affect the framework-controlled behavior
+        tr
+          td
+            code $f4->addRoute()
+          td Register routes with the framework
+
+    .warning-box
+      strong Notice the <code>&</code> symbol:
+      |  
+      | The <code>$f4</code> parameter is passed by reference (<code>&$f4</code>). This means you're working directly with the framework's CoreAPI object, not a copy.
+
+    .info-box
+      strong Important:
+      |  
+      | By default, only <code>App</code> namespace is configured for class autoloading using PSR-4 standard. If you want to use a different namespace for your module, be sure to adjust <code>autoload</code> section in <code>composer.json</code> file.
+
+
+  .content-section
+    h2 Registering Your Module
+
+    p After creating a module, you must register it in your configuration file (for details on configuration see Chapter 10):
+
+    pre
+      code.
+        <span class="comment">// config/local.php</span>
+        <span class="keyword">namespace</span> <span class="variable">F4</span>;
+
+        <span class="keyword">use</span> <span class="variable">F4</span>\<span class="variable">AbstractConfig</span>;
+        <span class="keyword">use</span> <span class="variable">App</span>\<span class="variable">Tutorial</span>\<span class="variable">TutorialModule</span>;
+
+        <span class="keyword">class</span> <span class="variable">Config</span> <span class="keyword">extends</span> <span class="variable">AbstractConfig</span>
+        {
+            <span class="keyword">public const array</span> <span class="variable">MODULES</span> = [
+                <span class="variable">TutorialModule</span>::<span class="keyword">class</span>
+            ];
+        }
+
+    p When F4 processes a request, it:
+
+    ol
+      li Reads the <code>MODULES</code> configuration
+      li Instantiates each module class
+      li Passes the <code>$f4</code> CoreAPI object to the constructor
+      li Your module registers routes via <code>$f4->addRoute()</code>
+      li Routes become available for matching
+
+
+  .content-section
+    h2 The $f4 CoreAPI Object
+
+    p The <code>$f4</code> object implements <code>CoreApiInterface</code> and provides access to all framework features. It's passed to your module constructor and becomes available for all subsequent operations.
+
+    h3 Route Management Methods
+
+    table
+      thead
+        tr
+          th Method
+          th Description
+      tbody
+        tr
+          td
+            code $f4->addRoute()
+          td Register a single route
+        tr
+          td
+            code $f4->addRouteGroup()
+          td Register a route group
+        tr
+          td
+            code $f4->before()
+          td Add global request middleware
+        tr
+          td
+            code $f4->after()
+          td Add global response middleware
+
+    h3 Exception Handling Methods
+
+    table
+      thead
+        tr
+          th Method
+          th Description
+      tbody
+        tr
+          td
+            code $f4->addExceptionHandler()
+          td Register exception handler for specific exception class
+        tr
+          td
+            code $f4->on()
+          td Syntax sugar for <code>addExceptionHandler()</code>
+
+    h3 Request/Response Methods
+
+    table
+      thead
+        tr
+          th Method
+          th Description
+      tbody
+        tr
+          td
+            code $f4->getRequest()
+          td Get current HTTP request object
+        tr
+          td
+            code $f4->getResponse()
+          td Get current HTTP response object
+        tr
+          td
+            code $f4->setResponse()
+          td Set response object
+        tr
+          td
+            code $f4->getResponseFormat()
+          td Get response format (e.g., 'text/html', 'application/json')
+        tr
+          td
+            code $f4->setResponseFormat()
+          td Set response format
+        tr
+          td
+            code $f4->emit()
+          td Emit response to client
+
+    h3 Template Methods
+
+    table
+      thead
+        tr
+          th Method
+          th Description
+      tbody
+        tr
+          td
+            code $f4->getTemplate()
+          td Get current template path
+        tr
+          td
+            code $f4->setTemplate()
+          td Set template for response
+
+    h3 Utility Methods
+
+    table
+      thead
+        tr
+          th Method
+          th Description
+      tbody
+        tr
+          td
+            code $f4->getLocalizer()
+          td Get localizer for i18n translations
+        tr
+          td
+            code $f4->getDebugger()
+          td Get debugger instance
+        tr
+          td
+            code $f4->log()
+          td Add debug log entry (visible in debugger)
+        tr
+          td
+            code $f4->getRouter()
+          td Get router instance
+        tr
+          td
+            code $f4->getMatchingRoute()
+          td Get currently matched route
+        tr
+          td
+            code $f4->getMatchingRouteGroup()
+          td Get currently matched route group
+        tr
+          td
+            code $f4->addHook()
+          td Register custom lifecycle hook
+        tr
+          td
+            code $f4->setTimezone()
+          td Set application timezone
+
+    h3 Using $f4 in Route Handlers
+
+    pre
+      code.
+        <span class="keyword">public function</span> <span class="function">__construct</span>(<span class="variable">CoreApiInterface</span> &<span class="variable">$f4</span>)
+        {
+            <span class="variable">$f4</span>-><span class="function">addRoute</span>(<span class="variable">Route</span>::<span class="function">get</span>(<span class="string">'/hello'</span>, <span class="keyword">function</span>() <span class="keyword">use</span> (<span class="variable">$f4</span>) {
+
+                <span class="comment">// Get localizer for translations</span>
+                <span class="variable">$localizer</span> = <span class="variable">$f4</span>-><span class="function">getLocalizer</span>();
+                <span class="variable">$greeting</span> = <span class="variable">$localizer</span>-><span class="function">translate</span>(<span class="string">'welcome-message'</span>);
+
+                <span class="keyword">return</span> [
+                    <span class="string">'greeting'</span> => <span class="variable">$greeting</span>,
+                ];
+            })-><span class="function">setTemplate</span>(<span class="string">'hello.pug'</span>));
+        }
+
+    .info-box
+      strong Note the <code>use ($f4)</code>:
+      |  
+      | To access <code>$f4</code> inside closures, you must import it with <code>use ($f4)</code>.
+
+  .content-section
+    h2 The Request-Response Cycle
+
+    p Every F4 application follows a simple flow:
+
+    ol
+      li A user makes an HTTP request (e.g., visits /tutorial/01-hello-world)
+      li F4's router matches the path to a registered route
+      li The route handler function executes
+      li The handler returns data
+      li F4 renders the data using the specified template
+      li The response is sent back to the user
+
+    .info-box
+      strong You're experiencing this right now!
+      |  
+      | This page was rendered by following the exact same process.
+
+  .content-section
+    h2 Creating Your First Route
+
+    p Now that you understand modules, let's look at the actual code that powers this page. This route is defined in the <code>TutorialModule</code> class.
+
+    h3 The Route Definition
+
+    pre
+      code.
+        <span class="keyword">namespace</span> <span class="variable">App</span>\<span class="variable">Tutorial</span>;
+
+        <span class="keyword">use</span> <span class="variable">F4</span>\<span class="variable">Core</span>\<span class="variable">CoreApiInterface</span>;
+        <span class="keyword">use</span> <span class="variable">F4</span>\<span class="variable">Core</span>\<span class="variable">Route</span>;
+        <span class="keyword">use</span> <span class="variable">F4</span>\<span class="variable">ModuleInterface</span>;
+
+        <span class="keyword">class</span> <span class="variable">TutorialModule</span> <span class="keyword">implements</span> <span class="variable">ModuleInterface</span>
+        {
+            <span class="keyword">public function</span> <span class="function">__construct</span>(<span class="variable">CoreApiInterface</span> &<span class="variable">$f4</span>)
+            {
+                <span class="comment">// Register the route for this chapter</span>
+                <span class="variable">$f4</span>-><span class="function">addRoute</span>(<span class="variable">Route</span>::<span class="function">get</span>(<span class="string">'/tutorial/01-hello-world'</span>, <span class="keyword">function</span>() {
+                    <span class="keyword">return</span> [
+                        <span class="string">'message'</span> => <span class="string">'Hello from F4 Framework!'</span>,
+                        <span class="string">'timestamp'</span> => <span class="function">date</span>(<span class="string">'Y-m-d H:i:s'</span>),
+                        <span class="string">'chapter'</span> => <span class="variable">$this</span>-><span class="function">getChapterInfo</span>(<span class="string">'01'</span>),
+                    ];
+                })-><span class="function">setTemplate</span>(<span class="string">'tutorial/chapter-01/chapter-01.pug'</span>));
+            }
+
+            <span class="keyword">private function</span> <span class="function">getChapterInfo</span>(<span class="keyword">string</span> <span class="variable">$number</span>): <span class="keyword">array</span>
+            {
+                <span class="comment">// Helper method to get chapter navigation data</span>
+                <span class="comment">// Returns current, previous, next chapter info</span>
+            }
+        }
+
+    h3 Breaking It Down
+
+    ul
+      li The module implements <code>ModuleInterface</code>
+      li Constructor receives <code>$f4</code> CoreAPI object by reference
+      li
+        code $f4->addRoute()
+        |  registers a route with the framework
+      li
+        code Route::get()
+        |  creates a route that responds to GET requests
+      li The first argument is the URL path (<code>/tutorial/01-hello-world</code>)
+      li The second argument is a handler function that returns data
+      li
+        code setTemplate()
+        |  specifies which Pug template to render
+      li The returned array becomes available in the template as <code>$response['data']</code>
+
+  .content-section
+    h2 Live Data from This Route
+
+    p Here's the actual data returned by the route handler for this page:
+
+    .demo-box
+      h4 Route Handler Response
+      table
+        thead
+          tr
+            th Key
+            th Value
+        tbody
+          tr
+            td
+              code $response['data']['message']
+            td= $response['data']['message']
+          tr
+            td
+              code $response['data']['timestamp']
+            td= $response['data']['timestamp']
+          tr
+            td
+              code $response['data']['chapter']['current']['title']
+            td= $response['data']['chapter']['current']['title']
+
+    .info-box
+      strong Live Demo:
+      |  
+      | The timestamp above updates every time you refresh the page, proving this is dynamically generated!
+
+  .content-section
+    h2 Understanding Template Context
+
+    p When F4 renders a template, it provides a rich context with several top-level variables. Understanding what's available is essential for building dynamic templates.
+
+    h3 How the Template Context is Created
+
+    p The F4's HTML response emitter automatically creates a context array that gets passed to your template. Each top-level key becomes available as a <code>$variable</code> in your Pug template.
+
+  .content-section
+    h2 Available Template Variables
+
+    p Every F4 template has access to these top-level variables:
+
+    h3 1. $response - Response Data
+
+    p Contains the data you return from your route handler, plus metadata:
+
+    pre
+      code.
+        <span class="variable">$response</span> = [
+            <span class="string">'data'</span> => [
+                <span class="comment">// Your route handler's returned data</span>
+                <span class="string">'message'</span> => <span class="string">'Hello from F4 Framework!'</span>,
+                <span class="string">'timestamp'</span> => <span class="string">'2025-12-01 15:30:00'</span>
+            ],
+            <span class="string">'datetime'</span> => <span class="string">'2025-12-01T15:30:00+00:00'</span>,
+            <span class="string">'timezone'</span> => <span class="string">'UTC'</span>,
+            <span class="string">'headers'</span> => [...],
+            <span class="string">'meta'</span> => [...],
+            <span class="string">'exception'</span> => <span class="keyword">null</span> <span class="comment">// or exception details if one occurred</span>
+        ]
+
+    table
+      thead
+        tr
+          th Key
+          th Type
+          th Description
+      tbody
+        tr
+          td
+            code $response['data']
+          td mixed
+          td Data returned from your route handler
+        tr
+          td
+            code $response['datetime']
+          td string
+          td ISO 8601 datetime of response
+        tr
+          td
+            code $response['timezone']
+          td string
+          td Timezone setting
+        tr
+          td
+            code $response['headers']
+          td array
+          td HTTP response headers
+        tr
+          td
+            code $response['meta']
+          td array
+          td Additional metadata, convenient for pagination and other utility data
+        tr
+          td
+            code $response['exception']
+          td array|null
+          td Exception details if error occurred
+
+    h3 2. $request - Request Information
+
+    p Contains details about the incoming HTTP request:
+
+    pre
+      code.
+        <span class="variable">$request</span> = [
+            <span class="string">'path'</span> => <span class="string">'/tutorial/01-hello-world'</span>,
+            <span class="string">'method'</span> => <span class="string">'GET'</span>,
+            <span class="string">'headers'</span> => [
+                <span class="string">'User-Agent'</span> => [<span class="string">'Mozilla/5.0...'</span>],
+                <span class="string">'Accept'</span> => [<span class="string">'text/html'</span>]
+            ],
+            <span class="string">'parameters'</span> => [
+                <span class="comment">// Query string or POST parameters</span>
+                <span class="string">'page'</span> => <span class="number">2</span>,
+                <span class="string">'search'</span> => <span class="string">'hello'</span>
+            ],
+            <span class="string">'validated-parameters'</span> => [
+                <span class="comment">// Parameters validated by attributes</span>
+            ]
+        ]
+
+    table
+      thead
+        tr
+          th Key
+          th Description
+      tbody
+        tr
+          td
+            code $request['path']
+          td The request URL path
+        tr
+          td
+            code $request['method']
+          td HTTP method (GET, POST, etc.)
+        tr
+          td
+            code $request['headers']
+          td HTTP request headers
+        tr
+          td
+            code $request['parameters']
+          td Query string or POST data
+        tr
+          td
+            code $request['validated-parameters']
+          td Parameters after validation
+
+    h3 3. $config - Configuration Constants
+
+    p Access to all your application's configuration values:
+
+    pre
+      code.
+        <span class="variable">$config</span> = [
+            <span class="string">'DEBUG_MODE'</span> => <span class="keyword">true</span>,
+            <span class="string">'TEMPLATE_PATHS'</span> => [<span class="string">'/path/to/templates'</span>],
+            <span class="string">'DEFAULT_LOCALE'</span> => <span class="string">'en'</span>,
+            <span class="comment">// All other config constants...</span>
+        ]
+
+    .warning-box
+      strong Security Note:
+      |  
+      | Sensitive configuration values marked with <code>\#[SensitiveParameter]</code> are automatically redacted in the config array.
+
+    h3 4. $locale - Current Locale
+
+    p The currently active locale/language:
+
+    pre
+      code.
+        <span class="variable">$locale</span> = <span class="string">'en'</span>  <span class="comment">// or 'es', 'fr', etc.</span>
+
+    h3 5. $t - Translation Function
+
+    p A function for translating strings (covered in Chapter 7):
+
+    pre
+      code.
+        <span class="comment">//- In your Pug template</span>
+        <span class="variable">p</span>= $t(<span class="string">'welcome-message'</span>)
+
+  .content-section
+    h2 Accessing Data in Templates
+
+    p Now let's see how to use these variables in your Pug templates. The most common is <code>$response['data']</code>, which contains your route handler's data.
+
+    h3 Template Code Examples
+
+    pre
+      code.
+        <span class="comment">//- Access route handler data</span>
+        <span class="variable">p</span>= $response['data']['message']
+        <span class="variable">p</span>= $response['data']['timestamp']
+
+        <span class="comment">//- Access nested data</span>
+        <span class="variable">h1</span>= $response['data']['chapter']['current']['title']
+
+        <span class="comment">//- Access request information</span>
+        <span class="variable">p</span> Current path: 
+          = $request['path']
+        <span class="variable">p</span> HTTP method: 
+          = $request['method']
+
+        <span class="comment">//- Check configuration</span>
+        if $config['DEBUG_MODE']
+          <span class="variable">.debug-banner</span> Debug Mode Active
+
+        <span class="comment">//- Use current locale</span>
+        <span class="variable">html</span>(lang=$locale)
+
+        <span class="comment">//- Loop through arrays</span>
+        each $item in $response['data']['items']
+          <span class="variable">li</span>= $item['name']
+
+    h3 PHP Syntax in Templates
+
+    p F4 uses PHP syntax in Pug templates, not JavaScript:
+
+    .demo-box
+      table
+        thead
+          tr
+            th ✅ Correct (PHP)
+            th ❌ Wrong (JavaScript)
+        tbody
+          tr
+            td
+              code $response['data']['message']
+            td
+              code response.data.message
+          tr
+            td
+              code $user['name'] ?? 'Guest'
+            td
+              code user.name || 'Guest'
+          tr
+            td
+              code count($items)
+            td
+              code items.length
+          tr
+            td
+              code $item['id']
+            td
+              code item.id
+
+    .info-box
+      strong Remember:
+      |  
+      | Use square brackets <code>['key']</code> for array access and <code>??</code> for null coalescing, not dot notation or <code>||</code>.
+
+  .content-section
+    h2 Practical Template Example
+
+    p Here's how the table on this page accesses live data:
+
+    pre
+      code.
+        <span class="variable">.demo-box</span>
+          <span class="variable">h4</span> Route Handler Response
+          <span class="variable">table</span>
+            <span class="variable">thead</span>
+              <span class="variable">tr</span>
+                <span class="variable">th</span> Key
+                <span class="variable">th</span> Value
+            <span class="variable">tbody</span>
+              <span class="variable">tr</span>
+                <span class="variable">td</span>
+                  <span class="variable">code</span> message
+                <span class="variable">td</span>= $response['data']['message']
+              <span class="variable">tr</span>
+                <span class="variable">td</span>
+                  <span class="variable">code</span> timestamp
+                <span class="variable">td</span>= $response['data']['timestamp']
+
+    p This produces:
+
+    .demo-box
+      table
+        thead
+          tr
+            th Key
+            th Value
+        tbody
+          tr
+            td
+              code message
+            td= $response['data']['message']
+          tr
+            td
+              code timestamp
+            td= $response['data']['timestamp']
+
+  .content-section
+    h2 HTTP Methods
+
+    p F4 supports all standard HTTP methods:
+
+    table
+      thead
+        tr
+          th Method
+          th Usage
+          th Example
+      tbody
+        tr
+          td
+            code Route::get()
+          td Retrieve data (read-only)
+          td Viewing a page, fetching data
+        tr
+          td
+            code Route::post()
+          td Submit data, create resources
+          td Form submissions, creating records
+        tr
+          td
+            code Route::put()
+          td Update existing resources
+          td Updating user profile
+        tr
+          td
+            code Route::delete()
+          td Delete resources
+          td Removing a record
+        tr
+          td
+            code Route::any()
+          td Respond to any HTTP method
+          td Flexible endpoints
+
+    p The full list of supported methods:
+      code Route::get()
+      |, 
+      code Route::head()
+      |, 
+      code Route::post()
+      |, 
+      code Route::put()
+      |, 
+      code Route::delete()
+      |, 
+      code Route::connect()
+      |, 
+      code Route::options()
+      |, 
+      code Route::trace()
+      |, 
+      code Route::any()
+
+
+  .content-section
+    h2 Try It Yourself
+
+    p Now that you understand the basics, here are some exercises:
+
+    ol
+      li Open
+        code f4/src/App/Tutorial/TutorialModule.php
+        |  and look at the route definitions
+      li Try adding a new data field to the route handler
+      li Modify this template to display your new field
+      li Refresh the page to see your changes
+
+    .success-box
+      strong Congratulations!
+      |  
+      | You've completed Chapter 1. You now understand how routes work and how to pass data to templates.
+
+  .content-section
+    h2 Key Takeaways
+
+    ul
+      li 
+        strong Modules are required
+        |  
+        | - All routes must be defined in a class implementing <code>ModuleInterface</code>
+      li
+        strong Module registration
+        |   
+        | - Modules must be added to the <code>MODULES</code> configuration constant
+      li
+        strong $f4 CoreAPI
+        |  
+        | - Module constructor receives <code>&$f4</code> by reference, providing access to all framework features
+      li
+        strong Route registration
+        |  
+        | - Use <code>$f4->addRoute()</code> to register routes
+      li
+        strong Handler functions
+        |  
+        | - Return data as associative arrays
+      li
+        strong Template context
+        |  
+        | - F4 provides 5 top-level variables: <code>$response</code>, <code>$request</code>, <code>$config</code>, <code>$locale</code>, <code>$t</code>
+      li
+        strong Data access
+        |  
+        | - Your route data is available via <code>$response['data']</code>
+      li
+        strong PHP syntax
+        |  
+        | - Templates use PHP array syntax <code>['key']</code>, not JavaScript dot notation
+      li
+        strong HTTP methods
+        |  
+        | - F4 supports all standard methods (including GET, POST, PUT, DELETE)
+      li
+        strong Request-response cycle
+        |  
+        | - Simple, predictable flow from request to rendered response
+
+  .content-section
+    h2 What's Next?
+
+    p In Chapter 2, we'll explore more advanced routing patterns including:
+
+    ul
+      li Path parameters (
+        code /users/{id}
+        | )
+      li Type constraints (
+        code {id:int}
+        | ,
+        code {slug:string}
+        | )
+      li Format negotiation (
+        code .json
+        |  vs
+        code .html
+        | )
+      li Route matching order and priority
+
+    p Ready to continue? Click "Next" below!

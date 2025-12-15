@@ -1,0 +1,583 @@
+extends ../tutorial.pug
+
+block title
+  | Chapter 4: Parameter Validation - F4 Framework Tutorial
+
+block content
+  .chapter-header
+    .chapter-number Chapter 4
+    h1 Parameter Validation
+    p.description Learn to validate and sanitize input using PHP attributes
+
+  .content-section
+    h2 Introduction
+
+    p In Chapter 2, you learned about path parameters with type constraints. Now we'll explore F4's powerful attribute-based validation system that lets you validate query parameters, form data, and more.
+
+    h3 What We'll Cover
+
+    ul
+      li Validation attributes for parameters
+      li Sanitization and filtering
+      li Constraints (min, max, length)
+      li Complex validators (ArrayKeys for nested data)
+      li Default values and optional parameters
+      li Handling validation errors
+      li Combining multiple validators
+
+  .content-section
+    h2 Why Use Attributes?
+
+    p F4 uses PHP 8+ attributes to define validation rules directly on function parameters. This provides:
+
+    ul
+      li Type-safe validation
+      li Self-documenting code
+      li Automatic error handling
+      li Built-in sanitization
+      li Composable validators
+
+    .info-box
+      strong Key Concept:
+      |  
+      | Attributes are evaluated before your handler function runs. Invalid data throws a <code>ValidationFailedException</code>.
+
+  .content-section
+    h2 Basic Validation Attributes
+
+    .warning-box
+      strong Important - Is* vs Cast* Validators:
+      |
+      | Validators prefixed with <code>Is*</code> (like <code>IsInt</code>, <code>IsEmail</code>, <code>IsBool</code>) will throw a <code>ValidationFailedException</code> if the input data does not match the expected type or format. To avoid exceptions and instead transform the data to the correct type, use <code>Cast*</code> validators (like <code>CastInt</code>, <code>CastBool</code>, <code>CastFloat</code>) which coerce the input value rather than validate it.
+
+    h3 IsNotEmpty
+
+    p Ensures a parameter has a value:
+
+    pre
+      code.
+        <span class="keyword">use</span> <span class="variable">F4</span>\<span class="variable">Core</span>\<span class="variable">Validator</span>\<span class="variable">IsNotEmpty</span>;
+
+        <span class="variable">Route</span>::<span class="function">post</span>(<span class="string">'/submit'</span>, <span class="keyword">function</span>(
+            \#[<span class="variable">IsNotEmpty</span>]
+            <span class="keyword">string</span> <span class="variable">$name</span>
+        ) {
+            <span class="keyword">return</span> [<span class="string">'name'</span> => <span class="variable">$name</span>];
+        });
+
+    h3 IsEmail
+
+    p Validates email addresses:
+
+    pre
+      code.
+        <span class="keyword">use</span> <span class="variable">F4</span>\<span class="variable">Core</span>\<span class="variable">Validator</span>\<span class="variable">IsEmail</span>;
+
+        <span class="variable">Route</span>::<span class="function">post</span>(<span class="string">'/register'</span>, <span class="keyword">function</span>(
+            \#[<span class="variable">IsEmail</span>]
+            <span class="keyword">string</span> <span class="variable">$email</span>
+        ) {
+            <span class="keyword">return</span> [<span class="string">'email'</span> => <span class="variable">$email</span>];
+        });
+
+    h3 IsInt, IsFloat, IsBool
+
+    p Type validation for query parameters - strict validation that throws exceptions:
+
+    pre
+      code.
+        <span class="keyword">use</span> <span class="variable">F4</span>\<span class="variable">Core</span>\<span class="variable">Validator</span>\{<span class="variable">IsInt</span>, <span class="variable">Min</span>, <span class="variable">Max</span>};
+
+        <span class="comment">// Using IsInt - will throw exception if $page is not an integer</span>
+        <span class="variable">Route</span>::<span class="function">get</span>(<span class="string">'/products'</span>, <span class="keyword">function</span>(
+            \#[<span class="variable">IsInt</span>]
+            \#[<span class="variable">Min</span>(<span class="number">1</span>)]
+            \#[<span class="variable">Max</span>(<span class="number">100</span>)]
+            <span class="keyword">int</span> <span class="variable">$page</span> = <span class="number">1</span>
+        ) {
+            <span class="keyword">return</span> [<span class="string">'page'</span> => <span class="variable">$page</span>];
+        });
+
+    h3 CastInt, CastFloat, CastBool (Recommended)
+
+    p Type coercion - transforms input to the correct type without throwing exceptions:
+
+    pre
+      code.
+        <span class="keyword">use</span> <span class="variable">F4</span>\<span class="variable">Core</span>\<span class="variable">Validator</span>\{<span class="variable">CastInt</span>, <span class="variable">Min</span>, <span class="variable">Max</span>};
+
+        <span class="comment">// Using CastInt - converts string "42" to integer 42</span>
+        <span class="variable">Route</span>::<span class="function">get</span>(<span class="string">'/products'</span>, <span class="keyword">function</span>(
+            \#[<span class="variable">CastInt</span>]
+            \#[<span class="variable">Min</span>(<span class="number">1</span>)]
+            \#[<span class="variable">Max</span>(<span class="number">100</span>)]
+            <span class="keyword">int</span> <span class="variable">$page</span> = <span class="number">1</span>
+        ) {
+            <span class="keyword">return</span> [<span class="string">'page'</span> => <span class="variable">$page</span>];
+        });
+
+    .info-box
+      strong Best Practice:
+      |
+      | Use <code>Cast*</code> validators for query parameters and form data (which arrive as strings). Use <code>Is*</code> validators only when you need strict type checking and want validation to fail on type mismatches.
+
+  .content-section
+    h2 Sanitization Attributes
+
+    p Sanitization attributes clean and normalize input before validation:
+
+    h3 Trim
+
+    p Removes whitespace from both ends:
+
+    pre
+      code.
+        <span class="keyword">use</span> <span class="variable">F4</span>\<span class="variable">Core</span>\<span class="variable">Validator</span>\<span class="variable">Trim</span>;
+
+        \#[<span class="variable">Trim</span>]
+        <span class="keyword">string</span> <span class="variable">$username</span>
+        <span class="comment">// "  john  " becomes "john"</span>
+
+    h3 SanitizedString
+
+    p Removes HTML tags and special characters:
+
+    pre
+      code.
+        <span class="keyword">use</span> <span class="variable">F4</span>\<span class="variable">Core</span>\<span class="variable">Validator</span>\<span class="variable">SanitizedString</span>;
+
+        \#[<span class="variable">SanitizedString</span>]
+        <span class="keyword">string</span> <span class="variable">$comment</span>
+        <span class="comment">// Strips potentially dangerous HTML/JS</span>
+
+    h3 CastInt
+
+    p Converts string to integer:
+
+    pre
+      code.
+        <span class="keyword">use</span> <span class="variable">F4</span>\<span class="variable">Core</span>\<span class="variable">Validator</span>\<span class="variable">CastInt</span>;
+
+        \#[<span class="variable">CastInt</span>]
+        <span class="keyword">int</span> <span class="variable">$quantity</span>
+        <span class="comment">// "42" becomes 42</span>
+
+  .content-section
+    h2 Constraint Attributes
+
+    h3 Min and Max
+
+    table
+      thead
+        tr
+          th Attribute
+          th Use Case
+          th Example
+      tbody
+        tr
+          td
+            code \#[Min(18)]
+          td Minimum age
+          td Age must be ≥ 18
+        tr
+          td
+            code \#[Max(100)]
+          td Maximum quantity
+          td Quantity must be ≤ 100
+        tr
+          td
+            code \#[Min(1)] \#[Max(5)]
+          td Rating system
+          td Rating between 1-5
+
+    h3 IsGreaterThan and IsLessThan
+
+    pre
+      code.
+        <span class="keyword">use</span> <span class="variable">F4</span>\<span class="variable">Core</span>\<span class="variable">Validator</span>\{<span class="variable">IsGreaterThan</span>, <span class="variable">IsLessThan</span>};
+
+        \#[<span class="variable">IsGreaterThan</span>(<span class="number">0</span>)]
+        \#[<span class="variable">IsLessThan</span>(<span class="number">1000</span>)]
+        <span class="keyword">float</span> <span class="variable">$price</span>
+
+  .content-section
+    h2 String Validators
+
+    h3 IsUrl
+
+    pre
+      code.
+        <span class="keyword">use</span> <span class="variable">F4</span>\<span class="variable">Core</span>\<span class="variable">Validator</span>\<span class="variable">IsUrl</span>;
+
+        \#[<span class="variable">IsUrl</span>]
+        <span class="keyword">string</span> <span class="variable">$website</span>
+        <span class="comment">// Validates URL format</span>
+
+    h3 IsUuid
+
+    pre
+      code.
+        <span class="keyword">use</span> <span class="variable">F4</span>\<span class="variable">Core</span>\<span class="variable">Validator</span>\<span class="variable">IsUuid</span>;
+
+        \#[<span class="variable">IsUuid</span>]
+        <span class="keyword">string</span> <span class="variable">$id</span>
+        <span class="comment">// Validates UUID format</span>
+
+    h3 RegExp
+
+    pre
+      code.
+        <span class="keyword">use</span> <span class="variable">F4</span>\<span class="variable">Core</span>\<span class="variable">Validator</span>\<span class="variable">RegExp</span>;
+
+        \#[<span class="variable">RegExp</span>(<span class="string">'/^[A-Z]{3}-[0-9]{4}$/'</span>)]
+        <span class="keyword">string</span> <span class="variable">$productCode</span>
+        <span class="comment">// Matches: ABC-1234</span>
+
+  .content-section
+    h2 Complex Validators
+
+    p F4 provides powerful validators for complex data structures like arrays with specific keys and nested validation.
+
+    h3 OneOf / IsOneOf
+
+    p Restrict values to a specific set:
+
+    pre
+      code.
+        <span class="keyword">use</span> <span class="variable">F4</span>\<span class="variable">Core</span>\<span class="variable">Validator</span>\<span class="variable">IsOneOf</span>;
+
+        \#[<span class="variable">IsOneOf</span>([<span class="string">'draft'</span>, <span class="string">'published'</span>, <span class="string">'archived'</span>])]
+        <span class="keyword">string</span> <span class="variable">$status</span>
+        <span class="comment">// Only accepts: draft, published, or archived</span>
+
+    h3 ArrayOf
+
+    p Validate arrays where all elements must pass the same validation:
+
+    pre
+      code.
+        <span class="keyword">use</span> <span class="variable">F4</span>\<span class="variable">Core</span>\<span class="variable">Validator</span>\<span class="variable">ArrayOf</span>;
+        <span class="keyword">use</span> <span class="variable">F4</span>\<span class="variable">Core</span>\<span class="variable">Validator</span>\<span class="variable">CastInt</span>;
+
+        \#[<span class="variable">ArrayOf</span>(new <span class="variable">CastInt</span>())]
+        <span class="keyword">array</span> <span class="variable">$ids</span>
+        <span class="comment">// Ensures $ids is an array of integers</span>
+
+    h3 ArrayKeys - Validating Complex Arrays
+
+    p The <code>ArrayKeys</code> validator allows you to validate associative arrays with specific keys, where each key can have its own validation rules:
+
+    pre
+      code.
+        <span class="keyword">use</span> <span class="variable">F4</span>\<span class="variable">Core</span>\<span class="variable">Validator</span>\{<span class="variable">ArrayKeys</span>, <span class="variable">SanitizedString</span>, <span class="variable">CastInt</span>, <span class="variable">Min</span>, <span class="variable">Max</span>};
+
+        <span class="variable">Route</span>::<span class="function">get</span>(<span class="string">'/employees'</span>, <span class="keyword">function</span>(
+            \#[<span class="variable">ArrayKeys</span>([
+                <span class="string">'search'</span> => new <span class="variable">SanitizedString</span>,
+                <span class="string">'employeeID'</span> => new <span class="variable">SanitizedString</span>
+            ])]
+            <span class="keyword">array</span> <span class="variable">$filter</span> = [],
+            \#[<span class="variable">CastInt</span>, <span class="variable">Min</span>(<span class="number">0</span>)]
+            <span class="keyword">int</span> <span class="variable">$offset</span> = <span class="number">0</span>,
+            \#[<span class="variable">CastInt</span>, <span class="variable">Min</span>(<span class="number">1</span>), <span class="variable">Max</span>(<span class="number">100</span>)]
+            <span class="keyword">int</span> <span class="variable">$limit</span> = <span class="number">20</span>
+        ) {
+            <span class="comment">// $filter is validated as associative array</span>
+            <span class="comment">// - 'search' key: sanitized string</span>
+            <span class="comment">// - 'employeeUUID' key: sanitized string</span>
+            <span class="comment">// $offset: must be integer >= 0</span>
+            <span class="comment">// $limit: must be integer between 1 and 100</span>
+
+            <span class="keyword">return</span> [
+                <span class="string">'filter'</span> => <span class="variable">$filter</span>,
+                <span class="string">'offset'</span> => <span class="variable">$offset</span>,
+                <span class="string">'limit'</span> => <span class="variable">$limit</span>
+            ];
+        });
+
+    p Example usage:
+
+    .demo-box
+      pre
+        code.
+          <span class="comment">// Query: /employees?filter[search]=john&filter[employeeUUID]=abc-123&offset=10&limit=50</span>
+
+          <span class="comment">// Validated data:</span>
+          <span class="variable">$filter</span> = [
+              <span class="string">'search'</span> => <span class="string">'john'</span>,          <span class="comment">// Sanitized string</span>
+              <span class="string">'employeeUUID'</span> => <span class="string">'abc-123'</span>   <span class="comment">// Sanitized string</span>
+          ];
+          <span class="variable">$offset</span> = <span class="number">10</span>;                    <span class="comment">// Cast to int, validated >= 0</span>
+          <span class="variable">$limit</span> = <span class="number">50</span>;                     <span class="comment">// Cast to int, validated 1-100</span>
+
+    h3 Nested ArrayKeys Example
+
+    p You can also nest <code>ArrayKeys</code> validators for deeply nested structures:
+
+    pre
+      code.
+        <span class="keyword">use</span> <span class="variable">F4</span>\<span class="variable">Core</span>\<span class="variable">Validator</span>\{<span class="variable">ArrayKeys</span>, <span class="variable">SanitizedString</span>, <span class="variable">IsEmail</span>, <span class="variable">IsOneOf</span>};
+
+        \#[<span class="variable">ArrayKeys</span>([
+            <span class="string">'name'</span> => new <span class="variable">SanitizedString</span>,
+            <span class="string">'email'</span> => new <span class="variable">IsEmail</span>,
+            <span class="string">'role'</span> => new <span class="variable">IsOneOf</span>([<span class="string">'admin'</span>, <span class="string">'user'</span>, <span class="string">'guest'</span>]),
+            <span class="string">'preferences'</span> => new <span class="variable">ArrayKeys</span>([
+                <span class="string">'theme'</span> => new <span class="variable">IsOneOf</span>([<span class="string">'light'</span>, <span class="string">'dark'</span>]),
+                <span class="string">'notifications'</span> => new <span class="variable">IsOneOf</span>([<span class="string">'enabled'</span>, <span class="string">'disabled'</span>])
+            ])
+        ])]
+        <span class="keyword">array</span> <span class="variable">$userData</span>
+
+    .info-box
+      strong Key Benefits:
+      |
+      | <code>ArrayKeys</code> ensures type safety for complex request data, validates each field independently, and provides clear error messages when validation fails.
+
+  .content-section
+    h2 Default Values
+
+    h3 DefaultValue
+
+    p Provides a fallback when parameter is missing:
+
+    pre
+      code.
+        <span class="keyword">use</span> <span class="variable">F4</span>\<span class="variable">Core</span>\<span class="variable">Validator</span>\<span class="variable">DefaultValue</span>;
+
+        <span class="variable">Route</span>::<span class="function">get</span>(<span class="string">'/search'</span>, <span class="keyword">function</span>(
+            <span class="keyword">string</span> <span class="variable">$query</span>,
+            \#[<span class="variable">DefaultValue</span>(<span class="number">10</span>)]
+            <span class="keyword">int</span> <span class="variable">$limit</span> = <span class="number">10</span>
+        ) {
+            <span class="keyword">return</span> [<span class="string">'query'</span> => <span class="variable">$query</span>, <span class="string">'limit'</span> => <span class="variable">$limit</span>];
+        });
+
+    h3 NullIfEmpty
+
+    pre
+      code.
+        <span class="keyword">use</span> <span class="variable">F4</span>\<span class="variable">Core</span>\<span class="variable">Validator</span>\<span class="variable">NullIfEmpty</span>;
+
+        \#[<span class="variable">NullIfEmpty</span>]
+        ?<span class="keyword">string</span> <span class="variable">$middleName</span>
+        <span class="comment">// Empty string becomes null</span>
+
+  .content-section
+    h2 Combining Validators
+
+    p Stack multiple attributes for comprehensive validation:
+
+    pre
+      code.
+        <span class="keyword">use</span> <span class="variable">F4</span>\<span class="variable">Core</span>\<span class="variable">Validator</span>\{
+            <span class="variable">IsNotEmpty</span>,
+            <span class="variable">Trim</span>,
+            <span class="variable">SanitizedString</span>,
+            <span class="variable">IsEmail</span>
+        };
+
+        <span class="variable">Route</span>::<span class="function">post</span>(<span class="string">'/register'</span>, <span class="keyword">function</span>(
+            \#[<span class="variable">IsNotEmpty</span>]
+            \#[<span class="variable">Trim</span>]
+            \#[<span class="variable">SanitizedString</span>]
+            <span class="keyword">string</span> <span class="variable">$name</span>,
+
+            \#[<span class="variable">IsNotEmpty</span>]
+            \#[<span class="variable">Trim</span>]
+            \#[<span class="variable">IsEmail</span>]
+            <span class="keyword">string</span> <span class="variable">$email</span>,
+
+            \#[<span class="variable">IsInt</span>]
+            \#[<span class="variable">Min</span>(<span class="number">18</span>)]
+            \#[<span class="variable">Max</span>(<span class="number">120</span>)]
+            <span class="keyword">int</span> <span class="variable">$age</span>
+        ) {
+            <span class="keyword">return</span> [
+                <span class="string">'name'</span> => <span class="variable">$name</span>,
+                <span class="string">'email'</span> => <span class="variable">$email</span>,
+                <span class="string">'age'</span> => <span class="variable">$age</span>
+            ];
+        });
+
+    .info-box
+      strong Processing Order:
+      | Validators are executed from top to bottom.
+
+  .content-section
+    h2 Validation Errors
+
+    p When validation fails, F4 throws a <code>ValidationFailedException</code>:
+
+    pre
+      code.
+        <span class="keyword">use</span> <span class="variable">F4</span>\<span class="variable">Core</span>\<span class="variable">Validator</span>\<span class="variable">ValidationFailedException</span>;
+
+        <span class="variable">$f4</span>-><span class="function">on</span>(<span class="variable">ValidationFailedException</span>::<span class="keyword">class</span>,
+            <span class="keyword">function</span>(<span class="variable">$exception</span>, <span class="variable">$request</span>, <span class="variable">$response</span>) {
+                <span class="keyword">return</span> <span class="variable">$response</span>
+                    -><span class="function">setData</span>([<span class="string">'errors'</span> => <span class="variable">$exception</span>-><span class="function">getErrors</span>()])
+                    -><span class="function">withStatus</span>(<span class="number">400</span>);
+            }
+        );
+
+    p The exception contains:
+    ul
+      li Parameter name that failed
+      li Validation rule that was violated
+      li User-friendly error message
+
+  .content-section
+    h2 Complete Example: User Registration
+
+    pre
+      code.
+        <span class="keyword">use</span> <span class="variable">F4</span>\<span class="variable">Core</span>\<span class="variable">Route</span>;
+        <span class="keyword">use</span> <span class="variable">F4</span>\<span class="variable">Core</span>\<span class="variable">Validator</span>\{
+            <span class="variable">IsNotEmpty</span>,
+            <span class="variable">Trim</span>,
+            <span class="variable">SanitizedString</span>,
+            <span class="variable">IsEmail</span>,
+            <span class="variable">IsInt</span>,
+            <span class="variable">Min</span>,
+            <span class="variable">Max</span>,
+            <span class="variable">DefaultValue</span>,
+            <span class="variable">IsOneOf</span>
+        };
+
+        <span class="variable">Route</span>::<span class="function">post</span>(<span class="string">'/api/users'</span>, <span class="keyword">function</span>(
+            \#[<span class="variable">IsNotEmpty</span>]
+            \#[<span class="variable">Trim</span>]
+            \#[<span class="variable">SanitizedString</span>]
+            <span class="keyword">string</span> <span class="variable">$username</span>,
+
+            \#[<span class="variable">IsNotEmpty</span>]
+            \#[<span class="variable">Trim</span>]
+            \#[<span class="variable">IsEmail</span>]
+            <span class="keyword">string</span> <span class="variable">$email</span>,
+
+            \#[<span class="variable">IsInt</span>]
+            \#[<span class="variable">Min</span>(<span class="number">18</span>)]
+            \#[<span class="variable">Max</span>(<span class="number">120</span>)]
+            <span class="keyword">int</span> <span class="variable">$age</span>,
+
+            \#[<span class="variable">DefaultValue</span>(<span class="string">'user'</span>)]
+            \#[<span class="variable">IsOneOf</span>([<span class="string">'user'</span>, <span class="string">'admin'</span>, <span class="string">'moderator'</span>])]
+            <span class="keyword">string</span> <span class="variable">$role</span> = <span class="string">'user'</span>
+        ) {
+            <span class="comment">// All parameters are validated and sanitized</span>
+            <span class="comment">// Safe to use directly</span>
+            <span class="keyword">return</span> [
+                <span class="string">'username'</span> => <span class="variable">$username</span>,
+                <span class="string">'email'</span> => <span class="variable">$email</span>,
+                <span class="string">'age'</span> => <span class="variable">$age</span>,
+                <span class="string">'role'</span> => <span class="variable">$role</span>
+            ];
+        });
+
+  .content-section
+    h2 Validator Reference Table
+
+    table
+      thead
+        tr
+          th Category
+          th Validators
+          th Purpose
+      tbody
+        tr
+          td Type Validation (Strict)
+          td
+            code IsInt, IsFloat, IsBool, IsEmail, IsUrl, IsUuid
+          td Validate types (throws on mismatch)
+        tr
+          td Type Coercion (Flexible)
+          td
+            code CastInt, CastFloat, CastBool
+          td Convert types (no exceptions)
+        tr
+          td Constraints
+          td
+            code Min, Max, IsGreaterThan, IsLessThan
+          td Numeric boundaries
+        tr
+          td Sanitization
+          td
+            code Trim, SanitizedString, CastInt
+          td Clean input
+        tr
+          td Presence
+          td
+            code IsNotEmpty, NullIfEmpty
+          td Required fields
+        tr
+          td Patterns
+          td
+            code RegExp
+          td Custom patterns
+        tr
+          td Complex Types
+          td
+            code IsOneOf, ArrayOf, ArrayKeys
+          td Complex data structures
+        tr
+          td Defaults
+          td
+            code DefaultValue
+          td Fallback values
+
+  .content-section
+    h2 Best Practices
+
+    ol
+      li <strong>Prefer <code>Cast*</code> over <code>Is*</code> validators</strong> for query parameters and form data to avoid exceptions on type mismatches
+      li Always sanitize user input (use <code>Trim</code>, <code>SanitizedString</code>)
+      li Validate before using in queries or logic
+      li Provide sensible default values for optional parameters
+      li Use specific validators (<code>IsEmail</code>) over generic ones (<code>RegExp</code>)
+      li Handle <code>ValidationFailedException</code> globally with exception handlers
+      li Combine validators for defense in depth (e.g., <code>CastInt</code> + <code>Min</code> + <code>Max</code>)
+      li Document expected formats with validators
+
+    .success-box
+      strong Security Note:
+      | Validation attributes are your first line of defense against malicious input. Always validate!
+
+  .content-section
+    h2 Try It Yourself
+
+    p Practice exercises:
+
+    ol
+      li Create a route that validates a user profile update with name, email, and age
+      li Add a search route with optional filters (category, min price, max price)
+      li Implement a contact form with validation for name, email, subject, and message
+      li Build an API endpoint that accepts pagination parameters (page, limit)
+
+  .content-section
+    h2 Key Takeaways
+
+    ul
+      li PHP attributes provide declarative validation
+      li Validators run automatically before your handler
+      li Sanitizers clean data, validators check constraints
+      li Multiple validators can be stacked
+      li <code>ValidationFailedException</code> is thrown on failure
+      li Default values work with <code>\#[DefaultValue]</code>
+      li Type safety is enforced through PHP type hints + validators
+      li <code>ArrayKeys</code> enables validation of complex associative arrays with per-key validators
+      li Complex validators can be nested for deeply structured data
+
+  .content-section
+    h2 What's Next?
+
+    p In Chapter 5, we'll explore middleware:
+
+    ul
+      li Request middleware for preprocessing
+      li Response middleware for postprocessing
+      li Authentication and authorization patterns
+      li Logging and timing middleware
+      li Middleware execution order
+
+    p Ready to learn middleware? Click "Next" below!

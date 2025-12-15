@@ -1,0 +1,631 @@
+extends ../tutorial.pug
+
+block title
+  | Chapter 11: Debug Mode - F4 Framework Tutorial
+
+block content
+  .chapter-header
+    .chapter-number Chapter 11
+    h1 Debug Mode
+    p.description Master F4's built-in debugger for profiling, inspecting requests, and troubleshooting
+
+  .content-section
+    h2 Introduction
+
+    p F4 includes a sophisticated built-in debugger that provides deep insights into your application's execution. By simply adding a special suffix to any URL, you can access a comprehensive debugging interface that shows profiling data, database queries, request/response details, and much more.
+
+    h3 What We'll Cover
+
+    ul
+      li Activating debug mode
+      li Configuring the debug extension
+      li Understanding the debugger interface
+      li Profiling and performance analysis
+      li Inspecting database queries
+      li Request and response inspection
+      li Route and middleware analysis
+      li Logging and custom debug output
+      li Template context inspection
+      li Best practices for debugging
+
+  .content-section
+    h2 Activating Debug Mode
+
+    p Debug mode is activated by adding a special suffix to any URL. By default, this suffix is <code>+debug</code>:
+
+    .demo-box
+      h4 Examples
+
+      pre.
+        # Normal request
+        http://localhost:8000/tutorial
+
+        # Debug mode request
+        http://localhost:8000/tutorial+debug
+
+        # Works with any route
+        http://localhost:8000/users/123+debug
+        http://localhost:8000/api/posts.json+debug
+
+    .info-box
+      strong Key Concept:
+      | The debug suffix is stripped from the URL before routing, so <code>/tutorial+debug</code> matches the same route as <code>/tutorial</code>.
+
+  .content-section
+    h2 Configuring Debug Extension
+
+    p You can customize the debug extension suffix in your configuration:
+
+    pre
+      code.
+        <span class="keyword">namespace</span> <span class="variable">F4</span>;
+
+        <span class="keyword">use</span> <span class="variable">F4</span>\<span class="variable">AbstractConfig</span>;
+
+        <span class="keyword">class</span> <span class="variable">Config</span> <span class="keyword">extends</span> <span class="variable">AbstractConfig</span>
+        {
+            <span class="comment">// Enable debug mode</span>
+            <span class="keyword">public const bool</span> <span class="variable">DEBUG_MODE</span> = <span class="keyword">true</span>;
+
+            <span class="comment">// Customize debug extension (default: '+debug')</span>
+            <span class="keyword">public const string</span> <span class="variable">DEBUG_EXTENSION</span> = <span class="string">'+debug'</span>;
+
+            <span class="comment">// Enable query logging for debugger</span>
+            <span class="keyword">public const bool</span> <span class="variable">DEBUG_DB_QUERIES</span> = <span class="keyword">true</span>;
+        }
+
+    h3 Custom Debug Extensions
+
+    .demo-box
+      pre
+        code.
+          <span class="comment">// Use different suffix</span>
+          <span class="keyword">public const string</span> <span class="variable">DEBUG_EXTENSION</span> = <span class="string">'?debug'</span>;
+          <span class="comment">// Access: /tutorial?debug</span>
+
+          <span class="keyword">public const string</span> <span class="variable">DEBUG_EXTENSION</span> = <span class="string">'.debug'</span>;
+          <span class="comment">// Access: /tutorial.debug</span>
+
+    .warning-box
+      strong Security:
+      | Always set <code>DEBUG_MODE = false</code> in production! The debugger exposes sensitive information about your application.
+
+  .content-section
+    h2 The Debugger Interface
+
+    p When debug mode is active, F4 replaces the normal response with a comprehensive debugging interface containing multiple panels:
+
+    table
+      thead
+        tr
+          th Panel
+          th Description
+      tbody
+        tr
+          td Profiler
+          td Timeline of request processing with execution times
+        tr
+          td Request
+          td HTTP request details (method, path, headers, parameters)
+        tr
+          td Response
+          td Response data, status code, headers, template info
+        tr
+          td Route
+          td Matched route, handler code, middleware chain
+        tr
+          td Queries
+          td All database queries with timing and results
+        tr
+          td Config
+          td Complete configuration with values
+        tr
+          td Session
+          td Session data and variables
+        tr
+          td Log
+          td Custom log entries added via debugger
+        tr
+          td System
+          td PHP version, extensions, F4 version, environment
+
+  .content-section
+    h2 Profiler Panel
+
+    p The profiler shows a timeline of your application's execution with precise timing:
+
+    .demo-box
+      h4 Profiler Snapshots
+
+      table
+        thead
+          tr
+            th Event
+            th Time (ms)
+            th Memory
+        tbody
+          tr
+            td Core ready
+            td 2.5ms
+            td 1.2MB
+          tr
+            td Setup request/response
+            td 0.8ms
+            td 1.3MB
+          tr
+            td Setup environment
+            td 0.3ms
+            td 1.3MB
+          tr
+            td Setup localizer
+            td 1.2ms
+            td 1.4MB
+          tr
+            td Register modules
+            td 3.1ms
+            td 1.5MB
+          tr
+            td Route matching
+            td 0.5ms
+            td 1.5MB
+          tr
+            td Execute query 1
+            td 2.8ms
+            td 1.6MB
+          tr
+            td Execute query 2
+            td 1.5ms
+            td 1.6MB
+          tr
+            td Prepare response
+            td 0.4ms
+            td 1.7MB
+          tr
+            td Render response
+            td 5.2ms
+            td 2.1MB
+
+    p The profiler helps identify performance bottlenecks by showing:
+
+    ul
+      li Time spent in each phase
+      li Memory usage at each snapshot
+      li Database query timing
+      li Template rendering time
+      li Total request processing time
+
+  .content-section
+    h2 Request Inspection
+
+    p The Request panel shows complete details about the incoming HTTP request:
+
+    .demo-box
+      h4 Request Information
+
+      pre
+        code.
+          {
+            <span class="string">"method"</span>: <span class="string">"GET"</span>,
+            <span class="string">"path"</span>: <span class="string">"/tutorial/09-configuration"</span>,
+            <span class="string">"extension"</span>: <span class="keyword">null</span>,
+            <span class="string">"debugExtension"</span>: <span class="string">"+debug"</span>,
+            <span class="string">"headers"</span>: {
+              <span class="string">"Host"</span>: [<span class="string">"localhost:8000"</span>],
+              <span class="string">"User-Agent"</span>: [<span class="string">"Mozilla/5.0..."</span>],
+              <span class="string">"Accept"</span>: [<span class="string">"text/html"</span>]
+            },
+            <span class="string">"parameters"</span>: {
+              <span class="string">"search"</span>: <span class="string">"config"</span>,
+              <span class="string">"page"</span>: <span class="number">2</span>
+            },
+            <span class="string">"body"</span>: <span class="string">""</span>
+          }
+
+  .content-section
+    h2 Response Inspection
+
+    p The Response panel shows what your application is returning:
+
+    .demo-box
+      h4 Response Details
+
+      pre
+        code.
+          {
+            <span class="string">"code"</span>: <span class="number">200</span>,
+            <span class="string">"status"</span>: <span class="string">"OK"</span>,
+            <span class="string">"format"</span>: <span class="string">"text/html"</span>,
+            <span class="string">"headers"</span>: {
+              <span class="string">"Content-Type"</span>: [<span class="string">"text/html; charset=utf-8"</span>]
+            },
+            <span class="string">"data"</span>: {
+              <span class="string">"chapter"</span>: {
+                <span class="string">"current"</span>: {<span class="string">"number"</span>: <span class="string">"09"</span>, <span class="string">"title"</span>: <span class="string">"Configuration"</span>},
+                <span class="string">"previous"</span>: {...},
+                <span class="string">"next"</span>: {...}
+              }
+            },
+            <span class="string">"template"</span>: {
+              <span class="string">"path"</span>: <span class="string">"tutorial/chapter-09/chapter-09.pug"</span>,
+              <span class="string">"context"</span>: {...},
+              <span class="string">"folders"</span>: [<span class="string">"/path/to/templates"</span>]
+            },
+            <span class="string">"exception"</span>: <span class="keyword">null</span>
+          }
+
+    p The response panel is especially useful for:
+
+    ul
+      li Verifying data passed to templates
+      li Checking HTTP status codes and headers
+      li Inspecting template context
+      li Debugging exceptions
+
+  .content-section
+    h2 Route Inspection
+
+    p The Route panel shows detailed information about the matched route and its handler:
+
+    .demo-box
+      h4 Route Handler
+
+      pre
+        code.
+          <span class="string">"file"</span>: <span class="string">"/app/src/App/Tutorial/TutorialModule.php"</span>
+          <span class="string">"line"</span>: <span class="number">95</span>
+          <span class="string">"code"</span>:
+            <span class="keyword">function</span>() {
+                <span class="keyword">return</span> [
+                    <span class="string">'chapter'</span> => <span class="variable">$this</span>-><span class="function">getChapterInfo</span>(<span class="string">'09'</span>)
+                ];
+            }
+
+      h4 Route Parameters
+
+      pre
+        code.
+          {
+            <span class="string">"id"</span>: <span class="number">123</span>,
+            <span class="string">"slug"</span>: <span class="string">"my-post"</span>
+          }
+
+      h4 Middleware Chain
+
+      p Shows all middleware executed for this route:
+
+      ul
+        li Request middleware (global)
+        li Route group request middleware
+        li Route request middleware
+        li Route response middleware
+        li Route group response middleware
+        li Response middleware (global)
+
+  .content-section
+    h2 Database Query Inspection
+
+    p When <code>DEBUG_DB_QUERIES = true</code>, the debugger captures all SQL queries:
+
+    .demo-box
+      h4 Query Log
+
+      pre
+        code.
+          Query 1: (2.8ms)
+          SELECT * FROM users WHERE id = $1
+          Parameters: [123]
+
+          Query 2: (1.5ms)
+          SELECT * FROM posts WHERE user_id = $1 ORDER BY created_at DESC
+          Parameters: [123]
+
+          Query 3: (0.8ms)
+          UPDATE users SET last_seen = NOW() WHERE id = $1
+          Parameters: [123]
+
+    p For each query, you can see:
+
+    ul
+      li SQL statement with parameter placeholders
+      li Actual parameter values
+      li Execution time
+      li Query order and timing in the profiler
+
+    .info-box
+      strong Performance Tip:
+      | Use the query debugger to identify N+1 query problems and slow queries.
+
+  .content-section
+    h2 Custom Logging
+
+    p Add custom debug logs using the debugger's <code>log()</code> method:
+
+    pre
+      code.
+        <span class="variable">$f4</span>-><span class="function">addRoute</span>(<span class="variable">Route</span>::<span class="function">get</span>(<span class="string">'/users/{id:int}'</span>, <span class="keyword">function</span>(<span class="keyword">int</span> <span class="variable">$id</span>) <span class="keyword">use</span> (<span class="variable">$f4</span>) {
+            <span class="comment">// Log variable for debugging</span>
+            <span class="variable">$f4</span>-><span class="function">debug</span>()-><span class="function">log</span>(<span class="variable">$id</span>, <span class="string">'User ID parameter'</span>);
+
+            <span class="variable">$user</span> = <span class="variable">User</span>::<span class="function">find</span>(<span class="variable">$id</span>);
+
+            <span class="comment">// Log complex objects</span>
+            <span class="variable">$f4</span>-><span class="function">debug</span>()-><span class="function">log</span>(<span class="variable">$user</span>, <span class="string">'Retrieved user object'</span>);
+
+            <span class="comment">// Log arrays</span>
+            <span class="variable">$f4</span>-><span class="function">debug</span>()-><span class="function">log</span>(<span class="variable">$user</span>-><span class="function">toArray</span>(), <span class="string">'User data array'</span>);
+
+            <span class="keyword">return</span> [<span class="string">'user'</span> => <span class="variable">$user</span>];
+        }));
+
+    h3 Log Entry Format
+
+    .demo-box
+      p Each log entry shows:
+
+      ul
+        li Description you provided
+        li Variable value (expandable tree view)
+        li Stack trace showing where the log was called
+        li File and line number
+
+  .content-section
+    h2 Template Context Inspection
+
+    p When a template is rendered, the debugger captures the complete template context:
+
+    .demo-box
+      pre
+        code.
+          {
+            <span class="string">"request"</span>: {
+              <span class="string">"method"</span>: <span class="string">"GET"</span>,
+              <span class="string">"path"</span>: <span class="string">"/tutorial"</span>
+            },
+            <span class="string">"response"</span>: {
+              <span class="string">"data"</span>: {
+                <span class="string">"chapters"</span>: [...],
+                <span class="string">"message"</span>: <span class="string">"Hello"</span>
+              }
+            },
+            <span class="string">"session"</span>: {...},
+            <span class="string">"locale"</span>: <span class="string">"en"</span>
+          }
+
+    p This helps debug template issues by showing:
+
+    ul
+      li What data is available in the template
+      li Variable names and values
+      li Nested object structures
+      li Helper functions and utilities
+
+  .content-section
+    h2 Configuration Inspection
+
+    p The Config panel shows all configuration constants and their values:
+
+    .demo-box
+      pre
+        code.
+          {
+            <span class="string">"DEBUG_MODE"</span>: <span class="keyword">true</span>,
+            <span class="string">"DEBUG_EXTENSION"</span>: <span class="string">"+debug"</span>,
+            <span class="string">"DB_HOST"</span>: <span class="string">"localhost"</span>,
+            <span class="string">"DB_NAME"</span>: <span class="string">"myapp"</span>,
+            <span class="string">"DB_PASSWORD"</span>: <span class="string">"***REDACTED***"</span>,
+            <span class="string">"TEMPLATE_CACHE_ENABLED"</span>: <span class="keyword">true</span>,
+            <span class="string">"MODULES"</span>: [
+              <span class="string">"App\\Tutorial\\TutorialModule"</span>
+            ]
+          }
+
+    .warning-box
+      strong Security:
+      | Parameters marked with <code>\#[SensitiveParameter]</code> are automatically redacted in the debugger output.
+
+  .content-section
+    h2 Session Inspection
+
+    p View all session variables and their values:
+
+    pre
+      code.
+        {
+          <span class="string">"user_id"</span>: <span class="number">123</span>,
+          <span class="string">"is_admin"</span>: <span class="keyword">false</span>,
+          <span class="string">"cart"</span>: [
+            {<span class="string">"id"</span>: <span class="number">1</span>, <span class="string">"quantity"</span>: <span class="number">2</span>},
+            {<span class="string">"id"</span>: <span class="number">5</span>, <span class="string">"quantity"</span>: <span class="number">1</span>}
+          ],
+          <span class="string">"locale"</span>: <span class="string">"en"</span>
+        }
+
+  .content-section
+    h2 System Information
+
+    p The System panel provides environment details:
+
+    .demo-box
+      h4 System Info
+
+      pre
+        code.
+          {
+            <span class="string">"F4 version"</span>: <span class="string">"1.0.0"</span>,
+            <span class="string">"F4 environment"</span>: <span class="string">"local"</span>,
+            <span class="string">"PHP version"</span>: <span class="string">"8.4.0"</span>,
+            <span class="string">"PHP extensions"</span>: [
+              <span class="string">"pdo_pgsql"</span>, <span class="string">"mbstring"</span>, <span class="string">"json"</span>
+            ],
+            <span class="string">"OS info"</span>: <span class="string">"Darwin 24.6.0"</span>,
+            <span class="string">"Project Root"</span>: <span class="string">"/Users/dev/myapp"</span>
+          }
+
+  .content-section
+    h2 Debugging Workflow
+
+    h3 1. Identify Performance Issues
+
+    pre
+      code.
+        <span class="comment">// Visit: /slow-page+debug</span>
+        <span class="comment">// Check Profiler panel for slow operations</span>
+        <span class="comment">// Look for:</span>
+        <span class="comment">// - Long query execution times</span>
+        <span class="comment">// - Slow middleware</span>
+        <span class="comment">// - Template rendering bottlenecks</span>
+
+    h3 2. Debug Database Queries
+
+    pre
+      code.
+        <span class="comment">// Visit: /users+debug</span>
+        <span class="comment">// Check Queries panel</span>
+        <span class="comment">// Look for:</span>
+        <span class="comment">// - N+1 query problems</span>
+        <span class="comment">// - Missing indexes (slow queries)</span>
+        <span class="comment">// - Unnecessary queries</span>
+
+    h3 3. Inspect Request/Response
+
+    pre
+      code.
+        <span class="comment">// Visit: /api/data+debug</span>
+        <span class="comment">// Check Request panel for incoming data</span>
+        <span class="comment">// Check Response panel for outgoing data</span>
+        <span class="comment">// Verify headers, status codes, format</span>
+
+    h3 4. Debug Template Issues
+
+    pre
+      code.
+        <span class="comment">// Visit: /page+debug</span>
+        <span class="comment">// Check Response > template > context</span>
+        <span class="comment">// Verify all variables are present</span>
+        <span class="comment">// Check template path is correct</span>
+
+  .content-section
+    h2 Custom Debugger Class
+
+    p You can create a custom debugger by implementing <code>DebuggerInterface</code>:
+
+    pre
+      code.
+        <span class="keyword">namespace</span> <span class="variable">App</span>;
+
+        <span class="keyword">use</span> <span class="variable">F4</span>\<span class="variable">Core</span>\<span class="variable">DebuggerInterface</span>;
+        <span class="keyword">use</span> <span class="variable">F4</span>\<span class="variable">Core</span>\<span class="variable">RequestInterface</span>;
+
+        <span class="keyword">class</span> <span class="variable">CustomDebugger</span> <span class="keyword">implements</span> <span class="variable">DebuggerInterface</span>
+        {
+            <span class="keyword">public function</span> <span class="function">checkIfEnabledByRequest</span>(<span class="variable">RequestInterface</span> <span class="variable">$request</span>): <span class="keyword">bool</span>
+            {
+                <span class="comment">// Custom logic for enabling debugger</span>
+                <span class="keyword">return</span> <span class="variable">$request</span>-><span class="function">getDebugExtension</span>() !== <span class="keyword">null</span>;
+            }
+
+            <span class="keyword">public function</span> <span class="function">log</span>(<span class="keyword">mixed</span> <span class="variable">$value</span>, ?<span class="keyword">string</span> <span class="variable">$description</span> = <span class="keyword">null</span>): <span class="keyword">void</span>
+            {
+                <span class="comment">// Custom logging implementation</span>
+            }
+
+            <span class="keyword">public function</span> <span class="function">captureAndEmit</span>(<span class="keyword">callable</span> <span class="variable">$emitCallback</span>): <span class="keyword">bool</span>
+            {
+                <span class="comment">// Custom debugger UI</span>
+                <span class="keyword">return</span> <span class="keyword">true</span>;
+            }
+        }
+
+    h3 Configure Custom Debugger
+
+    pre
+      code.
+        <span class="keyword">class</span> <span class="variable">Config</span> <span class="keyword">extends</span> <span class="variable">AbstractConfig</span>
+        {
+            <span class="keyword">public const string</span> <span class="variable">CORE_DEBUGGER_CLASS</span> = \<span class="variable">App</span>\<span class="variable">CustomDebugger</span>::<span class="keyword">class</span>;
+        }
+
+  .content-section
+    h2 Best Practices
+
+    ol
+      li <strong>Never enable in production</strong> - Set <code>DEBUG_MODE = false</code>
+      li <strong>Use environment variables</strong> - Control debug mode via env vars
+      li <strong>Profile regularly</strong> - Check performance during development
+      li <strong>Log strategically</strong> - Add debug logs at key decision points
+      li <strong>Check queries</strong> - Monitor database query counts and timing
+      li <strong>Inspect middleware</strong> - Verify middleware execution order
+      li <strong>Validate templates</strong> - Ensure correct data reaches templates
+      li <strong>Review exceptions</strong> - Check exception details in debugger
+      li <strong>Monitor memory</strong> - Watch memory usage in profiler
+      li <strong>Test debug mode</strong> - Ensure it works before you need it
+
+  .content-section
+    h2 Common Use Cases
+
+    .demo-box
+      h4 Use Case 1: Finding N+1 Query Problems
+
+      pre
+        code.
+          <span class="comment">// Visit: /posts+debug</span>
+          <span class="comment">// Look in Queries panel</span>
+          <span class="comment">// If you see:</span>
+          <span class="comment">//   Query 1: SELECT * FROM posts</span>
+          <span class="comment">//   Query 2: SELECT * FROM users WHERE id = 1</span>
+          <span class="comment">//   Query 3: SELECT * FROM users WHERE id = 2</span>
+          <span class="comment">//   Query 4: SELECT * FROM users WHERE id = 3</span>
+          <span class="comment">// You have an N+1 problem - use joins instead!</span>
+
+      h4 Use Case 2: Debugging Missing Template Variables
+
+      pre
+        code.
+          <span class="comment">// Visit: /page+debug</span>
+          <span class="comment">// Check Response > template > context</span>
+          <span class="comment">// Verify expected variables exist</span>
+          <span class="comment">// Check variable names and structure</span>
+
+      h4 Use Case 3: Profiling Slow Requests
+
+      pre
+        code.
+          <span class="comment">// Visit: /slow-endpoint+debug</span>
+          <span class="comment">// Check Profiler panel</span>
+          <span class="comment">// Identify which phase is slow</span>
+          <span class="comment">// Optimize that specific component</span>
+
+  .content-section
+    h2 Try It Yourself
+
+    p Practice exercises:
+
+    ol
+      li Enable debug mode on this tutorial page by adding <code>+debug</code> to the URL
+      li Explore the profiler to see how long each phase takes
+      li Check the Request panel to see your browser headers
+      li Look at the Response > template > context to see chapter data
+      li Try adding custom debug logs in your route handlers
+      li Profile a page with database queries
+      li Inspect the middleware chain for a route
+      li View configuration values in the Config panel
+
+  .content-section
+    h2 Key Takeaways
+
+    ul
+      li Debug mode is activated by adding <code>+debug</code> (or custom suffix) to any URL
+      li Configure debug extension with <code>DEBUG_EXTENSION</code> constant
+      li The debugger provides comprehensive insights into request processing
+      li Profiler shows timing and memory usage for each phase
+      li Query panel captures all database queries with timing
+      li Custom logs can be added with <code>$f4->debug()->log()</code>
+      li Template context shows all variables available in templates
+      li Sensitive parameters are automatically redacted
+      li Always disable debug mode in production (<code>DEBUG_MODE = false</code>)
+      li The debugger is an essential tool for performance optimization
+
+  .content-section
+    h2 What's Next?
+
+    p Now that you understand how to use F4's debug mode, the final step is learning how to deploy your application to production! Continue to Chapter 12 to learn about building assets, configuring production servers, and deployment best practices.

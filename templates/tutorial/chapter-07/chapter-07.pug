@@ -1,0 +1,619 @@
+extends ../tutorial.pug
+
+block title
+  | Chapter 07: Database Integration - F4 Framework Tutorial
+
+block content
+  .chapter-header
+    .chapter-number Chapter 07
+    h1 Database Integration
+    p.description Master F4's SQL-native query builder with powerful placeholder syntax for PostgreSQL
+
+  .content-section
+    h2 Introduction
+
+    p F4 includes a unique query builder designed specifically for PostgreSQL. Unlike traditional query builders, F4's approach is based on three core principles:
+
+    ul
+      li <strong>Follow native SQL syntax as closely as possible</strong> - Write queries that look like SQL
+      li <strong>Make minimal assumptions about literals</strong> - You control how values are interpreted
+      li <strong>Provide extremely powerful placeholder syntax</strong> - Safe parameterization anywhere in the query
+
+    .info-box
+      strong Philosophy:
+      |  
+      | F4's query builder doesn't try to abstract SQL away. Instead, it gives you the power of SQL with built-in safety through placeholders.
+
+  .content-section
+    h2 The DB Class
+
+    p The <code>DB</code> class is your entry point for database operations. It provides two types of methods:
+
+    h3 Static Methods (Query Starters)
+
+    p These methods create a new query:
+
+    table
+      thead
+        tr
+          th Method
+          th Purpose
+      tbody
+        tr
+          td
+            code DB::select()
+          td Start a SELECT query
+        tr
+          td
+            code DB::selectDistinct()
+          td Start a SELECT DISTINCT query
+        tr
+          td
+            code DB::insert()
+          td Start an INSERT query
+        tr
+          td
+            code DB::update()
+          td Start an UPDATE query
+        tr
+          td
+            code DB::delete()
+          td Start a DELETE query
+        tr
+          td
+            code DB::with()
+          td Start a query with CTE (Common Table Expression)
+        tr
+          td
+            code DB::withRecursive()
+          td Start a recursive CTE query
+        tr
+          td
+            code DB::raw()
+          td Execute raw SQL
+        tr
+          td
+            code DB::dropTable()
+          td Drop a table
+        tr
+          td
+            code DB::dropTableIfExists()
+          td Drop table if it exists
+        tr
+          td
+            code DB::dropTableWithCascade()
+          td Drop table with CASCADE
+        tr
+          td
+            code DB::dropTableIfExistsWithCascade()
+          td Drop table if exists with CASCADE
+
+    h3 Instance Methods (Query Builders)
+
+    p These methods build upon an existing query:
+
+    .demo-box
+      h4 Filtering and Conditions
+
+      ul
+        li <code>where()</code> - Add WHERE clause
+        li <code>having()</code> - Add HAVING clause
+
+      h4 Joins
+
+      ul
+        li <code>join()</code>, <code>innerJoin()</code> - INNER JOIN
+        li <code>leftJoin()</code>, <code>leftOuterJoin()</code> - LEFT JOIN
+        li <code>rightJoin()</code>, <code>rightOuterJoin()</code> - RIGHT JOIN
+        li <code>fullOuterJoin()</code> - FULL OUTER JOIN
+        li <code>crossJoin()</code> - CROSS JOIN
+        li <code>naturalJoin()</code> - NATURAL JOIN
+        li <code>joinLateral()</code>, <code>innerJoinLateral()</code> - LATERAL joins
+        li <code>leftJoinLateral()</code>, <code>crossJoinLateral()</code> - Lateral variants
+        li <code>on()</code> - Specify join condition
+
+      h4 Grouping and Ordering
+
+      ul
+        li <code>group()</code>, <code>groupBy()</code> - GROUP BY
+        li <code>groupByAll()</code> - GROUP BY ALL
+        li <code>groupByDistinct()</code> - GROUP BY DISTINCT
+        li <code>order()</code>, <code>orderBy()</code> - ORDER BY
+
+      h4 Limiting and Pagination
+
+      ul
+        li <code>limit()</code> - LIMIT rows
+        li <code>offset()</code> - OFFSET rows
+
+      h4 Set Operations
+
+      ul
+        li <code>union()</code> - UNION
+        li <code>unionAll()</code> - UNION ALL
+        li <code>except()</code> - EXCEPT
+        li <code>exceptAll()</code> - EXCEPT ALL
+        li <code>intersect()</code> - INTERSECT
+        li <code>intersectAll()</code> - INTERSECT ALL
+
+      h4 INSERT/UPDATE Specific
+
+      ul
+        li <code>into()</code> - Specify target table
+        li <code>values()</code> - Provide values for INSERT
+        li <code>set()</code> - SET clause for UPDATE
+        li <code>onConflict()</code> - ON CONFLICT clause
+        li <code>doNothing()</code> - DO NOTHING
+        li <code>doUpdateSet()</code> - DO UPDATE SET
+        li <code>returning()</code> - RETURNING clause
+
+      h4 Other
+
+      ul
+        li <code>from()</code> - FROM clause
+        li <code>using()</code> - USING clause
+        li <code>with()</code>, <code>withRecursive()</code> - CTEs
+
+  .content-section
+    h2 The Power of Placeholders
+
+    p F4's query builder uses a powerful placeholder system that allows safe parameterization anywhere in your SQL. There are three types of placeholders:
+
+    h3 1. Single Value Placeholder: {#}
+
+    p Substitutes a single scalar value (string, number, boolean, null):
+
+    pre
+      code.
+        <span class="comment">// Simple where clause</span>
+        <span class="variable">DB</span>::<span class="function">select</span>()
+            -><span class="function">from</span>(<span class="string">'users'</span>)
+            -><span class="function">where</span>([<span class="string">'"id" = {#}'</span> => <span class="number">123</span>])
+            -><span class="function">asRow</span>();
+
+        <span class="comment">// Generates: SELECT * FROM "users" WHERE "id" = $1</span>
+        <span class="comment">// Parameters: [123]</span>
+
+    pre
+      code.
+        <span class="comment">// Multiple conditions</span>
+        <span class="variable">DB</span>::<span class="function">select</span>()
+            -><span class="function">from</span>(<span class="string">'posts'</span>)
+            -><span class="function">where</span>([
+                <span class="string">'"user_id" = {#}'</span> => <span class="number">5</span>,
+                <span class="string">'"status" = {#}'</span> => <span class="string">'published'</span>,
+                <span class="string">'"created_at" > {#}'</span> => <span class="string">'2024-01-01'</span>
+            ])
+            -><span class="function">asTable</span>();
+
+        <span class="comment">// WHERE "user_id" = $1 AND "status" = $2 AND "created_at" > $3</span>
+
+    h3 2. Array Value Placeholder: {#,...#}
+
+    p Substitutes an array of values, perfect for IN clauses:
+
+    pre
+      code.
+        <span class="comment">// IN clause with multiple values</span>
+        <span class="variable">$ids</span> = [<span class="number">1</span>, <span class="number">2</span>, <span class="number">3</span>, <span class="number">5</span>, <span class="number">8</span>];
+
+        <span class="variable">DB</span>::<span class="function">select</span>()
+            -><span class="function">from</span>(<span class="string">'products'</span>)
+            -><span class="function">where</span>([<span class="string">'"id" IN ({#,...#})'</span> => <span class="variable">$ids</span>])
+            -><span class="function">asTable</span>();
+
+        <span class="comment">// WHERE "id" IN ($1, $2, $3, $4, $5)</span>
+        <span class="comment">// Parameters: [1, 2, 3, 5, 8]</span>
+
+    pre
+      code.
+        <span class="comment">// Multiple array placeholders</span>
+        <span class="variable">$categories</span> = [<span class="string">'electronics'</span>, <span class="string">'computers'</span>];
+        <span class="variable">$statuses</span> = [<span class="string">'active'</span>, <span class="string">'featured'</span>];
+
+        <span class="variable">DB</span>::<span class="function">select</span>()
+            -><span class="function">from</span>(<span class="string">'products'</span>)
+            -><span class="function">where</span>([
+                <span class="string">'"category" IN ({#,...#})'</span> => <span class="variable">$categories</span>,
+                <span class="string">'"status" IN ({#,...#})'</span> => <span class="variable">$statuses</span>
+            ])
+            -><span class="function">asTable</span>();
+
+    h3 3. Subquery Placeholder: {#::#}
+
+    p Substitutes another DB query object as a subquery:
+
+    pre
+      code.
+        <span class="comment">// Subquery in WHERE clause</span>
+        <span class="variable">$avgPriceQuery</span> = <span class="variable">DB</span>::<span class="function">select</span>(<span class="string">'AVG(price)'</span>)
+            -><span class="function">from</span>(<span class="string">'products'</span>);
+
+        <span class="variable">DB</span>::<span class="function">select</span>()
+            -><span class="function">from</span>(<span class="string">'products'</span>)
+            -><span class="function">where</span>([<span class="string">'"price" > ({#::#})'</span> => <span class="variable">$avgPriceQuery</span>])
+            -><span class="function">asTable</span>();
+
+    pre
+      code.
+        <span class="comment">// Subquery in FROM clause</span>
+        <span class="variable">$recentPosts</span> = <span class="variable">DB</span>::<span class="function">select</span>()
+            -><span class="function">from</span>(<span class="string">'posts'</span>)
+            -><span class="function">where</span>([<span class="string">'"created_at" > {#}'</span> => <span class="string">'2024-01-01'</span>]);
+
+        <span class="variable">DB</span>::<span class="function">select</span>()
+            -><span class="function">from</span>([<span class="string">'({#::#}) AS "recent"'</span> => <span class="variable">$recentPosts</span>])
+            -><span class="function">asTable</span>();
+
+        <span class="comment">// SELECT * FROM (SELECT * FROM "posts" WHERE "created_at" > $1) AS "recent"</span>
+
+    .info-box
+      strong Powerful Feature:
+      | Placeholders can be used <strong>anywhere</strong> a string is accepted, not just in specific methods. This makes F4's query builder incredibly flexible.
+
+  .content-section
+    h2 Basic SELECT Queries
+
+    h3 Simple SELECT
+
+    pre
+      code.
+        <span class="comment">// Select all columns from a table</span>
+        <span class="variable">$users</span> = <span class="variable">DB</span>::<span class="function">select</span>()
+            -><span class="function">from</span>(<span class="string">'user'</span>)
+            -><span class="function">asTable</span>();
+
+        <span class="comment">// SELECT * FROM "user"</span>
+
+    pre
+      code.
+        <span class="comment">// Select specific columns</span>
+        <span class="variable">$users</span> = <span class="variable">DB</span>::<span class="function">select</span>([<span class="string">'id'</span>, <span class="string">'username'</span>, <span class="string">'email'</span>])
+            -><span class="function">from</span>(<span class="string">'user'</span>)
+            -><span class="function">asTable</span>();
+
+        <span class="comment">// SELECT "id", "username", "email" FROM "user"</span>
+
+    pre
+      code.
+        <span class="comment">// Select with aliases</span>
+        <span class="variable">$data</span> = <span class="variable">DB</span>::<span class="function">select</span>([<span class="string">'"u"."id"'</span>, <span class="string">'"u"."username"'</span>, <span class="string">'"p"."title" AS "post_title"'</span>])
+            -><span class="function">from</span>(<span class="string">'user u'</span>)
+            -><span class="function">join</span>(<span class="string">'post p'</span>)
+            -><span class="function">on</span>([<span class="string">'"u"."id" = "p"."user_id"'</span>])
+            -><span class="function">asTable</span>();
+
+    h3 WHERE Clauses
+
+    pre
+      code.
+        <span class="comment">// Simple equality using shorthand (auto-quoted)</span>
+        <span class="variable">DB</span>::<span class="function">select</span>()
+            -><span class="function">from</span>(<span class="string">'user'</span>)
+            -><span class="function">where</span>([
+                <span class="string">'age'</span> => <span class="number">18</span>,
+                <span class="string">'status'</span> => <span class="string">'active'</span>
+            ])
+            -><span class="function">asTable</span>();
+
+        <span class="comment">// WHERE "age" = $1 AND "status" = $2</span>
+
+    pre
+      code.
+        <span class="comment">// Custom expressions with placeholders</span>
+        <span class="variable">DB</span>::<span class="function">select</span>()
+            -><span class="function">from</span>(<span class="string">'user'</span>)
+            -><span class="function">where</span>([
+                <span class="string">'"age" >= {#}'</span> => <span class="number">18</span>,
+                <span class="string">'status'</span> => <span class="string">'active'</span>
+            ])
+            -><span class="function">asTable</span>();
+
+        <span class="comment">// WHERE "age" >= $1 AND "status" = $2</span>
+
+    pre
+      code.
+        <span class="comment">// Complex conditions with LIKE, NULL checks</span>
+        <span class="variable">DB</span>::<span class="function">select</span>()
+            -><span class="function">from</span>(<span class="string">'article'</span>)
+            -><span class="function">where</span>([
+                <span class="string">'"title" LIKE {#}'</span> => <span class="string">'%tutorial%'</span>,
+                <span class="string">'"views" >= {#}'</span> => <span class="number">100</span>,
+                <span class="string">'published_at'</span> => <span class="keyword">null</span>  <span class="comment">// IS NULL</span>
+            ])
+            -><span class="function">asTable</span>();
+
+  .content-section
+    h2 JOINS
+
+    p F4 supports all PostgreSQL join types with natural SQL syntax:
+
+    pre
+      code.
+        <span class="comment">// INNER JOIN</span>
+        <span class="variable">DB</span>::<span class="function">select</span>([<span class="string">'"u".*'</span>, <span class="string">'"p"."title"'</span>])
+            -><span class="function">from</span>(<span class="string">'user u'</span>)
+            -><span class="function">innerJoin</span>(<span class="string">'post p'</span>)
+            -><span class="function">on</span>([<span class="string">'"u"."id" = "p"."user_id"'</span>])
+            -><span class="function">asTable</span>();
+
+    pre
+      code.
+        <span class="comment">// LEFT JOIN with conditions</span>
+        <span class="variable">DB</span>::<span class="function">select</span>()
+            -><span class="function">from</span>(<span class="string">'user u'</span>)
+            -><span class="function">leftJoin</span>(<span class="string">'order o'</span>)
+            -><span class="function">on</span>([
+                <span class="string">'"u"."id" = "o"."user_id"'</span>,
+                <span class="string">'"o"."status"'</span> => <span class="string">'completed'</span>
+            ])
+            -><span class="function">asTable</span>();
+
+    pre
+      code.
+        <span class="comment">// USING clause for natural joins</span>
+        <span class="variable">DB</span>::<span class="function">select</span>()
+            -><span class="function">from</span>(<span class="string">'user u'</span>)
+            -><span class="function">join</span>(<span class="string">'profile p'</span>)
+            -><span class="function">using</span>(<span class="string">'user_id'</span>)
+            -><span class="function">asTable</span>();
+
+  .content-section
+    h2 GROUP BY and Aggregates
+
+    pre
+      code.
+        <span class="comment">// Simple GROUP BY</span>
+        <span class="variable">DB</span>::<span class="function">select</span>([<span class="string">'category'</span>, <span class="string">'COUNT(*) AS "count"'</span>])
+            -><span class="function">from</span>(<span class="string">'product'</span>)
+            -><span class="function">groupBy</span>(<span class="string">'category'</span>)
+            -><span class="function">asTable</span>();
+
+    pre
+      code.
+        <span class="comment">// GROUP BY with HAVING</span>
+        <span class="variable">DB</span>::<span class="function">select</span>([<span class="string">'user_id'</span>, <span class="string">'COUNT(*) AS "order_count"'</span>])
+            -><span class="function">from</span>(<span class="string">'order'</span>)
+            -><span class="function">groupBy</span>(<span class="string">'user_id'</span>)
+            -><span class="function">having</span>([<span class="string">'COUNT(*) > {#}'</span> => <span class="number">5</span>])
+            -><span class="function">asTable</span>();
+
+  .content-section
+    h2 ORDER BY, LIMIT, and OFFSET
+
+    pre
+      code.
+        <span class="comment">// Ordering results</span>
+        <span class="variable">DB</span>::<span class="function">select</span>()
+            -><span class="function">from</span>(<span class="string">'post'</span>)
+            -><span class="function">orderBy</span>(<span class="string">'"created_at" DESC'</span>, <span class="string">'title ASC'</span>)
+            -><span class="function">asTable</span>();
+
+    pre
+      code.
+        <span class="comment">// Pagination</span>
+        <span class="variable">$page</span> = <span class="number">2</span>;
+        <span class="variable">$perPage</span> = <span class="number">20</span>;
+
+        <span class="variable">DB</span>::<span class="function">select</span>()
+            -><span class="function">from</span>(<span class="string">'user'</span>)
+            -><span class="function">orderBy</span>(<span class="string">'username'</span>)
+            -><span class="function">limit</span>(<span class="variable">$perPage</span>)
+            -><span class="function">offset</span>((<span class="variable">$page</span> - <span class="number">1</span>) * <span class="variable">$perPage</span>)
+            -><span class="function">asTable</span>();
+
+  .content-section
+    h2 INSERT Queries
+
+    pre
+      code.
+        <span class="keyword">use</span> <span class="variable">F4</span>\<span class="variable">DB</span>\<span class="variable">Fragment</span>;
+
+        <span class="comment">// Simple INSERT</span>
+        <span class="variable">DB</span>::<span class="function">insert</span>()
+            -><span class="function">into</span>(<span class="string">'user'</span>)
+            -><span class="function">values</span>([
+                <span class="string">'username'</span> => <span class="string">'john_doe'</span>,
+                <span class="string">'email'</span> => <span class="string">'john@example.com'</span>,
+                <span class="string">'age'</span> => <span class="number">25</span>,
+                <span class="string">'created_at'</span> => <span class="keyword">new</span> <span class="variable">Fragment</span>(<span class="string">'NOW()'</span>)
+            ])
+            -><span class="function">commit</span>();
+
+    .warning-box
+      strong Important - Fragment Required for SQL Functions:
+      |
+      | Due to PostgreSQL syntax limitations, you MUST use the <code>Fragment</code> wrapper to include SQL expressions (like <code>NOW()</code>) in <code>values()</code>. Unlike <code>set()</code> where you can use string expressions like <code>'"column" = NOW()'</code>, the <code>values()</code> method requires: <code>'column' => new Fragment('NOW()')</code>.
+
+    pre
+      code.
+        <span class="comment">// INSERT with RETURNING</span>
+        <span class="variable">$newUserId</span> = <span class="variable">DB</span>::<span class="function">insert</span>()
+            -><span class="function">into</span>(<span class="string">'user'</span>)
+            -><span class="function">values</span>([
+                <span class="string">'username'</span> => <span class="string">'jane_doe'</span>,
+                <span class="string">'email'</span> => <span class="string">'jane@example.com'</span>
+            ])
+            -><span class="function">returning</span>(<span class="string">'id'</span>)
+            -><span class="function">asValue</span>();
+
+    pre
+      code.
+        <span class="comment">// INSERT with ON CONFLICT (upsert)</span>
+        <span class="variable">DB</span>::<span class="function">insert</span>()
+            -><span class="function">into</span>(<span class="string">'settings'</span>)
+            -><span class="function">values</span>([<span class="string">'key'</span> => <span class="string">'theme'</span>, <span class="string">'value'</span> => <span class="string">'dark'</span>])
+            -><span class="function">onConflict</span>(<span class="string">'key'</span>)
+            -><span class="function">doUpdateSet</span>([<span class="string">'value'</span> => <span class="string">'dark'</span>, <span class="string">'"updated_at" = NOW()'</span>])
+            -><span class="function">commit</span>();
+
+    .info-box
+      strong Notice:
+      |
+      | In <code>doUpdateSet()</code>, you CAN use string expressions like <code>'"updated_at" = NOW()'</code> directly (same as <code>set()</code>), but in <code>values()</code> you must use <code>Fragment</code>.
+
+  .content-section
+    h2 UPDATE Queries
+
+    pre
+      code.
+        <span class="comment">// Simple UPDATE</span>
+        <span class="variable">DB</span>::<span class="function">update</span>(<span class="string">'user'</span>)
+            -><span class="function">set</span>([
+                <span class="string">'status'</span> => <span class="string">'inactive'</span>,
+                <span class="string">'"updated_at" = NOW()'</span>
+            ])
+            -><span class="function">where</span>([<span class="string">'"last_login" < {#}'</span> => <span class="string">'2023-01-01'</span>])
+            -><span class="function">commit</span>();
+
+    pre
+      code.
+        <span class="comment">// UPDATE with RETURNING</span>
+        <span class="variable">$updated</span> = <span class="variable">DB</span>::<span class="function">update</span>(<span class="string">'product'</span>)
+            -><span class="function">set</span>([<span class="string">'price'</span> => <span class="number">29.99</span>])
+            -><span class="function">where</span>([<span class="string">'"id" = {#}'</span> => <span class="number">100</span>])
+            -><span class="function">returning</span>(<span class="string">'*'</span>)
+            -><span class="function">asRow</span>();
+
+  .content-section
+    h2 DELETE Queries
+
+    pre
+      code.
+        <span class="comment">// Simple DELETE</span>
+        <span class="variable">DB</span>::<span class="function">delete</span>()
+            -><span class="function">from</span>(<span class="string">'session'</span>)
+            -><span class="function">where</span>([<span class="string">'"expires_at" < NOW()'</span>])
+            -><span class="function">commit</span>();
+
+    pre
+      code.
+        <span class="comment">// DELETE with RETURNING</span>
+        <span class="variable">$deletedIds</span> = <span class="variable">DB</span>::<span class="function">delete</span>()
+            -><span class="function">from</span>(<span class="string">'old_record'</span>)
+            -><span class="function">where</span>([<span class="string">'"created_at" < {#}'</span> => <span class="string">'2020-01-01'</span>])
+            -><span class="function">returning</span>(<span class="string">'id'</span>)
+            -><span class="function">asTable</span>();
+
+  .content-section
+    h2 Common Table Expressions (CTEs)
+
+    pre
+      code.
+        <span class="comment">// WITH clause (CTE)</span>
+        <span class="variable">$recentOrders</span> = <span class="variable">DB</span>::<span class="function">select</span>()
+            -><span class="function">from</span>(<span class="string">'order'</span>)
+            -><span class="function">where</span>([<span class="string">'"created_at" > {#}'</span> => <span class="string">'2024-01-01'</span>]);
+
+        <span class="variable">DB</span>::<span class="function">with</span>([<span class="string">'recent_order'</span> => <span class="variable">$recentOrders</span>])
+            -><span class="function">select</span>([<span class="string">'user_id'</span>, <span class="string">'COUNT(*) AS "order_count"'</span>])
+            -><span class="function">from</span>(<span class="string">'recent_order'</span>)
+            -><span class="function">groupBy</span>(<span class="string">'user_id'</span>)
+            -><span class="function">asTable</span>();
+
+  .content-section
+    h2 Executing Queries
+
+    p F4 provides several methods to execute and retrieve results:
+
+    table
+      thead
+        tr
+          th Method
+          th Returns
+          th Use Case
+      tbody
+        tr
+          td
+            code ->asRow()
+          td Single row (array) or null
+          td Fetch one record
+        tr
+          td
+            code ->asTable()
+          td Array of rows
+          td Fetch multiple records
+        tr
+          td
+            code ->commit()
+          td Array of rows (same as asTable)
+          td Execute INSERT/UPDATE/DELETE
+        tr
+          td
+            code ->asValue()
+          td Single scalar value
+          td Get a single column value (COUNT, MAX, etc.)
+
+    pre
+      code.
+        <span class="comment">// Fetch one record</span>
+        <span class="variable">$user</span> = <span class="variable">DB</span>::<span class="function">select</span>()
+            -><span class="function">from</span>(<span class="string">'user'</span>)
+            -><span class="function">where</span>([<span class="string">'id'</span> => <span class="number">1</span>])
+            -><span class="function">asRow</span>();
+
+        <span class="comment">// Fetch all records</span>
+        <span class="variable">$users</span> = <span class="variable">DB</span>::<span class="function">select</span>()-><span class="function">from</span>(<span class="string">'user'</span>)-><span class="function">asTable</span>();
+
+        <span class="comment">// Get scalar value</span>
+        <span class="variable">$count</span> = <span class="variable">DB</span>::<span class="function">select</span>(<span class="string">'COUNT(*)'</span>)-><span class="function">from</span>(<span class="string">'user'</span>)-><span class="function">asValue</span>();
+
+        <span class="comment">// Execute INSERT/UPDATE/DELETE</span>
+        <span class="variable">DB</span>::<span class="function">delete</span>()-><span class="function">from</span>(<span class="string">'user'</span>)-><span class="function">where</span>([<span class="string">'active'</span> => <span class="keyword">false</span>])-><span class="function">commit</span>();
+
+  .content-section
+    h2 Raw SQL
+
+    p When you need full control, use raw SQL with placeholders:
+
+    pre
+      code.
+        <span class="comment">// Raw query with placeholders</span>
+        <span class="variable">$results</span> = <span class="variable">DB</span>::<span class="function">raw</span>(
+            <span class="string">'SELECT * FROM "user" WHERE "age" > {#} AND "city" = {#}'</span>,
+            [<span class="number">18</span>, <span class="string">'New York'</span>]
+        )-><span class="function">asTable</span>();
+
+  .content-section
+    h2 Best Practices
+
+    ol
+      li <strong>Always use placeholders</strong> - Never concatenate user input into SQL strings
+      li <strong>Write SQL naturally</strong> - F4 doesn't force abstraction; write readable SQL
+      li <strong>Use appropriate placeholder types</strong> - {#} for values, {#,...#} for arrays, {#::#} for subqueries
+      li <strong>Leverage PostgreSQL features</strong> - CTEs, LATERAL joins, RETURNING clauses
+      li <strong>Use RETURNING</strong> - Get inserted/updated data without extra queries
+      li <strong>Handle null correctly</strong> - Use IS NULL/IS NOT NULL in conditions
+      li <strong>Index your queries</strong> - Monitor with DEBUG_DB_QUERIES and add appropriate indexes
+
+  .content-section
+    h2 Try It Yourself
+
+    p Practice exercises:
+
+    ol
+      li Write a query to find users who have made more than 5 orders
+      li Create an INSERT with ON CONFLICT to handle duplicate emails
+      li Build a query with a CTE to calculate running totals
+      li Use a subquery placeholder to find products above average price
+      li Write an UPDATE that uses a RETURNING clause
+
+  .content-section
+    h2 Key Takeaways
+
+    ul
+      li F4's query builder follows native SQL syntax closely
+      li Three placeholder types: {#}, {#,...#}, {#::#} for maximum flexibility
+      li Placeholders work <strong>anywhere</strong> in query strings, not just specific methods
+      li Associative array shorthand auto-quotes identifiers: <code>['name' => 'John']</code> → <code>"name" = $1</code>
+      li Custom expressions need manual quoting: <code>['"age" > {#}' => 18]</code>
+      li Full PostgreSQL support including CTEs, LATERAL joins, and RETURNING
+      li Methods are chainable for building complex queries step by step
+      li Execution methods: <code>asRow()</code>, <code>asTable()</code>, <code>commit()</code>, <code>asValue()</code>
+      li Use <code>Fragment</code> class to inject SQL expressions like NOW() without binding
+      li The query builder makes minimal assumptions - you're in control
+
+  .content-section
+    h2 What's Next?
+
+    p In Chapter 8, we'll explore internationalization (i18n) and learn how to build multilingual applications with F4's Fluent-based translation system!

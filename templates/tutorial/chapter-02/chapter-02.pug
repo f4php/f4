@@ -1,0 +1,325 @@
+extends ../tutorial.pug
+
+block title
+  | Chapter 2: Routing Patterns - F4 Framework Tutorial
+
+block content
+  .chapter-header
+    .chapter-number Chapter 2
+    h1 Routing Patterns
+    p.description Master path parameters, type constraints, and dynamic routing
+
+  .content-section
+    h2 Introduction
+
+    p In Chapter 1, you learned about basic routes with static paths. Now we'll explore F4's powerful routing system that can handle dynamic URLs with parameters, type validation, and format negotiation.
+
+    h3 What We'll Cover
+
+    ul
+      li Path parameters with curly braces syntax
+      li Type constraints for automatic validation
+      li Multiple parameter types in a single route
+      li Format negotiation (.html vs .json)
+      li Route matching order and priority
+
+  .content-section
+    h2 Path Parameters
+
+    p Path parameters allow you to capture parts of the URL and pass them to your route handler as function arguments.
+
+    h3 Basic Syntax
+
+    pre
+      code.
+        <span class="comment">// Capture a parameter</span>
+        <span class="variable">Route</span>::<span class="function">get</span>(<span class="string">'/users/{id}'</span>, <span class="keyword">function</span>(<span class="variable">$id</span>) {
+            <span class="keyword">return</span> [<span class="string">'user_id'</span> => <span class="variable">$id</span>];
+        });
+
+    p The <code>{id}</code> part captures whatever value is in that position of the URL and passes it to the handler function.
+
+    .info-box
+      strong Important:
+      |  
+      | Parameter names in the route must match the function parameter names exactly.
+
+  .content-section
+    h2 Type Constraints
+
+    p F4 provides built-in type constraints that automatically validate and convert parameters. If validation fails, the route won't match.
+
+    h3 Available Types
+
+    table
+      thead
+        tr
+          th Definition
+          th Pattern
+          th Example URL
+          th PHP Type
+      tbody
+        tr
+          td
+            code /users/{id:int}
+          td Integers only
+          td
+            code /users/123
+          td
+            code int
+        tr
+          td
+            code /posts{slug:string}/intro
+          td Any string not containing a forward slash (/) character (used by default)
+          td
+            code /posts/hello-world/intro
+          td
+            code string
+        tr
+          td
+            code /products/{price:float}
+          td Decimal numbers
+          td
+            code /products/19.99
+          td
+            code float
+        tr
+          td
+            code /filter/{active:bool}
+          td true/false, 1/0
+          td
+            code /filter/true
+          td
+            code bool
+        tr
+          td
+            code /items/{uuid:uuid4}
+          td UUID v4 format
+          td
+            code /items/550e8400-...
+          td
+            code string
+        tr
+          td
+            code /{id:any}
+          td Any value
+          td
+            code /resource/anything
+          td
+            code string
+
+    h3 Type Constraint Example
+
+    pre
+      code.
+        <span class="comment">// Only matches numeric IDs</span>
+        <span class="variable">Route</span>::<span class="function">get</span>(<span class="string">'/users/{id:int}'</span>, <span class="keyword">function</span>(<span class="keyword">int</span> <span class="variable">$id</span>) {
+            <span class="comment">// $id is guaranteed to be an integer</span>
+            <span class="keyword">return</span> [<span class="string">'user_id'</span> => <span class="variable">$id</span>];
+        });
+
+        <span class="comment">// Only matches string slugs</span>
+        <span class="variable">Route</span>::<span class="function">get</span>(<span class="string">'/posts/{slug:string}'</span>, <span class="keyword">function</span>(<span class="keyword">string</span> <span class="variable">$slug</span>) {
+            <span class="keyword">return</span> [<span class="string">'post_slug'</span> => <span class="variable">$slug</span>];
+        });
+
+  .content-section
+    h2 Interactive Demos
+
+    p Try these live examples to see how different parameter types work:
+
+    .demo-box
+      h4 Integer Parameter Demo
+      p Click the links below to see how F4 routes integer parameters:
+      ul
+        li
+          a.chapter-link(href="/tutorial/02-routing/demo/123") /demo/123
+          |  - Valid integer
+        li
+          a.chapter-link(href="/tutorial/02-routing/demo/456") /demo/456
+          |  - Valid integer
+        li
+          a.chapter-link(href="/tutorial/02-routing/demo/abc") /demo/abc
+          |  - String (will match string route)
+
+    .demo-box
+      h4 String Parameter Demo
+      p These will match the string parameter route:
+      ul
+        li
+          a.chapter-link(href="/tutorial/02-routing/demo/hello-world") /demo/hello-world
+          |  - Hyphenated string
+        li
+          a.chapter-link(href="/tutorial/02-routing/demo/my_slug") /demo/my_slug
+          |  - Underscore string
+        li
+          a.chapter-link(href="/tutorial/02-routing/demo/test123") /demo/test123
+          |  - Alphanumeric string
+
+  .content-section
+    h2 Multiple Parameters
+
+    p Routes can have multiple parameters at different positions:
+
+    pre
+      code.
+        <span class="comment">// Multiple parameters</span>
+        <span class="variable">Route</span>::<span class="function">get</span>(<span class="string">'/users/{userId:int}/posts/{postId:int}'</span>,
+            <span class="keyword">function</span>(<span class="keyword">int</span> <span class="variable">$userId</span>, <span class="keyword">int</span> <span class="variable">$postId</span>) {
+                <span class="keyword">return</span> [
+                    <span class="string">'user_id'</span> => <span class="variable">$userId</span>,
+                    <span class="string">'post_id'</span> => <span class="variable">$postId</span>
+                ];
+            }
+        );
+
+  .content-section
+    h2 Custom Regular Expression Patterns
+
+    p For advanced matching, you can use custom regex patterns:
+
+    pre
+      code.
+        <span class="comment">// Custom regex pattern</span>
+        <span class="variable">Route</span>::<span class="function">get</span>(<span class="string">'/items/{code:regexp([A-Z]{3}-[0-9]{4})}'</span>,
+            <span class="keyword">function</span>(<span class="keyword">string</span> <span class="variable">$code</span>) {
+                <span class="comment">// Matches: ABC-1234, XYZ-9999, etc.</span>
+                <span class="keyword">return</span> [<span class="string">'item_code'</span> => <span class="variable">$code</span>];
+            }
+        );
+
+  .content-section
+    h2 Format Negotiation
+
+    p F4 can automatically detect the requested format from the URL extension:
+
+    pre
+      code.
+        <span class="comment">// Same handler, different formats</span>
+        <span class="variable">Route</span>::<span class="function">get</span>(<span class="string">'/api/data'</span>, <span class="keyword">function</span>() {
+            <span class="keyword">return</span> [<span class="string">'items'</span> => [<span class="string">'apple'</span>, <span class="string">'banana'</span>, <span class="string">'cherry'</span>]];
+        });
+
+    p Consider these URLs:
+    ul
+      li
+        code /api/data
+        |  - Returns HTML (default)
+      li
+        code /api/data.json
+        |  - Returns JSON, skips template rendering
+      li
+        code /api/data.html
+        |  - Returns HTML explicitly
+
+    .info-box
+      strong How it works:
+      |  
+      | F4 detects the extension and sets the appropriate Content-Type header. Your handler returns the same data, but F4 formats it differently based on the request.
+
+  .content-section
+    h2 Format Matching
+
+    p F4 can automatically detect the requested format from the URL extension:
+
+    pre
+      code.
+        <span class="comment">// Same handler, different formats</span>
+        <span class="variable">Route</span>::<span class="function">get</span>(<span class="string">'/api/data.json'</span>, <span class="keyword">function</span>() {
+            <span class="keyword">return</span> [<span class="string">'items'</span> => [<span class="string">'apple'</span>, <span class="string">'banana'</span>, <span class="string">'cherry'</span>]];
+        });
+
+    p Consider these URLs:
+    ul
+      li
+        code /api/data
+        |  - Will not match unless application/json is configured as the default response format
+      li
+        code /api/data.json
+        |  - Will match
+      li
+        code /api/data.html
+        |  - Will not match
+
+    .info-box
+      strong How it works:
+      |  
+      | F4 checks the "extension" or format suffix from route definition and matches the route only if the response it's going to emit matches the suffix.
+
+  .content-section
+    h2 Multiple Route Matching
+
+    p At most one route is allowed by F4 router to match any given request, so plan your paths carefully.
+
+  .content-section
+    h2 Common Patterns
+
+    p Here are some common routing patterns you'll use:
+
+    table
+      thead
+        tr
+          th Use Case
+          th Route Pattern
+      tbody
+        tr
+          td User profile
+          td
+            code /users/{id:int}
+        tr
+          td Blog post by slug
+          td
+            code /blog/{slug:string}
+        tr
+          td API resource
+          td
+            code /api/v1/items/{id:int}.json
+        tr
+          td Date-based archives
+          td
+            code /archive/{year:int}/{month:int}
+        tr
+          td Category with subcategory
+          td
+            code /shop/{category}/{subcategory}
+
+  .content-section
+    h2 Try It Yourself
+
+    p Practice exercises:
+
+    ol
+      li Create a route that accepts a product ID and quantity: <code>/cart/add/{productId:int}/{qty:int}</code>
+      li Add a route for date-based blog archives: <code>/posts/{year:int}/{month:int}/{day:int}</code>
+      li Experiment with the demo links above to understand type matching
+      li Try accessing routes with .json extension to see format negotiation
+
+    .success-box
+      strong Great job!
+      |  
+      | You now understand how to create dynamic routes with parameters and type constraints.
+
+  .content-section
+    h2 Key Takeaways
+
+    ul
+      li Path parameters use curly braces: <code>{name}</code>
+      li Type constraints validate automatically: <code>{id:int}</code>
+      li Multiple path parameters can be combined in one route
+      li Format negotiation works via URL extensions (.json, .html)
+      li F4 provides many built-in types: int, string, float, bool, uuid, regexp
+
+  .content-section
+    h2 What's Next?
+
+    p In Chapter 3, we'll dive deep into working with templates:
+
+    ul
+      li Pug syntax and indentation-based structure
+      li Using PHP expressions in templates (not JavaScript!)
+      li Template inheritance with extends and blocks
+      li Mixins for reusable components
+      li Loops, conditionals, and includes
+      li Best practices for template organization
+
+    p Ready to master templates? Click "Next" below!

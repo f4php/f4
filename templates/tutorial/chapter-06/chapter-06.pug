@@ -1,0 +1,418 @@
+extends ../tutorial.pug
+
+block title
+  | Chapter 6: Route Groups - F4 Framework Tutorial
+
+block content
+  .chapter-header
+    .chapter-number Chapter 6
+    h1 Route Groups
+    p.description Organize and scale your application with route groups
+
+  .content-section
+    h2 Introduction
+
+    p As applications grow, managing hundreds of individual routes becomes unwieldy. Route groups solve this by letting you organize related routes, share configuration, and apply middleware to multiple routes at once.
+
+    h3 What We'll Cover
+
+    ul
+      li Creating route groups with path prefixes
+      li Sharing middleware across routes
+      li Building RESTful APIs
+      li Nesting route groups
+      li API versioning strategies
+      li Organizing large applications
+
+  .content-section
+    h2 What Are Route Groups?
+
+    p A <code>RouteGroup</code> is a container that:
+
+    ul
+      li Groups related routes under a common path prefix
+      li Applies shared middleware to all routes
+      li Organizes routes logically
+      li Makes APIs easier to maintain
+
+    .info-box
+      strong Key Concept:
+      | Route groups don't just prefix paths—they create a complete routing context with shared behavior.
+
+  .content-section
+    h2 Creating Your First Route Group
+
+    h3 Basic Syntax
+
+    pre
+      code.
+        <span class="keyword">use</span> <span class="variable">F4</span>\<span class="variable">Core</span>\{<span class="variable">Route</span>, <span class="variable">RouteGroup</span>};
+
+        <span class="variable">$group</span> = <span class="keyword">new</span> <span class="variable">RouteGroup</span>(<span class="string">'/api'</span>);
+
+        <span class="variable">$group</span>-><span class="function">addRoute</span>(<span class="variable">Route</span>::<span class="function">get</span>(<span class="string">'/users'</span>, <span class="keyword">function</span>() {
+            <span class="keyword">return</span> [<span class="string">'users'</span> => [<span class="comment">/* ... */</span>]];
+        }));
+
+        <span class="variable">$group</span>-><span class="function">addRoute</span>(<span class="variable">Route</span>::<span class="function">get</span>(<span class="string">'/posts'</span>, <span class="keyword">function</span>() {
+            <span class="keyword">return</span> [<span class="string">'posts'</span> => [<span class="comment">/* ... */</span>]];
+        }));
+
+        <span class="variable">$f4</span>-><span class="function">addRouteGroup</span>(<span class="variable">$group</span>);
+
+        <span class="comment">// Creates routes: /api/users and /api/posts</span>
+
+    h3 Alternative: fromRoutes()
+
+    pre
+      code.
+        <span class="variable">$group</span> = <span class="variable">RouteGroup</span>::<span class="function">fromRoutes</span>(
+            <span class="variable">Route</span>::<span class="function">get</span>(<span class="string">'/users'</span>, <span class="keyword">function</span>() { <span class="comment">/* ... */</span> }),
+            <span class="variable">Route</span>::<span class="function">get</span>(<span class="string">'/posts'</span>, <span class="keyword">function</span>() { <span class="comment">/* ... */</span> })
+        )-><span class="function">setPathPrefix</span>(<span class="string">'/api'</span>);
+
+        <span class="variable">$f4</span>-><span class="function">addRouteGroup</span>(<span class="variable">$group</span>);
+
+  .content-section
+    h2 Path Prefixes
+
+    p The group prefix is prepended to all route paths:
+
+    table
+      thead
+        tr
+          th Group Prefix
+          th Route Path
+          th Final URL
+      tbody
+        tr
+          td
+            code /api
+          td
+            code /users
+          td
+            code /api/users
+        tr
+          td
+            code /api/v1
+          td
+            code /products
+          td
+            code /api/v1/products
+        tr
+          td
+            code /admin
+          td
+            code /dashboard
+          td
+            code /admin/dashboard
+
+  .content-section
+    h2 Shared Middleware
+
+    p Apply middleware to all routes in the group:
+
+    pre
+      code.
+        <span class="variable">$apiGroup</span> = <span class="keyword">new</span> <span class="variable">RouteGroup</span>(<span class="string">'/api'</span>)
+            -><span class="function">before</span>(<span class="keyword">function</span>(<span class="variable">$request</span>, <span class="variable">$response</span>, <span class="variable">$route</span>) {
+                <span class="comment">// Validate API key for ALL /api/* routes</span>
+                <span class="variable">$apiKey</span> = <span class="variable">$request</span>-><span class="function">getHeader</span>(<span class="string">'X-API-Key'</span>);
+                <span class="keyword">if</span> (!<span class="function">validateApiKey</span>(<span class="variable">$apiKey</span>)) {
+                    <span class="keyword">throw new</span> <span class="variable">HttpException</span>(<span class="string">'Invalid API key'</span>, <span class="number">403</span>);
+                }
+                <span class="keyword">return</span> <span class="variable">$request</span>;
+            })
+            -><span class="function">after</span>(<span class="keyword">function</span>(<span class="variable">$response</span>, <span class="variable">$request</span>, <span class="variable">$route</span>) {
+                <span class="comment">// Add CORS headers to all API responses</span>
+                <span class="keyword">return</span> <span class="variable">$response</span>
+                    -><span class="function">withHeader</span>(<span class="string">'Access-Control-Allow-Origin'</span>, <span class="string">'*'</span>);
+            });
+
+  .content-section
+    h2 RESTful API Example
+
+    p Route groups are perfect for RESTful APIs:
+
+    pre
+      code.
+        <span class="keyword">use</span> <span class="variable">F4</span>\<span class="variable">Core</span>\{<span class="variable">Route</span>, <span class="variable">RouteGroup</span>};
+
+        <span class="variable">$usersApi</span> = <span class="keyword">new</span> <span class="variable">RouteGroup</span>(<span class="string">'/api/users'</span>)
+            -><span class="function">addRoute</span>(<span class="variable">Route</span>::<span class="function">get</span>(<span class="string">''</span>, <span class="keyword">function</span>() {
+                <span class="comment">// GET /api/users - List all users</span>
+                <span class="keyword">return</span> [<span class="string">'users'</span> => <span class="variable">User</span>::<span class="function">all</span>()];
+            }))
+            -><span class="function">addRoute</span>(<span class="variable">Route</span>::<span class="function">post</span>(<span class="string">''</span>, <span class="keyword">function</span>(<span class="variable">$name</span>, <span class="variable">$email</span>) {
+                <span class="comment">// POST /api/users - Create new user</span>
+                <span class="variable">$user</span> = <span class="variable">User</span>::<span class="function">create</span>(<span class="variable">$name</span>, <span class="variable">$email</span>);
+                <span class="keyword">return</span> [<span class="string">'user'</span> => <span class="variable">$user</span>];
+            }))
+            -><span class="function">addRoute</span>(<span class="variable">Route</span>::<span class="function">get</span>(<span class="string">'/{id:int}'</span>, <span class="keyword">function</span>(<span class="keyword">int</span> <span class="variable">$id</span>) {
+                <span class="comment">// GET /api/users/123 - Get specific user</span>
+                <span class="keyword">return</span> [<span class="string">'user'</span> => <span class="variable">User</span>::<span class="function">find</span>(<span class="variable">$id</span>)];
+            }))
+            -><span class="function">addRoute</span>(<span class="variable">Route</span>::<span class="function">put</span>(<span class="string">'/{id:int}'</span>, <span class="keyword">function</span>(<span class="keyword">int</span> <span class="variable">$id</span>, <span class="variable">$name</span>, <span class="variable">$email</span>) {
+                <span class="comment">// PUT /api/users/123 - Update user</span>
+                <span class="variable">$user</span> = <span class="variable">User</span>::<span class="function">update</span>(<span class="variable">$id</span>, <span class="variable">$name</span>, <span class="variable">$email</span>);
+                <span class="keyword">return</span> [<span class="string">'user'</span> => <span class="variable">$user</span>];
+            }))
+            -><span class="function">addRoute</span>(<span class="variable">Route</span>::<span class="function">delete</span>(<span class="string">'/{id:int}'</span>, <span class="keyword">function</span>(<span class="keyword">int</span> <span class="variable">$id</span>) {
+                <span class="comment">// DELETE /api/users/123 - Delete user</span>
+                <span class="variable">User</span>::<span class="function">delete</span>(<span class="variable">$id</span>);
+                <span class="keyword">return</span> [<span class="string">'success'</span> => <span class="keyword">true</span>];
+            }));
+
+        <span class="variable">$f4</span>-><span class="function">addRouteGroup</span>(<span class="variable">$usersApi</span>);
+
+  .content-section
+    h2 RESTful Resource Pattern
+
+    table
+      thead
+        tr
+          th HTTP Method
+          th Path
+          th Action
+          th Purpose
+      tbody
+        tr
+          td GET
+          td
+            code /api/users
+          td Index
+          td List all users
+        tr
+          td GET
+          td
+            code /api/users/{id}
+          td Show
+          td Get single user
+        tr
+          td POST
+          td
+            code /api/users
+          td Create
+          td Create new user
+        tr
+          td PUT
+          td
+            code /api/users/{id}
+          td Update
+          td Update existing user
+        tr
+          td DELETE
+          td
+            code /api/users/{id}
+          td Delete
+          td Delete user
+
+  .content-section
+    h2 API Versioning
+
+    p Use route groups to manage multiple API versions:
+
+    h3 Version 1 API
+
+    pre
+      code.
+        <span class="variable">$v1</span> = <span class="keyword">new</span> <span class="variable">RouteGroup</span>(<span class="string">'/api/v1'</span>)
+            -><span class="function">addRoute</span>(<span class="variable">Route</span>::<span class="function">get</span>(<span class="string">'/users'</span>, <span class="keyword">function</span>() {
+                <span class="comment">// Old response format</span>
+                <span class="keyword">return</span> [<span class="string">'data'</span> => <span class="variable">User</span>::<span class="function">all</span>()];
+            }));
+
+        <span class="variable">$f4</span>-><span class="function">addRouteGroup</span>(<span class="variable">$v1</span>);
+
+    h3 Version 2 API
+
+    pre
+      code.
+        <span class="variable">$v2</span> = <span class="keyword">new</span> <span class="variable">RouteGroup</span>(<span class="string">'/api/v2'</span>)
+            -><span class="function">addRoute</span>(<span class="variable">Route</span>::<span class="function">get</span>(<span class="string">'/users'</span>, <span class="keyword">function</span>() {
+                <span class="comment">// New response format with pagination</span>
+                <span class="keyword">return</span> [
+                    <span class="string">'data'</span> => <span class="variable">User</span>::<span class="function">paginate</span>(),
+                    <span class="string">'meta'</span> => [<span class="string">'version'</span> => <span class="string">'2.0'</span>]
+                ];
+            }));
+
+        <span class="variable">$f4</span>-><span class="function">addRouteGroup</span>(<span class="variable">$v2</span>);
+
+    p Both versions coexist:
+    ul
+      li
+        code /api/v1/users
+        |  - Old format (maintained for backwards compatibility)
+      li
+        code /api/v2/users
+        |  - New format (latest features)
+
+  .content-section
+    h2 Complete Application Structure
+
+    p Here's how to organize a full application:
+
+    pre
+      code.
+        <span class="keyword">use</span> <span class="variable">F4</span>\<span class="variable">Core</span>\{<span class="variable">Route</span>, <span class="variable">RouteGroup</span>};
+
+        <span class="comment">// Public routes (no auth)</span>
+        <span class="variable">$f4</span>-><span class="function">addRoute</span>(<span class="variable">Route</span>::<span class="function">get</span>(<span class="string">'/'</span>, <span class="keyword">function</span>() {
+            <span class="keyword">return</span> [<span class="string">'page'</span> => <span class="string">'home'</span>];
+        }));
+
+        <span class="variable">$f4</span>-><span class="function">addRoute</span>(<span class="variable">Route</span>::<span class="function">get</span>(<span class="string">'/about'</span>, <span class="keyword">function</span>() {
+            <span class="keyword">return</span> [<span class="string">'page'</span> => <span class="string">'about'</span>];
+        }));
+
+        <span class="comment">// Public API</span>
+        <span class="variable">$publicApi</span> = <span class="keyword">new</span> <span class="variable">RouteGroup</span>(<span class="string">'/api/public'</span>)
+            -><span class="function">after</span>(<span class="function">corsHeaders</span>())
+            -><span class="function">addRoute</span>(<span class="variable">Route</span>::<span class="function">get</span>(<span class="string">'/posts'</span>, <span class="keyword">function</span>() { <span class="comment">/* ... */</span> }))
+            -><span class="function">addRoute</span>(<span class="variable">Route</span>::<span class="function">get</span>(<span class="string">'/products'</span>, <span class="keyword">function</span>() { <span class="comment">/* ... */</span> }));
+
+        <span class="comment">// Protected API (requires authentication)</span>
+        <span class="variable">$authApi</span> = <span class="keyword">new</span> <span class="variable">RouteGroup</span>(<span class="string">'/api/auth'</span>)
+            -><span class="function">before</span>(<span class="function">requireAuth</span>())
+            -><span class="function">after</span>(<span class="function">corsHeaders</span>())
+            -><span class="function">addRoute</span>(<span class="variable">Route</span>::<span class="function">get</span>(<span class="string">'/profile'</span>, <span class="keyword">function</span>() { <span class="comment">/* ... */</span> }))
+            -><span class="function">addRoute</span>(<span class="variable">Route</span>::<span class="function">post</span>(<span class="string">'/orders'</span>, <span class="keyword">function</span>() { <span class="comment">/* ... */</span> }));
+
+        <span class="comment">// Admin panel</span>
+        <span class="variable">$adminPanel</span> = <span class="keyword">new</span> <span class="variable">RouteGroup</span>(<span class="string">'/admin'</span>)
+            -><span class="function">before</span>(<span class="function">requireAdmin</span>())
+            -><span class="function">addRoute</span>(<span class="variable">Route</span>::<span class="function">get</span>(<span class="string">'/dashboard'</span>, <span class="keyword">function</span>() { <span class="comment">/* ... */</span> }))
+            -><span class="function">addRoute</span>(<span class="variable">Route</span>::<span class="function">get</span>(<span class="string">'/users'</span>, <span class="keyword">function</span>() { <span class="comment">/* ... */</span> }))
+            -><span class="function">addRoute</span>(<span class="variable">Route</span>::<span class="function">get</span>(<span class="string">'/settings'</span>, <span class="keyword">function</span>() { <span class="comment">/* ... */</span> }));
+
+        <span class="comment">// Register all groups</span>
+        <span class="variable">$f4</span>-><span class="function">addRouteGroup</span>(<span class="variable">$publicApi</span>);
+        <span class="variable">$f4</span>-><span class="function">addRouteGroup</span>(<span class="variable">$authApi</span>);
+        <span class="variable">$f4</span>-><span class="function">addRouteGroup</span>(<span class="variable">$adminPanel</span>);
+
+  .content-section
+    h2 Module Organization
+
+    p Split large applications into modules, each with its own route group:
+
+    pre
+      code.
+        <span class="comment">// src/App/Modules/UserModule.php</span>
+        <span class="keyword">namespace</span> <span class="variable">App</span>\<span class="variable">Modules</span>;
+
+        <span class="keyword">class</span> <span class="variable">UserModule</span> <span class="keyword">implements</span> <span class="variable">ModuleInterface</span>
+        {
+            <span class="keyword">public function</span> <span class="function">__construct</span>(<span class="variable">CoreApiInterface</span> &<span class="variable">$f4</span>)
+            {
+                <span class="variable">$group</span> = <span class="keyword">new</span> <span class="variable">RouteGroup</span>(<span class="string">'/users'</span>)
+                    -><span class="function">addRoute</span>(<span class="variable">Route</span>::<span class="function">get</span>(<span class="string">''</span>, [<span class="variable">UserController</span>::<span class="keyword">class</span>, <span class="string">'index'</span>]))
+                    -><span class="function">addRoute</span>(<span class="variable">Route</span>::<span class="function">get</span>(<span class="string">'/{id:int}'</span>, [<span class="variable">UserController</span>::<span class="keyword">class</span>, <span class="string">'show'</span>]));
+
+                <span class="variable">$f4</span>-><span class="function">addRouteGroup</span>(<span class="variable">$group</span>);
+            }
+        }
+
+  .content-section
+    h2 Benefits of Route Groups
+
+    table
+      thead
+        tr
+          th Benefit
+          th Description
+      tbody
+        tr
+          td Organization
+          td Group related routes together logically
+        tr
+          td DRY Code
+          td Share middleware instead of repeating it
+        tr
+          td Maintainability
+          td Easy to find and modify related routes
+        tr
+          td Scalability
+          td Add new features without cluttering main routing file
+        tr
+          td Versioning
+          td Support multiple API versions simultaneously
+        tr
+          td Security
+          td Apply authentication to entire sections at once
+
+  .content-section
+    h2 Best Practices
+
+    ol
+      li Use meaningful group names that reflect their purpose
+      li Keep groups focused (users, posts, admin, api)
+      li Apply authentication middleware at the group level
+      li Version your APIs from the start (<code>/api/v1</code>)
+      li Organize large apps into modules
+      li Document group middleware behavior
+      li Nest groups for complex hierarchies
+      li Use consistent naming conventions
+
+  .content-section
+    h2 Common Patterns
+
+    h3 Multi-Tenant Applications
+
+    pre
+      code.
+        <span class="comment">// Each tenant has their own route group</span>
+        <span class="variable">$tenantGroup</span> = <span class="keyword">new</span> <span class="variable">RouteGroup</span>(<span class="string">'/tenant/{tenantId:int}'</span>)
+            -><span class="function">before</span>(<span class="function">validateTenant</span>())
+            -><span class="function">addRoute</span>(<span class="variable">Route</span>::<span class="function">get</span>(<span class="string">'/dashboard'</span>, <span class="keyword">function</span>() { <span class="comment">/* ... */</span> }));
+
+    h3 Language Prefixes
+
+    pre
+      code.
+        <span class="comment">// /en/products, /fr/products, etc.</span>
+        <span class="keyword">foreach</span> ([<span class="string">'en'</span>, <span class="string">'fr'</span>, <span class="string">'de'</span>] <span class="keyword">as</span> <span class="variable">$lang</span>) {
+            <span class="variable">$group</span> = <span class="keyword">new</span> <span class="variable">RouteGroup</span>(<span class="string">"/{$lang}"</span>)
+                -><span class="function">before</span>(<span class="function">setLocale</span>(<span class="variable">$lang</span>))
+                -><span class="function">addRoute</span>(<span class="variable">Route</span>::<span class="function">get</span>(<span class="string">'/products'</span>, <span class="keyword">function</span>() { <span class="comment">/* ... */</span> }));
+            <span class="variable">$f4</span>-><span class="function">addRouteGroup</span>(<span class="variable">$group</span>);
+        }
+
+  .content-section
+    h2 Try It Yourself
+
+    p Practice exercises:
+
+    ol
+      li Create a RESTful API for a blog (posts resource)
+      li Build an admin panel with nested route groups
+      li Implement API versioning (v1 and v2)
+      li Organize routes into modules (Auth, Shop, Blog)
+      li Add shared middleware for logging and CORS
+
+  .content-section
+    h2 Key Takeaways
+
+    ul
+      li Route groups organize related routes with path prefixes
+      li Middleware can be shared across all routes in a group
+      li Groups support nesting for complex applications
+      li Perfect for building RESTful APIs
+      li Essential for API versioning
+      li Improves code organization and maintainability
+      li Modules should use route groups for their routes
+
+  .content-section
+    h2 What's Next?
+
+    p In Chapter 7, we'll explore database integration:
+
+    ul
+      li F4's query builder
+      li SELECT, INSERT, UPDATE, DELETE operations
+      li JOINs and relationships
+      li Transactions
+      li Error handling
+      li Best practices for data access
+
+    p Ready to work with databases? Click "Next" below!

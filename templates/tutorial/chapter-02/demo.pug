@@ -1,0 +1,214 @@
+extends ../tutorial.pug
+
+block title
+  | Chapter 02: Demo - F4 Framework Tutorial
+
+block content
+  .chapter-header
+    .chapter-number Chapter 02 - Interactive Demo
+    h1 Route Parameter Demo
+    p.description See how F4 captures and validates route parameters
+
+  .content-section
+    h2 Current Request
+
+    p You've accessed a route with dynamic parameters. Here's what F4 captured:
+
+    .demo-box
+      h4 Request Details
+      table
+        thead
+          tr
+            th Property
+            th Value
+        tbody
+          tr
+            td
+              code Request Path
+            td= $request['path']
+          tr
+            td
+              code Request Method
+            td= $request['method']
+
+  .content-section
+    h2 Captured Parameters
+
+    - $hasId = isset($response['data']['id'])
+    - $hasSlug = isset($response['data']['slug'])
+    - $paramType = $response['data']['type'] ?? 'unknown'
+
+    if $hasId
+      .success-box
+        strong Integer Parameter Matched!
+        p This route used the <code>{id:int}</code> type constraint.
+
+      .demo-box
+        h4 Parameter Details
+        table
+          thead
+            tr
+              th Parameter
+              th Value
+              th PHP Type
+          tbody
+            tr
+              td
+                code id
+              td= $response['data']['id']
+              td
+                code int
+
+        h4 Route Definition
+        pre
+          code.
+            <span class="variable">Route</span>::<span class="function">get</span>(<span class="string">'/tutorial/02-routing/demo/{id:int}'</span>,
+                <span class="keyword">function</span>(<span class="keyword">int</span> <span class="variable">$id</span>) {
+                    <span class="keyword">return</span> [
+                        <span class="string">'id'</span> => <span class="variable">$id</span>,
+                        <span class="string">'type'</span> => <span class="string">'integer'</span>
+                    ];
+                }
+            );
+
+      .info-box
+        strong Type Safety:
+        |   
+        | F4 automatically validated that the parameter is an integer. Non-numeric values won't match this route.
+
+    else if $hasSlug
+      .success-box
+        strong String Parameter Matched!
+        p This route used the <code>{slug:string}</code> type constraint.
+
+      .demo-box
+        h4 Parameter Details
+        table
+          thead
+            tr
+              th Parameter
+              th Value
+              th PHP Type
+          tbody
+            tr
+              td
+                code slug
+              td= $response['data']['slug']
+              td
+                code string
+
+        h4 Route Definition
+        pre
+          code.
+            <span class="variable">Route</span>::<span class="function">get</span>(<span class="string">'/tutorial/02-routing/demo/{slug:string}'</span>,
+                <span class="keyword">function</span>(<span class="keyword">string</span> <span class="variable">$slug</span>) {
+                    <span class="keyword">return</span> [
+                        <span class="string">'slug'</span> => <span class="variable">$slug</span>,
+                        <span class="string">'type'</span> => <span class="string">'string'</span>
+                    ];
+                }
+            );
+
+      .info-box
+        strong Flexibility:
+        |   
+        | String parameters can contain letters, numbers, hyphens, underscores, and more.
+
+  .content-section
+    h2 How Route Matching Works
+
+    if $hasId
+      p 
+        | Since you provided a numeric value (<code>
+        = $response['data']['id'] ?? ''
+        | </code>), F4 matched it against the integer route.
+
+      h3 Matching Process
+
+      ol
+        li F4 checks if the value is numeric
+        li If yes, matches the <code>{id:int}</code> route
+        li Converts the string to an integer
+        li Passes it to the handler function with type safety
+
+    else if $hasSlug
+      p 
+        | Since you provided a non-numeric value (<code>
+        = $response['data']['slug'] ?? ''
+        | </code>), F4 matched it against the string route.
+
+      h3 Matching Process
+
+      ol
+        li F4 checks if the value matches integer pattern
+        li If no, tries the string route
+        li Matches the <code>{slug:string}</code> route
+        li Passes it as a string to the handler
+
+  .content-section
+    h2 Try Different Values
+
+    p Experiment with different URL patterns:
+
+    .demo-box
+      h4 Integer Examples
+      ul
+        li
+          a.chapter-link(href="/tutorial/02-routing/demo/1") /demo/1
+        li
+          a.chapter-link(href="/tutorial/02-routing/demo/42") /demo/42
+        li
+          a.chapter-link(href="/tutorial/02-routing/demo/999") /demo/999
+
+    .demo-box
+      h4 String Examples
+      ul
+        li
+          a.chapter-link(href="/tutorial/02-routing/demo/hello") /demo/hello
+        li
+          a.chapter-link(href="/tutorial/02-routing/demo/my-slug-123") /demo/my-slug-123
+        li
+          a.chapter-link(href="/tutorial/02-routing/demo/test_value") /demo/test_value
+
+  .content-section
+    h2 Multiple Parameters Example
+
+    p Routes can capture multiple parameters. Try building routes like:
+
+    pre
+      code.
+        <span class="comment">// Two parameters</span>
+        /users/{userId:int}/posts/{postId:int}
+
+        <span class="comment">// Date-based</span>
+        /archive/{year:int}/{month:int}/{day:int}
+
+        <span class="comment">// Mixed types</span>
+        /category/{slug:string}/item/{id:int}
+
+  .content-section
+    h2 Understanding Type Constraints
+
+    table
+      thead
+        tr
+          th What Happens
+          th Integer Route
+          th String Route
+      tbody
+        tr
+          td URL: /demo/123
+          td.success-box ✓ Matches
+          td.warning-box Skip
+        tr
+          td URL: /demo/abc
+          td.warning-box Skip
+          td.success-box ✓ Matches
+        tr
+          td URL: /demo/hello-world
+          td.warning-box Skip
+          td.success-box ✓ Matches
+
+  .content-section
+    p
+      a.start-button(href="/tutorial/02-routing") ← Back to Chapter 2

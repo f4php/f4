@@ -1,0 +1,619 @@
+// F4 Tutorial Styles - F4 Branded Design
+// Primary brand color: #c44 (F4 Red)
+
+// Color Palette
+$f4-red = #c44
+$f4-red-dark = #a33
+$f4-red-darker = #922
+$f4-red-light = #d55
+$f4-red-lighter = #e66
+$f4-red-pale = #fee
+
+$dark-bg = #1a1a1a
+$dark-bg-lighter = #2a2a2a
+$dark-bg-hover = #333
+$text-primary = #333
+$text-secondary = #666
+$text-light = #999
+$white = #fff
+$gray-bg = #f5f5f5
+$border-color = #ddd
+
+// Reset
+*
+  margin 0
+  padding 0
+  box-sizing border-box
+
+body
+  font-family -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif
+  line-height 1.6
+  color $text-primary
+  background $gray-bg
+
+.container
+  display flex
+  min-height 100vh
+
+// Sidebar Navigation with F4 Branding
+.sidebar
+  width 280px
+  background $dark-bg
+  color $white
+  padding 0
+  position fixed
+  height 100vh
+  overflow-y auto
+  border-right 3px solid $f4-red
+
+.sidebar-header
+  padding 1.5rem
+  border-bottom 1px solid rgba(255,255,255,0.1)
+  margin-bottom 1rem
+  background $dark-bg-lighter
+
+  .logo-container
+    display flex
+    align-items center
+    gap 1rem
+
+    .logo
+      width 48px
+      height 48px
+      flex-shrink 0
+
+      svg
+        width 100%
+        height 100%
+        display block
+
+        path
+          fill $f4-red
+
+    .logo-text
+      flex 1
+
+      h1
+        font-size 1.5rem
+        font-weight 600
+        margin-bottom 0.25rem
+        color $white
+
+        .f4-accent
+          color $f4-red
+          font-weight 700
+
+      p
+        font-size 0.875rem
+        color rgba(255,255,255,0.6)
+        margin 0
+
+.nav-chapter
+  padding 0.75rem 1.5rem
+  display block
+  color rgba(255,255,255,0.7)
+  text-decoration none
+  border-left 3px solid transparent
+  transition background 0.2s ease
+  position relative
+
+  &:hover
+    background $dark-bg-hover
+    color $white
+    border-left-color $f4-red-light
+
+    &::before
+      opacity 0.1
+
+  &.active
+    background $dark-bg-lighter
+    border-left-color $f4-red
+    color $white
+
+    .nav-chapter-number
+      color $f4-red
+
+    &::before
+      content ''
+      position absolute
+      left 0
+      top 0
+      bottom 0
+      width 3px
+      background linear-gradient(to bottom, $f4-red, $f4-red-dark)
+      box-shadow 0 0 10px $f4-red
+
+.nav-chapter-number
+  font-weight 600
+  margin-right 0.5rem
+  color $f4-red-light
+  transition color 0.2s
+
+.nav-chapter-title
+  display block
+  font-size 0.95rem
+  font-weight 500
+
+.nav-chapter-desc
+  display block
+  font-size 0.8rem
+  color rgba(255,255,255,0.4)
+  margin-top 0.125rem
+
+// Main Content Area
+.main-content
+  margin-left 280px
+  flex 1
+  padding 2rem
+  max-width 1200px
+
+.chapter-header
+  background $white
+  padding 2rem
+  border-radius 8px
+  margin-bottom 2rem
+  box-shadow 0 2px 8px rgba(0,0,0,0.08)
+  border-top 4px solid $f4-red
+  position relative
+  overflow hidden
+
+  &::before
+    content ''
+    position absolute
+    top -20px
+    right -20px
+    width 150px
+    height 150px
+    background url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 50.33 65.34"><path fill="%23fee" d="M26.63,13.95l1.99-6.91H6.73v51.26h7.35v-21.88h6.07l2-6.92h-8.07v-15.55s12.55,0,12.55,0ZM45.6,43.76v6.91h-3.53v7.63h-7.34v-7.63h-14.62v-6.91l2.11-7.34,2-6.92,6.47-22.46h7.78l-11.02,36.72h7.28v-14.62h7.34v14.62h3.53ZM46.96,65.34H3.38c-1.86,0-3.38-1.51-3.38-3.38V3.38C0,1.51,1.51,0,3.38,0h43.58c1.86,0,3.38,1.51,3.38,3.38v58.59c0,1.86-1.51,3.38-3.38,3.38ZM3.38.75C1.93.75.75,1.93.75,3.38v58.59c0,1.45,1.18,2.62,2.62,2.62h43.58c1.45,0,2.62-1.18,2.62-2.62V3.38c0-1.45-1.18-2.62-2.62-2.62H3.38Z"/></svg>')
+    background-size contain
+    background-repeat no-repeat
+    opacity 0.3
+    pointer-events none
+
+  h1
+    font-size 2rem
+    margin 0 0 0.5rem 0
+    color $dark-bg
+    position relative
+    z-index 1
+
+  .chapter-number
+    font-size 0.875rem
+    color $f4-red
+    font-weight 700
+    text-transform uppercase
+    letter-spacing 0.05em
+    margin 0 0 0.5rem 0
+    display inline-block
+    padding 0.25rem 0.75rem
+    background $f4-red-pale
+    border-radius 4px
+
+  .description
+    font-size 1.125rem
+    color $text-secondary
+    margin 0
+    position relative
+    z-index 1
+
+.content-section
+  background $white
+  padding 2rem
+  border-radius 8px
+  margin-bottom 1.5rem
+  box-shadow 0 1px 3px rgba(0,0,0,0.08)
+  border-left 3px solid transparent
+  transition border-color 0.3s
+
+  &:hover
+    border-left-color $f4-red-light
+
+  h2
+    font-size 1.5rem
+    margin-bottom 1rem
+    color $dark-bg
+    padding-bottom 0.5rem
+    border-bottom 2px solid $f4-red-pale
+
+    &::before
+      content '▸ '
+      color $f4-red
+      margin-right 0.5rem
+
+  h3
+    font-size 1.25rem
+    margin 1.5rem 0 1rem
+    color $text-primary
+
+    &::before
+      content '• '
+      color $f4-red
+      margin-right 0.5rem
+
+  h4
+    font-size 1.1rem
+    margin 1rem 0 0.75rem
+    color $text-primary
+
+  p
+    margin-bottom 1rem
+    color $text-secondary
+
+  ul, ol
+    margin-left 1.5rem
+    margin-bottom 1rem
+
+  li
+    margin-bottom 0.5rem
+    color $text-secondary
+
+    &::marker
+      color $f4-red
+
+// Code Styling
+code
+  background $f4-red-pale
+  padding 0.125rem 0.375rem
+  border-radius 3px
+  font-family "SF Mono", Monaco, "Cascadia Code", "Roboto Mono", Consolas, monospace
+  font-size 0.875em
+  color $f4-red-dark
+  border 1px solid rgba(204,68,68,0.2)
+
+pre
+  background $dark-bg
+  color #d4d4d4
+  padding 1.5rem
+  border-radius 6px
+  overflow-x auto
+  margin 1rem 0
+  font-family "SF Mono", Monaco, "Cascadia Code", "Roboto Mono", Consolas, monospace
+  font-size 0.875rem
+  line-height 1.5
+  border 1px solid $dark-bg-lighter
+  box-shadow 0 4px 12px rgba(0,0,0,0.15)
+
+  code
+    background none
+    padding 0
+    color inherit
+    border none
+
+// Syntax Highlighting
+.keyword
+  color #569cd6
+
+.string
+  color #ce9178
+
+.function
+  color #dcdcaa
+
+.comment
+  color #6a9955
+
+.variable
+  color #9cdcfe
+
+// Info Boxes with F4 Branding
+.info-box
+  background lighten($f4-red-pale, 50%)
+  border-left 4px solid $f4-red
+  padding 1rem 1.5rem
+  margin 1rem 0
+  border-radius 4px
+
+  &::before
+    content '💡 '
+    margin-right 0.5rem
+
+  strong
+    color $f4-red-dark
+
+.warning-box
+  background #fff3cd
+  border-left 4px solid #f39c12
+  padding 1rem 1.5rem
+  margin 1rem 0
+  border-radius 4px
+
+  &::before
+    content '⚠️ '
+    margin-right 0.5rem
+
+  strong
+    color #d68910
+
+.success-box
+  background #d4edda
+  border-left 4px solid #27ae60
+  padding 1rem 1.5rem
+  margin 1rem 0
+  border-radius 4px
+
+  &::before
+    content '✅ '
+    margin-right 0.5rem
+
+  strong
+    color #1e8449
+
+// Chapter Navigation with F4 Branding
+.chapter-nav
+  display flex
+  justify-content space-between
+  margin-top 3rem
+  gap 1rem
+
+  a
+    flex 1
+    padding 1rem 1.5rem
+    background $white
+    border 2px solid $border-color
+    border-radius 6px
+    text-decoration none
+    color $text-primary
+    transition all 0.3s ease
+    position relative
+    overflow hidden
+
+    &::before
+      content ''
+      position absolute
+      top 0
+      left 0
+      width 100%
+      height 100%
+      background $f4-red-pale
+      transform scaleX(0)
+      transform-origin left
+      transition transform 0.3s ease
+      z-index 0
+
+    &:hover
+      border-color $f4-red
+      color $f4-red-dark
+      box-shadow 0 4px 12px rgba(204,68,68,0.2)
+
+      &::before
+        transform scaleX(1)
+
+      .label
+        color $f4-red
+
+      .title
+        color $f4-red-darker
+
+  .prev
+    &::after
+      content '←'
+      position absolute
+      left 1rem
+      top 50%
+      transform translateY(-50%)
+      font-size 1.5rem
+      color $f4-red-light
+      opacity 0
+      transition all 0.3s
+
+    &:hover::after
+      opacity 1
+      left 0.5rem
+
+  .next
+    text-align right
+
+    &::after
+      content '→'
+      position absolute
+      right 1rem
+      top 50%
+      transform translateY(-50%)
+      font-size 1.5rem
+      color $f4-red-light
+      opacity 0
+      transition all 0.3s
+
+    &:hover::after
+      opacity 1
+      right 0.5rem
+
+  .label
+    font-size 0.75rem
+    text-transform uppercase
+    color $text-light
+    margin-bottom 0.25rem
+    display block
+    position relative
+    z-index 1
+    transition color 0.3s
+
+  .title
+    font-weight 600
+    display block
+    position relative
+    z-index 1
+    transition color 0.3s
+
+// Demo Boxes
+.demo-box
+  background $gray-bg
+  border 2px solid $f4-red-pale
+  padding 1.5rem
+  border-radius 6px
+  margin 1rem 0
+  position relative
+
+  &::before
+    content ''
+    position absolute
+    top 0
+    left 0
+    width 4px
+    height 100%
+    background linear-gradient(to bottom, $f4-red, $f4-red-dark)
+
+  h4
+    margin-bottom 1rem
+    color $text-primary
+    font-weight 600
+
+// Tables
+table
+  width 100%
+  border-collapse collapse
+  margin 1rem 0
+  border-radius 6px
+  overflow hidden
+  box-shadow 0 1px 3px rgba(0,0,0,0.08)
+
+th, td
+  padding 0.75rem
+  text-align left
+  border-bottom 1px solid $border-color
+
+th
+  background $f4-red
+  color $white
+  font-weight 600
+  text-transform uppercase
+  font-size 0.875rem
+  letter-spacing 0.05em
+
+  &:first-child
+    padding-left 1.5rem
+
+td
+  background $white
+
+  &:first-child
+    padding-left 1.5rem
+
+tr
+  transition background 0.2s
+
+  &:hover td
+    background lighten($f4-red-pale, 50%)
+
+// Chapter Links and Badges
+.chapter-number-badge
+  color $f4-red
+  font-weight 700
+  margin-right 0.5rem
+  background $f4-red-pale
+  padding 0.125rem 0.5rem
+  border-radius 3px
+  display inline-block
+
+.chapter-description
+  margin-bottom 0.5rem
+
+.chapter-link
+  color $f4-red
+  text-decoration none
+  font-weight 600
+  display inline-flex
+  align-items center
+  gap 0.5rem
+  transition all 0.2s
+
+  &::after
+    content '→'
+    transition transform 0.2s
+
+  &:hover
+    color $f4-red-darker
+    gap 0.75rem
+
+    &::after
+      transform translateX(4px)
+
+// Start Button
+.start-button
+  display inline-block
+  padding 0.875rem 1.75rem
+  background $f4-red
+  color $white
+  text-decoration none
+  border-radius 6px
+  font-weight 600
+  transition all 0.3s ease
+  box-shadow 0 2px 4px rgba(204,68,68,0.3)
+  position relative
+  overflow hidden
+
+  &::before
+    content ''
+    position absolute
+    top 50%
+    left 50%
+    width 0
+    height 0
+    border-radius 50%
+    background rgba(255,255,255,0.3)
+    transform translate(-50%, -50%)
+    transition width 0.6s, height 0.6s
+
+  &:hover
+    background $f4-red-dark
+    box-shadow 0 4px 12px rgba(204,68,68,0.4)
+    transform translateY(-2px)
+
+    &::before
+      width 300px
+      height 300px
+
+// F4 Logo Accents
+.f4-logo-small
+  width 24px
+  height auto
+  display inline-block
+  vertical-align middle
+  margin-right 0.5rem
+
+  path
+    fill $f4-red
+
+// Responsive Design
+@media (max-width: 768px)
+  .sidebar
+    width 100%
+    position relative
+    height auto
+    border-right none
+    border-bottom 3px solid $f4-red
+
+  .main-content
+    margin-left 0
+
+  .chapter-nav
+    flex-direction column
+
+    .prev, .next
+      text-align left
+
+      &::after
+        display none
+
+// Scrollbar Styling (Webkit)
+.sidebar::-webkit-scrollbar
+  width 8px
+
+.sidebar::-webkit-scrollbar-track
+  background $dark-bg-lighter
+
+.sidebar::-webkit-scrollbar-thumb
+  background $f4-red
+  border-radius 4px
+
+  &:hover
+    background $f4-red-light
+
+// Print Styles
+@media print
+  .sidebar, .chapter-nav
+    display none
+
+  .main-content
+    margin-left 0
+    max-width 100%

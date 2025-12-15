@@ -1,22 +1,69 @@
 {
-    "name": "f4php/f4",
-    "description": "The skeleton application for F4, a lightweight webapp framework",
-    "keywords": ["f4","framework"],
-    "type": "project",
-    "license": "MIT",
-    "autoload": {
-        "psr-4": {
-            "F4\\": "src/"
-        }
-    },
-    "authors": [
-        {
-            "name": "Dennis Kreminsky",
-            "email": "dennis@kreminsky.com"
-        }
-    ],
-    "require": {
-        "f4php/framework": "dev-main",
-        "php": "^8.3"
+  "name": "f4php/f4",
+  "description": "The skeleton application for F4, a (really) lightweight web application framework",
+  "keywords": [
+    "f4",
+    "framework"
+  ],
+  "type": "project",
+  "license": "MIT",
+  "autoload": {
+    "psr-4": {
+      "App\\": "src/App"
     }
+  },
+  "repositories": [
+    {
+        "type": "path",
+        "url": "../framework"
+    },
+    {
+        "type": "path",
+        "url": "../checkmate"
+    }
+  ],
+  "authors": [
+    {
+      "name": "Dennis Kreminsky",
+      "email": "dennis@kreminsky.com"
+    }
+  ],
+  "require": {
+    "php": "^8.3",
+    "symfony/console": "^7.1",
+    "composer-runtime-api": "*",
+    "f4php/framework": "dev-main",
+    "f4php/checkmate": "dev-main"
+  },
+  "config": {
+    "optimize-autoloader": true,
+    "process-timeout": 0
+  },
+  "scripts": {
+    "post-update-cmd": "npm update",
+    "post-install-cmd": "npm install",
+    "create-config": "@php scripts/create-config.php",
+    "serve": "@php -S `composer config extra.f4.environments.local.server` -t public/"
+  },
+  "extra": {
+    "f4": {
+      "environments": {
+        "production": {
+          "config": "config/production.php"
+        },
+        "test": {
+          "config": "config/test.php"
+        },
+        "local": {
+          "config": "config/local.php",
+          "server": "localhost:8080"
+        },
+        "default": {
+          "config": "config/default.php"
+        }
+      }
+    }
+  },
+  "minimum-stability": "dev",
+  "prefer-stable": true
 }

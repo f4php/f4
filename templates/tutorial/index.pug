@@ -1,0 +1,59 @@
+extends tutorial.pug
+
+block title
+  | F4 Framework Tutorial - Interactive Learning Guide
+
+block content
+  .chapter-header
+    h1 Welcome to F4 Framework Tutorial
+    p.description Learn to build modern PHP web applications with F4's lightweight, module-based architecture
+
+  .content-section
+    h2 About This Tutorial
+
+    p This interactive tutorial will guide you through all the essential concepts of the F4 framework. Each chapter builds upon the previous one, providing hands-on examples and live demonstrations.
+
+    h3 What You'll Learn
+
+    ul
+      li How to create routes and handle HTTP requests
+      li Parameter validation using PHP attributes
+      li Middleware for request/response processing
+      li Building REST APIs with route groups
+      li Database integration and query building
+      li Multi-language support (i18n)
+      li Exception handling and error pages
+
+    .info-box
+      strong Note:
+      | This tutorial application is itself built using F4! You can explore the source code to see real-world examples of all the concepts we'll cover.
+
+  .content-section
+    h2 Chapters
+
+    each $chapter in $response['data']['chapters']
+      .demo-box
+        h4
+          span.chapter-number-badge= 'Chapter ' . (int)$chapter['number']
+          = $chapter['title']
+        p.chapter-description= $chapter['description']
+        a.chapter-link(href=$chapter['path']) Start Chapter →
+
+  .content-section
+    h2 Prerequisites
+
+    p Before starting this tutorial, you should have:
+
+    ul
+      li Basic knowledge of PHP (version 8.3+)
+      li Understanding of HTTP and web development concepts
+      li A local development environment with PHP and PostgreSQL
+      li Composer installed for dependency management
+
+  .content-section
+    h2 Getting Started
+
+    p Ready to begin? Start with Chapter 01 to learn the basics of routing and templates.
+
+    p
+      a.start-button(href="/tutorial/01-hello-world") Start Learning →

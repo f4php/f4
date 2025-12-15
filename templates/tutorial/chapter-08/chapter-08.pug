@@ -1,0 +1,532 @@
+extends ../tutorial.pug
+
+block title
+  | Chapter 8: Internationalization - F4 Framework Tutorial
+
+block content
+  .chapter-header
+    .chapter-number Chapter 8
+    h1 Internationalization (i18n)
+    p.description Build multilingual applications with F4's Fluent-based i18n system
+
+  .content-section
+    h2 Introduction
+
+    p Internationalization (i18n) allows your application to support multiple languages and locales. F4 uses Mozilla's Fluent format for translations, providing a powerful and flexible system for handling multilingual content.
+
+    h3 What We'll Cover
+
+    ul
+      li Configuring locales and languages
+      li Creating Fluent translation files (.ftl)
+      li Using translation functions in templates
+      li Locale negotiation (path, headers, session)
+      li Variables and pluralization
+      li Fallback locales
+      li Best practices for multilingual apps
+
+  .content-section
+    h2 What Is Fluent?
+
+    p Fluent is Mozilla's localization system designed to:
+
+    ul
+      li Keep translations natural and readable
+      li Support complex grammar rules
+      li Handle pluralization automatically
+      li Manage variables and formatting
+      li Isolate translation logic from code
+
+    .info-box
+      strong Natural Language:
+      |  
+      | Fluent lets translators write natural-sounding text without worrying about code syntax.
+
+  .content-section
+    h2 Configuration
+
+    p Configure your locales in the config file:
+
+    pre
+      code.
+        <span class="comment">// config/local.php</span>
+        <span class="keyword">namespace</span> <span class="variable">F4</span>;
+
+        <span class="keyword">class</span> <span class="variable">Config</span> <span class="keyword">extends</span> <span class="variable">AbstractConfig</span>
+        {
+            <span class="keyword">public const string</span> <span class="variable">DEFAULT_LOCALE</span> = <span class="string">'en'</span>;
+
+            <span class="keyword">public const array</span> <span class="variable">LOCALES</span> = [
+                <span class="string">'en'</span> => [
+                    <span class="string">'extensions'</span> => [<span class="string">'.en'</span>],
+                    <span class="string">'resources'</span> => [<span class="string">'locales/messages.en.ftl'</span>],
+                    <span class="string">'weight'</span> => <span class="number">1.0</span>
+                ],
+                <span class="string">'fr'</span> => [
+                    <span class="string">'extensions'</span> => [<span class="string">'.fr'</span>],
+                    <span class="string">'resources'</span> => [<span class="string">'locales/messages.fr.ftl'</span>],
+                    <span class="string">'weight'</span> => <span class="number">0.9</span>
+                ],
+                <span class="string">'es'</span> => [
+                    <span class="string">'extensions'</span> => [<span class="string">'.es'</span>],
+                    <span class="string">'resources'</span> => [<span class="string">'locales/messages.es.ftl'</span>],
+                    <span class="string">'weight'</span> => <span class="number">0.8</span>
+                ]
+            ];
+        }
+
+    h3 Configuration Options
+
+    table
+      thead
+        tr
+          th Option
+          th Description
+          th Example
+      tbody
+        tr
+          td
+            code extensions
+          td File extensions for this locale
+          td
+            code ['.en', '.en-US']
+        tr
+          td
+            code resources
+          td Path to .ftl translation files
+          td
+            code ['locales/messages.en.ftl']
+        tr
+          td
+            code weight
+          td Priority for locale matching
+          td
+            code 1.0
+            |  (higher = preferred)
+
+  .content-section
+    h2 Creating Translation Files
+
+    p Translation files use the Fluent (.ftl) format:
+
+    h3 English (messages.en.ftl)
+
+    pre
+      code.
+        <span class="comment"># Simple messages</span>
+        welcome = Welcome to our application!
+        goodbye = Goodbye, see you soon!
+
+        <span class="comment"># Messages with variables</span>
+        hello-user = Hello, { $name }!
+        items-count = You have { $count } items in your cart.
+
+        <span class="comment"># Pluralization</span>
+        email-count = {$count ->
+            [0] You have no unread emails.
+            [1] You have one unread email.
+           *[other] You have { $count } unread emails.
+        }
+
+        <span class="comment"># Attributes</span>
+        login-button = Log In
+            .aria-label = Log in to your account
+            .title = Click to log in
+
+        <span class="comment"># Multiline messages</span>
+        about-us =
+            We are a company dedicated to building
+            amazing software products for everyone.
+
+    h3 French (messages.fr.ftl)
+
+    pre
+      code.
+        <span class="comment"># Messages simples</span>
+        welcome = Bienvenue dans notre application !
+        goodbye = Au revoir, à bientôt !
+
+        <span class="comment"># Messages avec variables</span>
+        hello-user = Bonjour, { $name } !
+        items-count = Vous avez { $count } articles dans votre panier.
+
+        <span class="comment"># Pluralisation</span>
+        email-count = {$count ->
+            [0] Vous n'avez aucun email non lu.
+            [1] Vous avez un email non lu.
+           *[other] Vous avez { $count } emails non lus.
+        }
+
+  .content-section
+    h2 Using Translations in Templates
+
+    p The translation function <code>$t()</code> is available in all Pug templates:
+
+    h3 Basic Usage
+
+    pre
+      code.
+        <span class="comment">//- Simple message</span>
+        <span class="variable">h1</span>= <span class="variable">$t</span>(<span class="string">'welcome'</span>)
+
+        <span class="comment">//- Message with variables</span>
+        <span class="variable">p</span>= <span class="variable">$t</span>(<span class="string">'hello-user'</span>, [<span class="string">'name'</span> => <span class="variable">$userName</span>])
+
+        <span class="comment">//- Pluralization</span>
+        <span class="variable">p</span>= <span class="variable">$t</span>(<span class="string">'email-count'</span>, [<span class="string">'count'</span> => <span class="variable">$emailCount</span>])
+
+        <span class="comment">//- Message attributes</span>
+        <span class="variable">button</span>(aria-label=<span class="variable">$t</span>(<span class="string">'login-button.aria-label'</span>))
+          = <span class="variable">$t</span>(<span class="string">'login-button'</span>)
+
+  .content-section
+    h2 Locale Negotiation
+
+    p F4 determines the user's locale from multiple sources:
+
+    h3 1. Path-Based Locale
+
+    pre
+      code.
+        <span class="comment">// URL with locale prefix</span>
+        /en/products  <span class="comment">→ English</span>
+        /fr/products  <span class="comment">→ French</span>
+        /es/products  <span class="comment">→ Spanish</span>
+
+    p The locale is extracted from the first segment of the path.
+
+    h3 2. Accept-Language Header
+
+    pre
+      code.
+        <span class="comment">// Browser sends</span>
+        Accept-Language: fr-FR,fr;q=0.9,en;q=0.8
+
+        <span class="comment">// F4 selects best match based on weight</span>
+
+    h3 3. Session Storage
+
+    pre
+      code.
+        <span class="comment">// Store user's preference</span>
+        <span class="variable">$_SESSION</span>[<span class="string">'locale'</span>] = <span class="string">'fr'</span>;
+
+    h3 Priority Order
+
+    .demo-box
+      pre.
+        1. Path-based locale (/fr/page)
+        2. Session locale ($_SESSION['locale'])
+        3. Accept-Language header
+        4. Default locale (from config)
+
+  .content-section
+    h2 Variables in Translations
+
+    p Pass dynamic values to translations:
+
+    h3 Simple Variables
+
+    pre
+      code.
+        <span class="comment"># messages.en.ftl</span>
+        greeting = Hello, { $name }! Welcome back.
+        balance = Your balance is { $amount } { $currency }.
+
+    pre
+      code.
+        <span class="comment">//- template.pug</span>
+        <span class="variable">p</span>= <span class="variable">$t</span>(<span class="string">'greeting'</span>, [<span class="string">'name'</span> => <span class="string">'Alice'</span>])
+        <span class="variable">p</span>= <span class="variable">$t</span>(<span class="string">'balance'</span>, [<span class="string">'amount'</span> => <span class="number">150.50</span>, <span class="string">'currency'</span> => <span class="string">'USD'</span>])
+
+    h3 Number Formatting
+
+    pre
+      code.
+        <span class="comment"># With NUMBER function</span>
+        price = The price is { NUMBER($amount, minimumFractionDigits: 2) }.
+        percentage = Discount: { NUMBER($discount, style: "percent") }
+
+  .content-section
+    h2 Pluralization
+
+    p Fluent handles pluralization elegantly:
+
+    h3 Simple Plurals
+
+    pre
+      code.
+        <span class="comment"># messages.en.ftl</span>
+        photos = {$count ->
+            [0] No photos
+            [1] One photo
+           *[other] { $count } photos
+        }
+
+    h3 Complex Plurals
+
+    pre
+      code.
+        <span class="comment"># Different rules for different languages</span>
+        <span class="comment"># English</span>
+        items-added = {$count ->
+            [1] One item was added to your cart.
+           *[other] { $count } items were added to your cart.
+        }
+
+        <span class="comment"># French (different rules)</span>
+        items-added = {$count ->
+            [0] Aucun article n'a été ajouté.
+            [1] Un article a été ajouté.
+           *[other] { $count } articles ont été ajoutés.
+        }
+
+  .content-section
+    h2 Language Switcher
+
+    p Implement a language switcher in your application:
+
+    h3 Route-Based Approach
+
+    pre
+      code.
+        <span class="comment">//- Language switcher in template</span>
+        <span class="variable">nav.language-switcher</span>
+          <span class="variable">a</span>(href=<span class="string">'/en'</span> + <span class="variable">$request</span>[<span class="string">'path'</span>]) English
+          <span class="variable">a</span>(href=<span class="string">'/fr'</span> + <span class="variable">$request</span>[<span class="string">'path'</span>]) Français
+          <span class="variable">a</span>(href=<span class="string">'/es'</span> + <span class="variable">$request</span>[<span class="string">'path'</span>]) Español
+
+    h3 Session-Based Approach
+
+    pre
+      code.
+        <span class="comment">// Route to change language</span>
+        <span class="variable">Route</span>::<span class="function">post</span>(<span class="string">'/set-locale'</span>, <span class="keyword">function</span>(<span class="variable">$locale</span>) {
+            <span class="keyword">if</span> (<span class="function">in_array</span>(<span class="variable">$locale</span>, [<span class="string">'en'</span>, <span class="string">'fr'</span>, <span class="string">'es'</span>])) {
+                <span class="variable">$_SESSION</span>[<span class="string">'locale'</span>] = <span class="variable">$locale</span>;
+            }
+            <span class="comment">// Redirect back</span>
+            <span class="keyword">return</span> <span class="variable">$response</span>-><span class="function">withRedirect</span>(<span class="variable">$_SERVER</span>[<span class="string">'HTTP_REFERER'</span>]);
+        });
+
+  .content-section
+    h2 Organizing Translation Files
+
+    p For large applications, split translations by feature:
+
+    pre
+      code.
+        templates/locales/
+        ├── common.en.ftl       <span class="comment"># Shared messages</span>
+        ├── common.fr.ftl
+        ├── auth.en.ftl         <span class="comment"># Authentication</span>
+        ├── auth.fr.ftl
+        ├── products.en.ftl     <span class="comment"># Product catalog</span>
+        ├── products.fr.ftl
+        └── checkout.en.ftl     <span class="comment"># Checkout process</span>
+
+    p Update config to include all files:
+
+    pre
+      code.
+        <span class="keyword">public const array</span> <span class="variable">LOCALES</span> = [
+            <span class="string">'en'</span> => [
+                <span class="string">'extensions'</span> => [<span class="string">'.en'</span>],
+                <span class="string">'resources'</span> => [
+                    <span class="string">'locales/common.en.ftl'</span>,
+                    <span class="string">'locales/auth.en.ftl'</span>,
+                    <span class="string">'locales/products.en.ftl'</span>,
+                    <span class="string">'locales/checkout.en.ftl'</span>
+                ]
+            ]
+        ];
+
+  .content-section
+    h2 Date and Time Formatting
+
+    p Use Fluent's DATETIME function:
+
+    pre
+      code.
+        <span class="comment"># messages.en.ftl</span>
+        last-login = Last login: { DATETIME($date, dateStyle: "medium") }
+        event-time = Event starts at { DATETIME($timestamp, timeStyle: "short") }
+
+  .content-section
+    h2 Complete Example
+
+    h3 Configuration
+
+    pre
+      code.
+        <span class="keyword">public const array</span> <span class="variable">LOCALES</span> = [
+            <span class="string">'en'</span> => [
+                <span class="string">'extensions'</span> => [<span class="string">'.en'</span>],
+                <span class="string">'resources'</span> => [<span class="string">'locales/app.en.ftl'</span>],
+                <span class="string">'weight'</span> => <span class="number">1.0</span>
+            ],
+            <span class="string">'fr'</span> => [
+                <span class="string">'extensions'</span> => [<span class="string">'.fr'</span>],
+                <span class="string">'resources'</span> => [<span class="string">'locales/app.fr.ftl'</span>],
+                <span class="string">'weight'</span> => <span class="number">0.9</span>
+            ]
+        ];
+
+    h3 Translation Files
+
+    pre
+      code.
+        <span class="comment"># app.en.ftl</span>
+        app-title = My Application
+        welcome = Welcome, { $name }!
+        product-count = {$count ->
+            [0] No products available
+            [1] One product available
+           *[other] { $count } products available
+        }
+
+        <span class="comment"># app.fr.ftl</span>
+        app-title = Mon Application
+        welcome = Bienvenue, { $name } !
+        product-count = {$count ->
+            [0] Aucun produit disponible
+            [1] Un produit disponible
+           *[other] { $count } produits disponibles
+        }
+
+    h3 Template Usage
+
+    pre
+      code.
+        <span class="variable">doctype</span> html
+        <span class="variable">html</span>(lang=<span class="variable">$locale</span>[<span class="string">'locale'</span>])
+          <span class="variable">head</span>
+            <span class="variable">title</span>= <span class="variable">$t</span>(<span class="string">'app-title'</span>)
+          <span class="variable">body</span>
+            <span class="variable">h1</span>= <span class="variable">$t</span>(<span class="string">'welcome'</span>, [<span class="string">'name'</span> => <span class="variable">$user</span>[<span class="string">'name'</span>]])
+            <span class="variable">p</span>= <span class="variable">$t</span>(<span class="string">'product-count'</span>, [<span class="string">'count'</span> => <span class="variable">$products</span>.<span class="function">length</span>])
+
+  .content-section
+    h2 Fallback Behavior
+
+    p When a translation is missing:
+
+    ol
+      li F4 looks in the current locale's files
+      li If not found, falls back to DEFAULT_LOCALE
+      li If still not found, returns the message key
+
+    .info-box
+      strong Development Tip:
+      | Missing translations return the key name, making them easy to spot during development.
+
+  .content-section
+    h2 Best Practices
+
+    ol
+      li Use semantic message keys (
+        code login-button
+        | , not
+        code msg1
+        | )
+      li Keep translations in separate files, not in code
+      li Provide context in comments for translators
+      li Test all languages during development
+      li Use pluralization rules correctly for each language
+      li Organize translations by feature for large apps
+      li Store user's locale preference in session
+      li Provide a language switcher in your UI
+      li Use Fluent's built-in formatting (numbers, dates)
+      li Have native speakers review translations
+
+  .content-section
+    h2 Fluent Syntax Reference
+
+    table
+      thead
+        tr
+          th Feature
+          th Syntax
+          th Example
+      tbody
+        tr
+          td Simple message
+          td
+            code key = value
+          td
+            code welcome = Welcome!
+        tr
+          td Variable
+          td
+            code { $var }
+          td
+            code hello = Hi, { $name }!
+        tr
+          td Pluralization
+          td
+            code {$count -> [options]}
+          td
+            code [0] [1] *[other]
+        tr
+          td Attribute
+          td
+            code .attr = value
+          td
+            code .title = Click here
+        tr
+          td Number format
+          td
+            code NUMBER($var)
+          td
+            code NUMBER($price, minimumFractionDigits: 2)
+        tr
+          td Date format
+          td
+            code DATETIME($var)
+          td
+            code DATETIME($date, dateStyle: "long")
+
+  .content-section
+    h2 Try It Yourself
+
+    p Practice exercises:
+
+    ol
+      li Add Spanish (es) support to your app
+      li Create translations for a login form
+      li Implement a user preference-based language switcher
+      li Add pluralization for comment counts
+      li Organize translations into multiple files
+      li Format currency amounts in different locales
+
+  .content-section
+    h2 Key Takeaways
+
+    ul
+      li F4 uses Mozilla's Fluent format for i18n
+      li Configure locales in config files with resources
+      li Translation files use .ftl extension
+      li Use
+        code $t()
+        |  function in templates
+      li Locale negotiation: path → session → headers → default
+      li Fluent handles pluralization automatically
+      li Variables pass dynamic values to translations
+      li Organize large apps with multiple .ftl files
+      li Always provide meaningful message keys
+      li Test all supported languages
+
+  .content-section
+    h2 What's Next?
+
+    p In Chapter 9, we'll explore exception handling:
+
+    ul
+      li Global exception handlers
+      li HTTP exceptions and status codes
+      li Custom error pages
+      li Validation error handling
+      li Development vs production error display
+      li Logging and debugging exceptions
+
+    p Ready to master error handling? Click "Next" below!

@@ -1,0 +1,795 @@
+extends ../tutorial.pug
+
+block title
+  | Chapter 3: Working with Templates - F4 Framework Tutorial
+
+block content
+  .chapter-header
+    .chapter-number Chapter 3
+    h1 Working with Templates
+    p.description Master Pug templating in F4 - syntax, data binding, layout inheritance, and best practices
+
+  .content-section
+    h2 Introduction
+
+    p F4 uses Pug (formerly Jade) as its template engine. Pug is a clean, whitespace-sensitive templating language that compiles to HTML. Unlike JavaScript-based Pug implementations, F4 templates use <strong>PHP syntax</strong> for expressions and logic.
+
+    h3 What We'll Cover
+
+    ul
+      li Attaching templates to routes with setTemplate()
+      li Pug syntax basics (indentation, tags, attributes)
+      li Using PHP expressions in templates
+      li Accessing template variables
+      li Template inheritance with extends and blocks
+      li Mixins for reusable components
+      li Conditional rendering and loops
+      li Including partials
+      li Asset management with Vite
+      li Best practices for template organization
+
+  .content-section
+    h2 Connecting Routes to Templates
+
+    p Before diving into Pug syntax, you need to understand how templates are connected to your routes. Every route can specify which template should render its response.
+
+    h3 Using setTemplate()
+
+    pre
+      code.
+        <span class="keyword">use</span> <span class="variable">F4</span>\<span class="variable">Core</span>\<span class="variable">Route</span>;
+
+        <span class="comment">// Define a route and attach a template</span>
+        <span class="variable">$f4</span>-><span class="function">addRoute</span>(<span class="variable">Route</span>::<span class="function">get</span>(<span class="string">'/hello'</span>, <span class="keyword">function</span>() {
+            <span class="keyword">return</span> [
+                <span class="string">'message'</span> => <span class="string">'Hello World!'</span>,
+                <span class="string">'timestamp'</span> => <span class="function">date</span>(<span class="string">'Y-m-d H:i:s'</span>)
+            ];
+        })-><span class="function">setTemplate</span>(<span class="string">'hello.pug'</span>));
+
+    .info-box
+      strong Key Concept:
+      |  
+      | The <code>setTemplate()</code> method tells F4 which Pug template file to use for rendering the response. The data you return from the route handler becomes available in the template as <code>$response['data']</code>.
+
+    h3 Template Path Resolution
+
+    p F4 looks for templates in the directories specified in your configuration:
+
+    pre
+      code.
+        <span class="keyword">class</span> <span class="variable">Config</span> <span class="keyword">extends</span> <span class="variable">AbstractConfig</span>
+        {
+            <span class="keyword">public const array</span> <span class="variable">TEMPLATE_PATHS</span> = [
+                <span class="variable">__DIR__</span> . <span class="string">'/../templates'</span>
+            ];
+        }
+
+    p Template paths are relative to these configured directories:
+
+    table
+      thead
+        tr
+          th Template String
+          th Resolved File Path
+      tbody
+        tr
+          td
+            code hello.pug
+          td
+            code templates/hello.pug
+        tr
+          td
+            code pages/about.pug
+          td
+            code templates/pages/about.pug
+        tr
+          td
+            code user/profile.pug
+          td
+            code templates/user/profile.pug
+
+    h3 Complete Example
+
+    pre
+      code.
+        <span class="comment">// Route handler returns data</span>
+        <span class="variable">$f4</span>-><span class="function">addRoute</span>(<span class="variable">Route</span>::<span class="function">get</span>(<span class="string">'/users/{id:int}'</span>, <span class="keyword">function</span>(<span class="keyword">int</span> <span class="variable">$id</span>) {
+            <span class="variable">$user</span> = <span class="variable">User</span>::<span class="function">find</span>(<span class="variable">$id</span>);
+
+            <span class="comment">// Return data to be passed to template</span>
+            <span class="keyword">return</span> [
+                <span class="string">'user'</span> => <span class="variable">$user</span>,
+                <span class="string">'pageTitle'</span> => <span class="string">'User Profile'</span>
+            ];
+        })-><span class="function">setTemplate</span>(<span class="string">'user/profile.pug'</span>));
+
+    p In your template file (<code>templates/user/profile.pug</code>):
+
+    pre
+      code.
+        h1= <span class="variable">$response</span>[<span class="string">'data'</span>][<span class="string">'pageTitle'</span>]
+
+        .user-info
+          h2= <span class="variable">$response</span>[<span class="string">'data'</span>][<span class="string">'user'</span>][<span class="string">'name'</span>]
+          p= <span class="string">'Email: '</span> . <span class="variable">$response</span>[<span class="string">'data'</span>][<span class="string">'user'</span>][<span class="string">'email'</span>]
+
+    h3 Routes Without Templates
+
+    p Not all routes need templates. API routes typically return JSON directly:
+
+    pre
+      code.
+        <span class="variable">$f4</span>-><span class="function">addRoute</span>(<span class="variable">Route</span>::<span class="function">get</span>(<span class="string">'/api/users/{id:int}.json'</span>, <span class="keyword">function</span>(<span class="keyword">int</span> <span class="variable">$id</span>) {
+            <span class="keyword">return</span> [<span class="string">'user'</span> => <span class="variable">User</span>::<span class="function">find</span>(<span class="variable">$id</span>)];
+        }));
+
+    p F4 always needs to know how to render a route's response. There are two ways to tell F4 how to do it:
+    ol
+      li By using path suffix in your request, for example 
+        code /api/users.json
+        | , 
+        code /products.html
+        | , 
+        code /rss.xml
+      li By setting the default response format in your Config class:
+        pre
+          code
+            span.keyword
+              | public const string 
+            span.variable
+              | DEFAULT_RESPONSE_FORMAT = 
+            span.string
+              | 'application/json'
+            | ;
+          span.comment
+            |  // emit JSON by default
+
+  .content-section
+    h2 Pug Syntax Basics
+
+    p Pug uses indentation instead of closing tags. Each level of indentation represents nesting:
+
+    h3 Basic Tags
+
+    .demo-box
+      h4 Pug Code
+
+      pre
+        code.
+          div
+            h1 Welcome
+            p This is a paragraph
+            ul
+              li First item
+              li Second item
+
+      h4 Compiled HTML
+
+      pre
+        code.
+          &lt;div&gt;
+            &lt;h1&gt;Welcome&lt;/h1&gt;
+            &lt;p&gt;This is a paragraph&lt;/p&gt;
+            &lt;ul&gt;
+              &lt;li&gt;First item&lt;/li&gt;
+              &lt;li&gt;Second item&lt;/li&gt;
+            &lt;/ul&gt;
+          &lt;/div&gt;
+
+    h3 Classes and IDs
+
+    pre
+      code.
+        <span class="comment">// Div with class</span>
+        .container
+          h1.title My Title
+          p.description.text-muted Description text
+
+        <span class="comment">// Div with ID</span>
+        #header
+          h1 Header Content
+
+        <span class="comment">// Multiple classes</span>
+        button.btn.btn-primary.btn-lg Click Me
+
+        <span class="comment">// Element with class and ID</span>
+        section\#main-content.container
+          p Content here
+
+    .info-box
+      strong Note:
+      | By default, class and ID selectors create <code>div</code> elements. Use explicit tag names for other elements.
+
+    h3 Attributes
+
+    pre
+      code.
+        <span class="comment">// Basic attributes</span>
+        a(href=<span class="string">"/about"</span> title=<span class="string">"About Us"</span>) About
+
+        <span class="comment">// Boolean attributes</span>
+        input(type=<span class="string">"checkbox"</span> checked)
+        button(disabled) Submit
+
+        <span class="comment">// Multiple attributes</span>
+        img(
+          src=<span class="string">"/images/logo.png"</span>
+          alt=<span class="string">"Logo"</span>
+          width=<span class="string">"200"</span>
+          height=<span class="string">"100"</span>
+        )
+
+        <span class="comment">// Data attributes</span>
+        div(data-id=<span class="string">"123"</span> data-action=<span class="string">"delete"</span>)
+
+  .content-section
+    h2 Using PHP in Templates
+
+    p <strong>Important:</strong> F4's Pug templates use PHP syntax, not JavaScript!
+
+    h3 Basic PHP Expressions
+
+    pre
+      code.
+        <span class="comment">// Output a variable</span>
+        = <span class="variable">$username</span>
+
+        <span class="comment">// String concatenation</span>
+        = <span class="string">'Hello, '</span> . <span class="variable">$username</span>
+
+        <span class="comment">// Array access</span>
+        = <span class="variable">$user</span>[<span class="string">'name'</span>]
+
+        <span class="comment">// Object property</span>
+        = <span class="variable">$post</span>-><span class="variable">title</span>
+
+        <span class="comment">// Function calls</span>
+        = <span class="function">strtoupper</span>(<span class="variable">$message</span>)
+        = <span class="function">date</span>(<span class="string">'Y-m-d'</span>)
+
+    h3 String Concatenation in Output
+
+    pre
+      code.
+        <span class="comment">// Text output with concatenation</span>
+        p= <span class="string">'Welcome, '</span> . <span class="variable">$username</span> . <span class="string">'!'</span>
+        p= <span class="string">'You have '</span> . <span class="variable">$count</span> . <span class="string">' new messages.'</span>
+
+        <span class="comment">// In attributes - build the value first</span>
+        - <span class="variable">$userUrl</span> = <span class="string">'/users/'</span> . <span class="variable">$userId</span>
+        a(href=<span class="variable">$userUrl</span>) View Profile
+
+        - <span class="variable">$imageSrc</span> = <span class="string">'/images/'</span> . <span class="variable">$filename</span>
+        img(src=<span class="variable">$imageSrc</span>)
+
+    .warning-box
+      strong PHP Syntax:
+      |  
+      | Use PHP operators (<code>.</code> for concatenation, <code>-></code> for properties), not JavaScript (<code>+</code>, <code>.</code>).
+
+  .content-section
+    h2 Template Variables
+
+    p Every F4 template receives several variables automatically:
+
+    table
+      thead
+        tr
+          th Variable
+          th Type
+          th Description
+      tbody
+        tr
+          td
+            code $response
+          td array
+          td Response data, headers, template info, exceptions
+        tr
+          td
+            code $request
+          td array
+          td Request path, method, parameters, headers
+        tr
+          td
+            code $config
+          td array
+          td Configuration constants
+        tr
+          td
+            code $locale
+          td string
+          td Current locale (e.g., 'en', 'fr')
+        tr
+          td
+            code $t
+          td callable
+          td Translation function
+
+    h3 Accessing Response Data
+
+    pre
+      code.
+        <span class="comment">// Your route returns data in an array</span>
+        <span class="variable">Route</span>::<span class="function">get</span>(<span class="string">'/hello'</span>, <span class="keyword">function</span>() {
+            <span class="keyword">return</span> [
+                <span class="string">'message'</span> => <span class="string">'Hello World'</span>,
+                <span class="string">'timestamp'</span> => <span class="function">time</span>()
+            ];
+        });
+
+        <span class="comment">// In template: access via $response['data']</span>
+        p= <span class="variable">$response</span>[<span class="string">'data'</span>][<span class="string">'message'</span>]
+        p= <span class="function">date</span>(<span class="string">'Y-m-d H:i:s'</span>, <span class="variable">$response</span>[<span class="string">'data'</span>][<span class="string">'timestamp'</span>])
+
+    h3 Accessing Request Data
+
+    pre
+      code.
+        <span class="comment">// Current path</span>
+        p= <span class="string">'Current URL: '</span> . <span class="variable">$request</span>[<span class="string">'path'</span>]
+
+        <span class="comment">// HTTP method</span>
+        p= <span class="string">'Method: '</span> . <span class="variable">$request</span>[<span class="string">'method'</span>]
+
+        <span class="comment">// Query parameters</span>
+        p= <span class="string">'Page: '</span> . (<span class="variable">$request</span>[<span class="string">'parameters'</span>][<span class="string">'page'</span>] ?? <span class="number">1</span>)
+
+  .content-section
+    h2 Template Inheritance
+
+    p Pug's template inheritance system allows you to create base layouts and extend them.
+
+    h3 Base Layout
+
+    pre
+      code.
+        <span class="comment">// File: templates/layout.pug</span>
+        doctype html
+        html
+          head
+            title= <span class="variable">$title</span> ?? <span class="string">'My App'</span>
+            meta(charset=<span class="string">"utf-8"</span>)
+            <span class="keyword">block</span> styles
+              link(rel=<span class="string">"stylesheet"</span> href=<span class="string">"/css/app.css"</span>)
+
+          body
+            header
+              <span class="keyword">block</span> header
+                h1 Default Header
+
+            main
+              <span class="keyword">block</span> content
+                p Default content
+
+            footer
+              <span class="keyword">block</span> footer
+                p © 2025 My App
+
+            <span class="keyword">block</span> scripts
+              script(src=<span class="string">"/js/app.js"</span>)
+
+    h3 Extending Layout
+
+    pre
+      code.
+        <span class="comment">// File: templates/home.pug</span>
+        <span class="keyword">extends</span> layout.pug
+
+        <span class="keyword">block</span> title
+          | Home - My App
+
+        <span class="keyword">block</span> content
+          .container
+            h1 Welcome Home
+            p This is the home page content
+
+        <span class="keyword">block</span> scripts
+          <span class="comment">// Include parent block content</span>
+          <span class="keyword">block</span>
+          <span class="comment">// Add additional script</span>
+          script(src=<span class="string">"/js/home.js"</span>)
+
+    .info-box
+      strong Key Concept:
+      |  
+      | Blocks define placeholder regions that child templates can override or extend.
+
+  .content-section
+    h2 Conditional Rendering
+
+    p Use PHP conditional statements for dynamic content:
+
+    h3 If/Else Statements
+
+    pre
+      code.
+        <span class="comment">// Basic if</span>
+        <span class="keyword">if</span> (<span class="variable">$isLoggedIn</span>)
+          p= <span class="string">'Welcome back, '</span> . <span class="variable">$username</span> . <span class="string">'!'</span>
+
+        <span class="comment">// If/else</span>
+        <span class="keyword">if</span> (<span class="variable">$count</span> > <span class="number">0</span>)
+          p= <span class="string">'You have '</span> . <span class="variable">$count</span> . <span class="string">' messages'</span>
+        <span class="keyword">else</span>
+          p No messages
+
+        <span class="comment">// If/elseif/else</span>
+        <span class="keyword">if</span> (<span class="variable">$role</span> === <span class="string">'admin'</span>)
+          p Admin Dashboard
+        <span class="keyword">elseif</span> (<span class="variable">$role</span> === <span class="string">'moderator'</span>)
+          p Moderator Panel
+        <span class="keyword">else</span>
+          p User Dashboard
+
+    h3 Unless Statement
+
+    pre
+      code.
+        <span class="comment">// Unless (if not)</span>
+        <span class="keyword">unless</span> (<span class="variable">$isLoggedIn</span>)
+          a(href=<span class="string">"/login"</span>) Please log in
+
+    h3 Ternary Operator
+
+    pre
+      code.
+        <span class="comment">// In attributes</span>
+        button(class=<span class="variable">$isActive</span> ? <span class="string">'btn-primary'</span> : <span class="string">'btn-secondary'</span>) Toggle
+
+        <span class="comment">// In text</span>
+        p= <span class="string">'Status: '</span> . (<span class="variable">$isOnline</span> ? <span class="string">'Online'</span> : <span class="string">'Offline'</span>)
+
+  .content-section
+    h2 Loops and Iteration
+
+    p Iterate over arrays and objects using PHP loops:
+
+    h3 Each Loop (foreach)
+
+    pre
+      code.
+        <span class="comment">// Simple array</span>
+        ul
+          <span class="keyword">each</span> <span class="variable">$item</span> <span class="keyword">in</span> <span class="variable">$items</span>
+            li= <span class="variable">$item</span>
+
+        <span class="comment">// With index</span>
+        ul
+          <span class="keyword">each</span> <span class="variable">$item</span>, <span class="variable">$index</span> <span class="keyword">in</span> <span class="variable">$items</span>
+            li= (<span class="variable">$index</span> + <span class="number">1</span>) . <span class="string">'. '</span> . <span class="variable">$item</span>
+
+        <span class="comment">// Array of objects</span>
+        <span class="keyword">each</span> <span class="variable">$user</span> <span class="keyword">in</span> <span class="variable">$users</span>
+          .user-card
+            h3= <span class="variable">$user</span>[<span class="string">'name'</span>]
+            p= <span class="variable">$user</span>[<span class="string">'email'</span>]
+
+    h3 Handling Empty Arrays
+
+    pre
+      code.
+        ul
+          <span class="keyword">each</span> <span class="variable">$post</span> <span class="keyword">in</span> <span class="variable">$posts</span>
+            li= <span class="variable">$post</span>[<span class="string">'title'</span>]
+          <span class="keyword">else</span>
+            li No posts found
+
+    h3 While Loop
+
+    pre
+      code.
+        - <span class="variable">$i</span> = <span class="number">0</span>
+        ul
+          <span class="keyword">while</span> (<span class="variable">$i</span> < <span class="variable">$count</span>)
+            li= <span class="string">'Item '</span> . <span class="variable">$i</span>
+            - <span class="variable">$i</span>++
+
+  .content-section
+    h2 Mixins (Reusable Components)
+
+    p Mixins are reusable template blocks, similar to functions:
+
+    h3 Defining Mixins
+
+    pre
+      code.
+        <span class="comment">// Simple mixin</span>
+        <span class="keyword">mixin</span> alert(<span class="variable">$message</span>)
+          .alert
+            p= <span class="variable">$message</span>
+
+        <span class="comment">// Mixin with parameters</span>
+        <span class="keyword">mixin</span> button(<span class="variable">$text</span>, <span class="variable">$type</span> = <span class="string">'primary'</span>)
+          - <span class="variable">$btnClass</span> = <span class="string">'btn btn-'</span> . <span class="variable">$type</span>
+          button(class=<span class="variable">$btnClass</span>)= <span class="variable">$text</span>
+
+        <span class="comment">// Mixin with block content</span>
+        <span class="keyword">mixin</span> card(<span class="variable">$title</span>)
+          .card
+            .card-header
+              h3= <span class="variable">$title</span>
+            .card-body
+              <span class="keyword">block</span>
+
+    h3 Using Mixins
+
+    pre
+      code.
+        <span class="comment">// Call simple mixin</span>
+        +alert(<span class="string">'Welcome to our site!'</span>)
+
+        <span class="comment">// Call with different parameter</span>
+        +button(<span class="string">'Submit'</span>)
+        +button(<span class="string">'Cancel'</span>, <span class="string">'secondary'</span>)
+
+        <span class="comment">// Mixin with content block</span>
+        +card(<span class="string">'User Profile'</span>)
+          p= <span class="string">'Name: '</span> . <span class="variable">$user</span>[<span class="string">'name'</span>]
+          p= <span class="string">'Email: '</span> . <span class="variable">$user</span>[<span class="string">'email'</span>]
+
+  .content-section
+    h2 Including Partials
+
+    p Break templates into smaller, reusable files:
+
+    h3 Include Syntax
+
+    pre
+      code.
+        <span class="comment">// File: templates/layout.pug</span>
+        doctype html
+        html
+          head
+            <span class="keyword">include</span> partials/head.pug
+          body
+            header
+              <span class="keyword">include</span> partials/header.pug
+
+            main
+              <span class="keyword">block</span> content
+
+            footer
+              <span class="keyword">include</span> partials/footer.pug
+
+    h3 Partial Files
+
+    pre
+      code.
+        <span class="comment">// File: templates/partials/head.pug</span>
+        title= <span class="variable">$title</span> ?? <span class="string">'My App'</span>
+        meta(charset=<span class="string">"utf-8"</span>)
+        meta(name=<span class="string">"viewport"</span> content=<span class="string">"width=device-width, initial-scale=1"</span>)
+
+        <span class="comment">// File: templates/partials/header.pug</span>
+        nav.navbar
+          a.logo(href=<span class="string">"/"</span>) My App
+          ul.nav-links
+            li: a(href=<span class="string">"/about"</span>) About
+            li: a(href=<span class="string">"/contact"</span>) Contact
+
+  .content-section
+    h2 Working with Assets
+
+    p F4 uses Vite for asset management (both in development and production mode).
+
+    h3 Linking CSS / Stylus and JavaScript
+
+    pre
+      code.
+        head
+          <span class="comment">// Tell Vite to include resources in a named bundle</span>
+          vite:resource(bundle=<span class="string">"my_bundle"</span> src=<span class="string">"module.js"</span>)
+          vite:resource(bundle=<span class="string">"my_bundle"</span> src=<span class="string">"module.css"</span>)
+          <span class="comment">// Tell F4 to include bundled assets during page render</span>
+          vite:bundle(name=<span class="string">"my_bundle"</span>)
+
+    .warning-box
+      strong Production build:
+      |  
+      | Vite uses different asset bundling methods for development and production servers, meaning that you have to run
+      code
+        | npm run build
+      | before deploying your code to production.
+
+    h3 Static Assets
+
+    pre
+      code.
+        <span class="comment">// Public assets (in public/images/)</span>
+        img(src=<span class="string">"/images/logo.png"</span> alt=<span class="string">"Logo"</span>)
+
+        <span class="comment">// Dynamic image path</span>
+        - <span class="variable">$imageUrl</span> = <span class="string">'/uploads/'</span> . <span class="variable">$imageName</span>
+        img(src=<span class="variable">$imageUrl</span> alt=<span class="variable">$imageAlt</span>)
+
+  .content-section
+    h2 Code Blocks
+
+    p Execute PHP code without outputting:
+
+    pre
+      code.
+        <span class="comment">// Define variables</span>
+        - <span class="variable">$fullName</span> = <span class="variable">$firstName</span> . <span class="string">' '</span> . <span class="variable">$lastName</span>
+        - <span class="variable">$isActive</span> = <span class="variable">$status</span> === <span class="string">'active'</span>
+
+        <span class="comment">// Multiple lines</span>
+        -
+          <span class="variable">$total</span> = <span class="number">0</span>;
+          <span class="keyword">foreach</span> (<span class="variable">$items</span> <span class="keyword">as</span> <span class="variable">$item</span>) {
+              <span class="variable">$total</span> += <span class="variable">$item</span>[<span class="string">'price'</span>];
+          }
+
+        p= <span class="string">'Total: $'</span> . <span class="variable">$total</span>
+
+  .content-section
+    h2 Comments
+
+    pre
+      p
+        code
+          span.comment //- Pug comment (not in output)
+        br/
+        code
+          span.comment //- This won't appear in HTML
+
+      p
+        code
+          span.comment // HTML comment (in output)
+        br/
+        code
+          span.comment // This will be in the HTML
+      p
+        code
+          span.comment //- Block comments
+        br/
+        code
+          span.comment.
+            //-
+              This is a block comment
+              Multiple lines
+              Won't appear in output
+
+  .content-section
+    h2 Escaping and Raw HTML
+
+    pre
+      code.
+        <span class="comment">// Escaped output (default - safe)</span>
+        p= <span class="variable">$userInput</span>  <span class="comment">// HTML entities escaped</span>
+
+        <span class="comment">// Unescaped output (use with caution!)</span>
+        p!= <span class="variable">$trustedHtml</span>  <span class="comment">// Raw HTML output</span>
+
+        <span class="comment">// Example</span>
+        - <span class="variable">$html</span> = <span class="string">'&lt;strong&gt;Bold&lt;/strong&gt;'</span>
+        p= <span class="variable">$html</span>   <span class="comment">// Shows: &lt;strong&gt;Bold&lt;/strong&gt;</span>
+        p!= <span class="variable">$html</span>  <span class="comment">// Shows: Bold (rendered)</span>
+
+    .warning-box
+      strong Security:
+      |  
+      | Never use unescaped output (<code>!=</code>) with user input! This can lead to XSS vulnerabilities.
+
+  .content-section
+    h2 Template Organization
+
+    p Recommended structure for organizing templates:
+
+    .demo-box
+      pre
+        code.
+          templates/
+          ├── layouts/
+          │   ├── base.pug           <span class="comment"># Main layout</span>
+          │   ├── admin.pug          <span class="comment"># Admin layout</span>
+          │   └── auth.pug           <span class="comment"># Authentication layout</span>
+          ├── partials/
+          │   ├── head.pug           <span class="comment"># &lt;head&gt; content</span>
+          │   ├── header.pug         <span class="comment"># Site header</span>
+          │   ├── footer.pug         <span class="comment"># Site footer</span>
+          │   └── nav.pug            <span class="comment"># Navigation</span>
+          ├── components/
+          │   ├── card.pug           <span class="comment"># Card mixin</span>
+          │   ├── button.pug         <span class="comment"># Button mixin</span>
+          │   └── form.pug           <span class="comment"># Form components</span>
+          ├── pages/
+          │   ├── home.pug
+          │   ├── about.pug
+          │   └── contact.pug
+          └── errors/
+              ├── 404.pug
+              └── 500.pug
+
+  .content-section
+    h2 Best Practices
+
+    ol
+      li <strong>Use consistent indentation</strong> - 2 spaces is standard for Pug
+      li <strong>Keep templates DRY</strong> - Use mixins and includes for repeated code
+      li <strong>Leverage inheritance</strong> - Create layouts for common page structures
+      li <strong>Escape user input</strong> - Use <code>=</code> not <code>!=</code> for untrusted data
+      li <strong>Organize logically</strong> - Group related templates in folders
+      li <strong>Use PHP syntax</strong> - Remember F4 uses PHP, not JavaScript
+      li <strong>Keep logic minimal</strong> - Complex logic belongs in route handlers
+      li <strong>Name variables clearly</strong> - Use descriptive names in template context
+      li <strong>Comment complex sections</strong> - Help future developers understand
+      li <strong>Test template output</strong> - Verify HTML structure and data binding
+
+  .content-section
+    h2 Common Patterns
+
+    h3 Navigation with Active State
+
+    pre
+      code.
+        nav
+          ul
+            li(class=<span class="variable">$request</span>[<span class="string">'path'</span>] === <span class="string">'/'</span> ? <span class="string">'active'</span> : <span class="string">''</span>)
+              a(href=<span class="string">"/"</span>) Home
+            li(class=<span class="variable">$request</span>[<span class="string">'path'</span>] === <span class="string">'/about'</span> ? <span class="string">'active'</span> : <span class="string">''</span>)
+              a(href=<span class="string">"/about"</span>) About
+
+    h3 Pagination
+
+    pre
+      code.
+        nav.pagination
+          <span class="keyword">if</span> (<span class="variable">$page</span> > <span class="number">1</span>)
+            - <span class="variable">$prevUrl</span> = <span class="string">'?page='</span> . (<span class="variable">$page</span> - <span class="number">1</span>)
+            a(href=<span class="variable">$prevUrl</span>) Previous
+
+          <span class="keyword">each</span> <span class="variable">$p</span> <span class="keyword">in</span> <span class="function">range</span>(<span class="number">1</span>, <span class="variable">$totalPages</span>)
+            <span class="keyword">if</span> (<span class="variable">$p</span> === <span class="variable">$page</span>)
+              span.current= <span class="variable">$p</span>
+            <span class="keyword">else</span>
+              - <span class="variable">$pageUrl</span> = <span class="string">'?page='</span> . <span class="variable">$p</span>
+              a(href=<span class="variable">$pageUrl</span>)= <span class="variable">$p</span>
+
+          <span class="keyword">if</span> (<span class="variable">$page</span> < <span class="variable">$totalPages</span>)
+            - <span class="variable">$nextUrl</span> = <span class="string">'?page='</span> . (<span class="variable">$page</span> + <span class="number">1</span>)
+            a(href=<span class="variable">$nextUrl</span>) Next
+
+    h3 Flash Messages
+
+    pre
+      code.
+        <span class="keyword">if</span> (<span class="function">isset</span>(<span class="variable">$session</span>[<span class="string">'flash'</span>]))
+          <span class="keyword">each</span> <span class="variable">$message</span>, <span class="variable">$type</span> <span class="keyword">in</span> <span class="variable">$session</span>[<span class="string">'flash'</span>]
+            - <span class="variable">$alertClass</span> = <span class="string">'alert-'</span> . <span class="variable">$type</span>
+            .alert(class=<span class="variable">$alertClass</span>)= <span class="variable">$message</span>
+  .content-section
+    h2 Try It Yourself
+
+    p Practice exercises:
+
+    ol
+      li Create a base layout with header, content block, and footer
+      li Make a reusable card mixin that accepts title and content
+      li Build a navigation component that highlights the active page
+      li Create a loop that displays a list of blog posts
+      li Add conditional rendering to show/hide content based on user role
+      li Make a form template with validation error display
+      li Create an include partial for social media links
+      li Build a breadcrumb navigation using the current path
+
+  .content-section
+    h2 Key Takeaways
+
+    ul
+      li Pug uses indentation-based syntax instead of closing tags
+      li F4 templates use <strong>PHP syntax</strong>, not JavaScript
+      li Access route data via <code>$response['data']</code>
+      li Template variables: <code>$response</code>, <code>$request</code>, <code>$config</code>, <code>$locale</code>, <code>$t</code>
+      li Use <code>extends</code> and <code>block</code> for template inheritance
+      li Mixins create reusable components
+      li <code>each</code> loops iterate over arrays with PHP syntax
+      li <code>include</code> imports partial templates
+      li Always escape user input with <code>=</code> operator
+      li Keep templates organized in logical folder structures
+
+  .content-section
+    h2 What's Next?
+
+    p Now that you understand how to work with templates, Chapter 4 will teach you parameter validation using PHP attributes to ensure data integrity and security!

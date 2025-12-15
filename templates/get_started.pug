@@ -1,0 +1,19 @@
+doctype html
+html
+  head
+    meta(name="description" content="F4 is a lightweight web app development framework")
+    meta(charset=$config['RESPONSE_CHARSET'])
+    title
+      | F4: it worked!
+    meta(name="viewport" content="width=device-width, initial-scale=1")
+    meta(name="author" content="")
+    vite:resource(src="assets/get_started.styl" bundle="get-started")
+    vite:bundle(name="get-started")
+body
+  .page
+    .horizon
+    .logo
+    a(href="/tutorial").get-started
+      = $t('get-started')
+      |  →
+

@@ -1,0 +1,98 @@
+:root
+  --f4-text-color #000
+  --f4-text-alternative-color #fff
+  --f4-primary-color #cc4444
+  --f4-font-size 16px
+  --f4-border-radius (12/16)rem
+  --f4-font-family sans-serif
+  --f4-transition-duration 0.25s
+html
+body
+  padding 0
+  margin 0
+  font-size var(--f4-font-size)
+  font-family var(--f4-font-family)
+.page
+  width 100vw
+  height 100vh
+  position relative
+  background linear-gradient(to bottom, #fff 0%, #e0e0e0 50%, #fff 50%, #f0f0f0 100%)
+  &:before
+    content ''
+    position absolute
+    left 0
+    right 0
+    bottom 50%
+    height 25vh
+    background url('./mountains.svg') bottom center no-repeat
+  .horizon
+    height 50vh
+    position absolute
+    top 50%
+    left 0
+    right 0
+    perspective 20vh
+    perspective-origin top center
+    &:after
+      content ''
+      position absolute
+      left 0
+      right 0
+      top 0%
+      height 100vh
+      background-image url('./net.svg') 
+      background-size 640px 20%
+      background-position-x 50%
+      background-position-y 0
+      background-repeat repeat
+      transform-origin top center 
+      transform rotateX(75deg)
+      opacity 0.2
+      animation move-with-perspective 36s linear infinite
+.logo
+  position absolute
+  left 50%
+  top 50%
+  transform translate(-50%, -75%) scale(1)
+  font-size 120px
+  background url('./logo.svg') center center no-repeat
+  width 12vw
+  height @width * 1.2
+  min-width (160/16)rem
+  min-height @min-width * 1.2
+  max-width (320/16)rem
+  max-height @max-width * 1.2
+  transform-origin center center
+  animation logo-grow 18s ease-out 1
+  &:after
+    content ''
+    position absolute
+    bottom -75%
+    left 0%
+    right 0%
+    height 0
+    box-shadow 0 0 (16/16)rem (4/16)rem rgba(0,0,0,0.1)
+    pointer-events none
+.get-started
+  position absolute
+  z-index 1
+  left 50%
+  bottom 20%
+  transform translate(-50%, 50%)
+  text-decoration none
+  color var(--f4-text-alternative-color)
+  background var(--f4-primary-color)
+  padding (12/16)rem (16/16)rem
+  border-radius var(--f4-border-radius)
+
+@keyframes move-with-perspective
+  from
+    background-position-y 0
+  to
+    background-position-y 100vh
+
+@keyframes logo-grow
+  from
+    transform translate(-50%, -75%) scale(0.5)
+  to
+    transform translate(-50%, -75%) scale(1)

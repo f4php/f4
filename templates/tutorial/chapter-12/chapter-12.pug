@@ -1,0 +1,523 @@
+extends ../tutorial.pug
+
+block title
+  | Chapter 12: Deployment - F4 Framework Tutorial
+
+block content
+  .chapter-header
+    .chapter-number Chapter 12
+    h1 Deployment
+    p.description Deploy your F4 application to production with proper builds, configuration, and server setup
+
+  .content-section
+    h2 Introduction
+
+    p Deploying an F4 application to production requires several important steps: building static assets, configuring the production environment, and setting up the web server correctly. This chapter covers the complete deployment workflow.
+
+    h3 What We'll Cover
+
+    ul
+      li Building static assets with Vite
+      li Understanding the public folder structure
+      li Creating production configuration
+      li Setting up environment-specific configs in composer.json
+      li Configuring web servers (Apache, Nginx)
+      li Best practices for production deployments
+
+  .content-section
+    h2 Building Static Assets
+
+    p F4 uses Vite for building and bundling frontend assets (JavaScript, CSS, images). Before deploying to production, you must build your assets.
+
+    h3 Running the Production Build
+
+    pre
+      code.
+        <span class="comment"># Build optimized production assets</span>
+        npm run build
+
+    p This command:
+
+    ul
+      li Compiles and minifies JavaScript files
+      li Processes and optimizes CSS
+      li Optimizes images and other static assets
+      li Generates a manifest file for asset versioning
+      li Outputs everything to <code>public/assets/</code>
+
+    h3 Build Output
+
+    p After running <code>npm run build</code>, your <code>public/assets/</code> directory will contain:
+
+    .demo-box
+      pre
+        code.
+          public/assets/
+          ├── .vite/
+          │   └── manifest.json       <span class="comment"># Asset manifest for cache-busting</span>
+          ├── app-[hash].js           <span class="comment"># Bundled JavaScript</span>
+          ├── app-[hash].css          <span class="comment"># Bundled CSS</span>
+          └── images/                 <span class="comment"># Optimized images</span>
+
+    .info-box
+      strong Cache Busting:
+      | Vite automatically adds content hashes to filenames (e.g., <code>app-a1b2c3d4.js</code>). This ensures browsers load new versions when assets change.
+
+  .content-section
+    h2 The Public Folder
+
+    p The <code>public/</code> folder is the <strong>document root</strong> for your production web server. This is the only directory that should be accessible via HTTP.
+
+    h3 Public Folder Structure
+
+    pre
+      code.
+        public/
+        ├── index.php               <span class="comment"># Application entry point</span>
+        ├── .htaccess              <span class="comment"># Apache rewrite rules</span>
+        └── assets/                <span class="comment"># Built static assets (CSS, JS, images)</span>
+
+    h3 Why Public as Document Root?
+
+    ol
+      li <strong>Security</strong> - Source code, config files, and templates remain outside the web root
+      li <strong>Clean URLs</strong> - All requests route through index.php for proper routing
+      li <strong>Asset serving</strong> - Static files in assets/ are served directly by the web server
+
+    .warning-box
+      strong Security:
+      | Never point your web server at the project root! Always use <code>public/</code> as the document root to prevent direct access to application source code and configuration.
+
+  .content-section
+    h2 Production Configuration
+
+    p Create a dedicated configuration file for production environments.
+
+    h3 Creating config/production.php
+
+    pre
+      code.
+        <span class="keyword">namespace</span> <span class="variable">F4</span>;
+
+        <span class="keyword">use</span> <span class="variable">F4</span>\<span class="variable">AbstractConfig</span>;
+        <span class="keyword">use</span> <span class="variable">F4</span>\<span class="variable">Config</span>\<span class="variable">FromEnvironmentVariable</span> <span class="keyword">as</span> <span class="variable">ENV</span>;
+        <span class="keyword">use</span> <span class="variable">F4</span>\<span class="variable">Config</span>\<span class="variable">SensitiveParameter</span>;
+
+        <span class="keyword">class</span> <span class="variable">Config</span> <span class="keyword">extends</span> <span class="variable">AbstractConfig</span>
+        {
+            <span class="comment">// CRITICAL: Debug mode must be FALSE in production</span>
+            <span class="keyword">public const bool</span> <span class="variable">DEBUG_MODE</span> = <span class="keyword">false</span>;
+
+            <span class="comment">// Database from environment variables</span>
+            \#[<span class="variable">ENV</span>(name: <span class="string">'DB_HOST'</span>)]
+            <span class="keyword">public const string</span> <span class="variable">DB_HOST</span> = <span class="string">'localhost'</span>;
+
+            \#[<span class="variable">ENV</span>(name: <span class="string">'DB_NAME'</span>)]
+            <span class="keyword">public const string</span> <span class="variable">DB_NAME</span> = <span class="string">''</span>;
+
+            \#[<span class="variable">ENV</span>(name: <span class="string">'DB_USERNAME'</span>)]
+            <span class="keyword">public const string</span> <span class="variable">DB_USERNAME</span> = <span class="string">''</span>;
+
+            \#[<span class="variable">ENV</span>(name: <span class="string">'DB_PASSWORD'</span>)]
+            \#[<span class="variable">SensitiveParameter</span>]
+            <span class="keyword">public const string</span> <span class="variable">DB_PASSWORD</span> = <span class="string">''</span>;
+
+            <span class="comment">// Template caching enabled for performance</span>
+            <span class="keyword">public const bool</span> <span class="variable">TEMPLATE_CACHE_ENABLED</span> = <span class="keyword">true</span>;
+            <span class="keyword">public const int</span> <span class="variable">TEMPLATE_CACHE_LIFETIME</span> = <span class="number">3600</span>;
+
+            <span class="comment">// Modules</span>
+            <span class="keyword">public const array</span> <span class="variable">MODULES</span> = [
+                \<span class="variable">App</span>\<span class="variable">Main</span>\<span class="variable">MainModule</span>::<span class="keyword">class</span>,
+            ];
+
+            <span class="comment">// Template paths</span>
+            <span class="keyword">public const array</span> <span class="variable">TEMPLATE_PATHS</span> = [
+                <span class="variable">__DIR__</span> . <span class="string">'/../templates'</span>
+            ];
+        }
+
+    .warning-box
+      strong Critical Settings:
+      ul
+        li <code>DEBUG_MODE = false</code> - Never enable debug mode in production
+        li <code>TEMPLATE_CACHE_ENABLED = true</code> - Essential for performance
+        li Use environment variables for all sensitive data
+
+  .content-section
+    h2 Environment Configuration in composer.json
+
+    p Define all your environments in <code>composer.json</code> to maintain a single source of truth for configuration file locations.
+
+    h3 Recommended composer.json Setup
+
+    pre
+      code.
+        {
+          <span class="string">"extra"</span>: {
+            <span class="string">"f4"</span>: {
+              <span class="string">"environments"</span>: {
+                <span class="string">"production"</span>: {
+                  <span class="string">"config"</span>: <span class="string">"config/production.php"</span>
+                },
+                <span class="string">"staging"</span>: {
+                  <span class="string">"config"</span>: <span class="string">"config/staging.php"</span>
+                },
+                <span class="string">"test"</span>: {
+                  <span class="string">"config"</span>: <span class="string">"config/test.php"</span>
+                },
+                <span class="string">"local"</span>: {
+                  <span class="string">"config"</span>: <span class="string">"config/local.php"</span>,
+                  <span class="string">"server"</span>: <span class="string">"localhost:8080"</span>
+                },
+                <span class="string">"default"</span>: {
+                  <span class="string">"config"</span>: <span class="string">"config/default.php"</span>
+                }
+              }
+            }
+          }
+        }
+
+    h3 Benefits of This Approach
+
+    ul
+      li <strong>Single source of truth</strong> - All config paths defined in one place
+      li <strong>Environment-specific</strong> - Each server type has its own config
+      li <strong>Version controlled</strong> - Configuration structure is in git
+      li <strong>Easy to extend</strong> - Add new environments as needed (staging, qa, etc.)
+
+    h3 Using F4_ENVIRONMENT
+
+    p On each server, set the <code>F4_ENVIRONMENT</code> variable to select which config to load:
+
+    .demo-box
+      h4 Production Server
+
+      pre
+        code.
+          <span class="comment"># Set in your deployment script or server config</span>
+          export F4_ENVIRONMENT=production
+
+      h4 Staging Server
+
+      pre
+        code.
+          export F4_ENVIRONMENT=staging
+
+      h4 Test Server
+
+      pre
+        code.
+          export F4_ENVIRONMENT=test
+
+    .info-box
+      strong How It Works:
+      | Your bootstrap file (<code>public/index.php</code>) uses this pattern: <code>Loader::loadEnvironmentConfig([($_SERVER['F4_ENVIRONMENT']??null)?:'local', 'default'])</code>. This loads the environment specified by F4_ENVIRONMENT, falling back to 'local' then 'default'.
+
+  .content-section
+    h2 Web Server Configuration
+
+    h3 Apache Configuration
+
+    p The included <code>.htaccess</code> file handles routing for Apache:
+
+    pre
+      code.
+        DirectoryIndex /index.php
+
+        ErrorDocument 403 /index.php
+        ErrorDocument 404 /index.php
+        ErrorDocument 500 /index.php
+
+        Options -Indexes
+        Options +FollowSymLinks
+
+        RewriteEngine On
+
+        RewriteCond %{REQUEST_FILENAME}         !-f
+        RewriteCond %{REQUEST_FILENAME}         !-d
+        RewriteRule ^.*$                        /index.php  [PT,QSA]
+
+    h4 Apache Virtual Host
+
+    pre
+      code.
+        &lt;VirtualHost *:80&gt;
+            ServerName example.com
+            DocumentRoot /var/www/myapp/public
+
+            &lt;Directory /var/www/myapp/public&gt;
+                AllowOverride All
+                Require all granted
+            &lt;/Directory&gt;
+
+            <span class="comment"># Set environment</span>
+            SetEnv F4_ENVIRONMENT production
+        &lt;/VirtualHost&gt;
+
+    h3 Nginx Configuration
+
+    pre
+      code.
+        server {
+            listen 80;
+            server_name example.com;
+
+            root /var/www/myapp/public;
+            index index.php;
+
+            <span class="comment"># Set environment variable</span>
+            fastcgi_param F4_ENVIRONMENT production;
+
+            <span class="comment"># Serve static files directly</span>
+            location /assets {
+                try_files $uri =404;
+                expires 1y;
+                add_header Cache-Control "public, immutable";
+            }
+
+            <span class="comment"># Route all other requests through index.php</span>
+            location / {
+                try_files $uri $uri/ /index.php?$query_string;
+            }
+
+            <span class="comment"># PHP-FPM configuration</span>
+            location ~ \.php$ {
+                fastcgi_pass unix:/var/run/php/php8.3-fpm.sock;
+                fastcgi_index index.php;
+                fastcgi_param SCRIPT_FILENAME $document_root$fastcgi_script_name;
+                include fastcgi_params;
+            }
+
+            <span class="comment"># Deny access to hidden files</span>
+            location ~ /\. {
+                deny all;
+            }
+        }
+
+  .content-section
+    h2 Deployment Checklist
+
+    ol
+      li <strong>Build assets</strong> - Run <code>npm run build</code>
+      li <strong>Create production config</strong> - Create <code>config/production.php</code> with DEBUG_MODE=false
+      li <strong>Add environment to composer.json</strong> - Define production environment
+      li <strong>Set environment variables</strong> - Configure DB credentials and other secrets
+      li <strong>Configure web server</strong> - Point document root to <code>public/</code>
+      li <strong>Set F4_ENVIRONMENT</strong> - Set to 'production' on server
+      li <strong>Run composer install</strong> - Install dependencies with <code>--no-dev --optimize-autoloader</code>
+      li <strong>Set permissions</strong> - Ensure web server can read files
+      li <strong>Enable template cache</strong> - Set TEMPLATE_CACHE_ENABLED=true
+      li <strong>Test the deployment</strong> - Verify all routes work and debug mode is off
+
+  .content-section
+    h2 Deployment Commands
+
+    h3 Initial Deployment
+
+    pre
+      code.
+        <span class="comment"># On your local machine</span>
+        npm run build
+        git add public/assets
+        git commit -m <span class="string">"Build production assets"</span>
+        git push production main
+
+        <span class="comment"># On production server</span>
+        git pull
+        composer install --no-dev --optimize-autoloader
+        export F4_ENVIRONMENT=production
+
+    h3 Updating Deployment
+
+    pre
+      code.
+        <span class="comment"># Local: rebuild assets if frontend changed</span>
+        npm run build
+        git add -A
+        git commit -m <span class="string">"Update application"</span>
+        git push production main
+
+        <span class="comment"># Production: pull and update</span>
+        git pull
+        composer install --no-dev --optimize-autoloader
+
+        <span class="comment"># Clear template cache if needed</span>
+        rm -rf var/cache/templates/*
+
+  .content-section
+    h2 Environment Variables on Production
+
+    p Set all sensitive configuration via environment variables on your production server.
+
+    h3 Option 1: System Environment Variables
+
+    pre
+      code.
+        <span class="comment"># Add to /etc/environment or ~/.bashrc</span>
+        export F4_ENVIRONMENT=production
+        export DB_HOST=prod-db.example.com
+        export DB_NAME=myapp_prod
+        export DB_USERNAME=prod_user
+        export DB_PASSWORD=<span class="string">'secure-password-here'</span>
+
+    h3 Option 2: Web Server Environment
+
+    p <strong>Apache:</strong> Use <code>SetEnv</code> in VirtualHost or <code>.htaccess</code>
+
+    pre
+      code.
+        SetEnv F4_ENVIRONMENT production
+        SetEnv DB_HOST prod-db.example.com
+        SetEnv DB_NAME myapp_prod
+        SetEnv DB_USERNAME prod_user
+        SetEnv DB_PASSWORD secure-password-here
+
+    p <strong>Nginx:</strong> Use <code>fastcgi_param</code>
+
+    pre
+      code.
+        fastcgi_param F4_ENVIRONMENT production;
+        fastcgi_param DB_HOST prod-db.example.com;
+        fastcgi_param DB_NAME myapp_prod;
+        fastcgi_param DB_USERNAME prod_user;
+        fastcgi_param DB_PASSWORD secure-password-here;
+
+    h3 Option 3: Docker
+
+    pre
+      code.
+        <span class="comment"># docker-compose.yml</span>
+        services:
+          app:
+            environment:
+              - F4_ENVIRONMENT=production
+              - DB_HOST=db
+              - DB_NAME=myapp
+              - DB_USERNAME=appuser
+              - DB_PASSWORD=secure-password
+
+  .content-section
+    h2 Security Best Practices
+
+    ol
+      li <strong>Never commit secrets</strong> - Use <code>.gitignore</code> for local configs
+      li <strong>Disable debug mode</strong> - Always set DEBUG_MODE=false in production
+      li <strong>Use HTTPS</strong> - Enable SSL/TLS certificates (Let's Encrypt)
+      li <strong>Restrict file permissions</strong> - Web server should only read, not write
+      li <strong>Keep dependencies updated</strong> - Run <code>composer update</code> regularly
+      li <strong>Enable error logging</strong> - Log errors to files, not to screen
+      li <strong>Use strong passwords</strong> - For database and any API keys
+      li <strong>Firewall database</strong> - Only allow app server to access database
+      li <strong>Regular backups</strong> - Backup database and uploaded files
+      li <strong>Monitor logs</strong> - Watch for errors and suspicious activity
+
+  .content-section
+    h2 Performance Optimization
+
+    ul
+      li <strong>Enable template caching</strong> - Set TEMPLATE_CACHE_ENABLED=true
+      li <strong>Use OPcache</strong> - Enable PHP OPcache for bytecode caching
+      li <strong>Optimize autoloader</strong> - Use <code>--optimize-autoloader</code> flag
+      li <strong>Enable asset compression</strong> - Gzip/Brotli for JS/CSS files
+      li <strong>CDN for assets</strong> - Serve static files from CDN if needed
+      li <strong>Database indexes</strong> - Ensure proper indexes on frequently queried columns
+      li <strong>Connection pooling</strong> - Use persistent database connections
+      li <strong>HTTP/2</strong> - Enable HTTP/2 for better performance
+
+  .content-section
+    h2 Troubleshooting Deployment
+
+    h3 Assets Not Loading
+
+    ul
+      li Check that <code>npm run build</code> completed successfully
+      li Verify <code>public/assets/.vite/manifest.json</code> exists
+      li Ensure web server can read <code>public/assets/</code>
+      li Check browser console for 404 errors
+
+    h3 Routes Not Working
+
+    ul
+      li Verify document root points to <code>public/</code> directory
+      li Check <code>.htaccess</code> file exists (Apache)
+      li Ensure mod_rewrite is enabled (Apache)
+      li Verify nginx rewrite rules are correct
+
+    h3 Configuration Not Loading
+
+    ul
+      li Check F4_ENVIRONMENT variable is set correctly
+      li Verify config file exists at path specified in composer.json
+      li Ensure config file has correct namespace and class name
+      li Check file permissions allow web server to read config
+
+    h3 Database Connection Errors
+
+    ul
+      li Verify DB_HOST, DB_NAME, DB_USERNAME, DB_PASSWORD are set
+      li Check database server is accessible from app server
+      li Verify firewall allows connection to database port
+      li Test connection using psql or database client
+
+  .content-section
+    h2 Zero-Downtime Deployments
+
+    p For production applications, consider using blue-green deployment or rolling updates:
+
+    pre
+      code.
+        <span class="comment"># 1. Deploy to new directory</span>
+        git clone repo /var/www/myapp-new
+        cd /var/www/myapp-new
+        composer install --no-dev --optimize-autoloader
+        npm run build
+
+        <span class="comment"># 2. Switch symlink atomically</span>
+        ln -sfn /var/www/myapp-new /var/www/myapp-current
+
+        <span class="comment"># 3. Reload web server</span>
+        sudo systemctl reload nginx
+
+        <span class="comment"># 4. Keep old version for rollback</span>
+        mv /var/www/myapp-old /var/www/myapp-backup
+
+  .content-section
+    h2 Key Takeaways
+
+    ul
+      li Always run <code>npm run build</code> before deploying to production
+      li The <code>public/</code> folder is your web server document root
+      li Create dedicated <code>config/production.php</code> with DEBUG_MODE=false
+      li Define all environments in composer.json for consistency
+      li Use <code>F4_ENVIRONMENT</code> variable to select configuration
+      li Store secrets in environment variables, never in code
+      li Enable template caching for performance
+      li Use <code>--no-dev --optimize-autoloader</code> for production composer install
+      li Configure web server to route all requests through index.php
+      li Test thoroughly before deploying to production
+
+  .content-section
+    h2 Congratulations!
+
+    p You've completed the F4 Framework tutorial! You now understand:
+
+    ul
+      li Routing and templates
+      li Parameter validation and middleware
+      li Database operations with F4's query builder
+      li Exception handling and error pages
+      li Internationalization with Fluent
+      li Configuration management
+      li Debug mode and profiling
+      li Production deployment
+
+    p You're ready to build robust, production-ready web applications with F4!
+
+    .info-box
+      strong Next Steps:
+      ul
+        li Build your own application
+        li Explore the F4 framework source code
+        li Join the F4 community
+        li Share your projects and experiences

@@ -1,0 +1,52 @@
+doctype html
+html(lang="en")
+  head
+    meta(charset="UTF-8")
+    meta(name="viewport" content="width=device-width, initial-scale=1.0")
+    title
+      block title
+        | F4 Framework Tutorial
+    vite:resource(src="tutorial.styl" bundle="tutorial")
+    vite:bundle(name="tutorial")
+
+  body
+    .container
+      aside.sidebar
+        .sidebar-header
+          .logo-container
+            .logo
+              svg(xmlns="http://www.w3.org/2000/svg" viewBox="0 0 50.33 65.34")
+                path(d="M26.63,13.95l1.99-6.91H6.73v51.26h7.35v-21.88h6.07l2-6.92h-8.07v-15.55s12.55,0,12.55,0ZM45.6,43.76v6.91h-3.53v7.63h-7.34v-7.63h-14.62v-6.91l2.11-7.34,2-6.92,6.47-22.46h7.78l-11.02,36.72h7.28v-14.62h7.34v14.62h3.53ZM46.96,65.34H3.38c-1.86,0-3.38-1.51-3.38-3.38V3.38C0,1.51,1.51,0,3.38,0h43.58c1.86,0,3.38,1.51,3.38,3.38v58.59c0,1.86-1.51,3.38-3.38,3.38ZM3.38.75C1.93.75.75,1.93.75,3.38v58.59c0,1.45,1.18,2.62,2.62,2.62h43.58c1.45,0,2.62-1.18,2.62-2.62V3.38c0-1.45-1.18-2.62-2.62-2.62H3.38Z")
+            .logo-text
+              h1
+                //- span.f4-accent F4
+                |  Tutorial
+              p Interactive Coding Guide
+
+        nav
+          - $chapters = $response['data']['chapter']['all'] ?? $response['data']['chapters'] ?? []
+          - $currentPath = $request['path']
+          each $chapter in $chapters
+            - $isActive = strpos($currentPath, $chapter['path']) === 0 ? 'active' : ''
+            a.nav-chapter(href=$chapter['path'], class=$isActive)
+              span.nav-chapter-number= 'Chapter ' . (int)$chapter['number']
+              span.nav-chapter-title= $chapter['title']
+              span.nav-chapter-desc= $chapter['description']
+
+      main.main-content
+        block content
+
+        - $chapter = $response['data']['chapter'] ?? null
+        if $chapter && ($chapter['previous'] || $chapter['next'])
+          .chapter-nav
+            if $chapter['previous']
+              a.prev(href=$chapter['previous']['path'])
+                .label Previous
+                .title= $chapter['previous']['title']
+            else
+              div
+
+            if $chapter['next']
+              a.next(href=$chapter['next']['path'])
+                .label Next
+                .title= $chapter['next']['title']
