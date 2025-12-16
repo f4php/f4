@@ -31,10 +31,10 @@ block content
     h3 Basic Syntax
 
     pre
-      code.
-        <span class="comment">// Capture a parameter</span>
-        <span class="variable">Route</span>::<span class="function">get</span>(<span class="string">'/users/{id}'</span>, <span class="keyword">function</span>(<span class="variable">$id</span>) {
-            <span class="keyword">return</span> [<span class="string">'user_id'</span> => <span class="variable">$id</span>];
+      code.language-php.
+        // Capture a parameter
+        Route::get('/users/{id}', function($id) {
+            return ['user_id' => $id];
         });
 
     p The <code>{id}</code> part captures whatever value is in that position of the URL and passes it to the handler function.
@@ -42,7 +42,7 @@ block content
     .info-box
       strong Important:
       |  
-      | Parameter names in the route must match the function parameter names exactly.
+      | Parameter names in the route must match the function argument names exactly.
 
   .content-section
     h2 Type Constraints
@@ -111,16 +111,16 @@ block content
     h3 Type Constraint Example
 
     pre
-      code.
-        <span class="comment">// Only matches numeric IDs</span>
-        <span class="variable">Route</span>::<span class="function">get</span>(<span class="string">'/users/{id:int}'</span>, <span class="keyword">function</span>(<span class="keyword">int</span> <span class="variable">$id</span>) {
-            <span class="comment">// $id is guaranteed to be an integer</span>
-            <span class="keyword">return</span> [<span class="string">'user_id'</span> => <span class="variable">$id</span>];
+      code.language-php.
+        // Only matches numeric IDs
+        Route::get('/users/{id:int}', function(int $id) {
+            // $id is guaranteed to be an integer
+            return ['user_id' => $id];
         });
 
-        <span class="comment">// Only matches string slugs</span>
-        <span class="variable">Route</span>::<span class="function">get</span>(<span class="string">'/posts/{slug:string}'</span>, <span class="keyword">function</span>(<span class="keyword">string</span> <span class="variable">$slug</span>) {
-            <span class="keyword">return</span> [<span class="string">'post_slug'</span> => <span class="variable">$slug</span>];
+        // Only matches string slugs
+        Route::get('/posts/{slug:string}', function(string $slug) {
+            return ['post_slug' => $slug];
         });
 
   .content-section
@@ -162,13 +162,13 @@ block content
     p Routes can have multiple parameters at different positions:
 
     pre
-      code.
-        <span class="comment">// Multiple parameters</span>
-        <span class="variable">Route</span>::<span class="function">get</span>(<span class="string">'/users/{userId:int}/posts/{postId:int}'</span>,
-            <span class="keyword">function</span>(<span class="keyword">int</span> <span class="variable">$userId</span>, <span class="keyword">int</span> <span class="variable">$postId</span>) {
-                <span class="keyword">return</span> [
-                    <span class="string">'user_id'</span> => <span class="variable">$userId</span>,
-                    <span class="string">'post_id'</span> => <span class="variable">$postId</span>
+      code.language-php.
+        // Multiple parameters
+        Route::get('/users/{userId:int}/posts/{postId:int}',
+            function(int $userId, int $postId) {
+                return [
+                    'user_id' => $userId,
+                    'post_id' => $postId
                 ];
             }
         );
@@ -179,12 +179,12 @@ block content
     p For advanced matching, you can use custom regex patterns:
 
     pre
-      code.
-        <span class="comment">// Custom regex pattern</span>
-        <span class="variable">Route</span>::<span class="function">get</span>(<span class="string">'/items/{code:regexp([A-Z]{3}-[0-9]{4})}'</span>,
-            <span class="keyword">function</span>(<span class="keyword">string</span> <span class="variable">$code</span>) {
-                <span class="comment">// Matches: ABC-1234, XYZ-9999, etc.</span>
-                <span class="keyword">return</span> [<span class="string">'item_code'</span> => <span class="variable">$code</span>];
+      code.language-php.
+        // Custom regex pattern
+        Route::get('/items/{code:regexp([A-Z]{3}-[0-9]{4})}',
+            function(string $code) {
+                // Matches: ABC-1234, XYZ-9999, etc.
+                return ['item_code' => $code];
             }
         );
 
@@ -194,10 +194,10 @@ block content
     p F4 can automatically detect the requested format from the URL extension:
 
     pre
-      code.
-        <span class="comment">// Same handler, different formats</span>
-        <span class="variable">Route</span>::<span class="function">get</span>(<span class="string">'/api/data'</span>, <span class="keyword">function</span>() {
-            <span class="keyword">return</span> [<span class="string">'items'</span> => [<span class="string">'apple'</span>, <span class="string">'banana'</span>, <span class="string">'cherry'</span>]];
+      code.language-php.
+        // Same handler, different formats
+        Route::get('/api/data', function() {
+            return ['items' => ['apple', 'banana', 'cherry']];
         });
 
     p Consider these URLs:
@@ -223,10 +223,10 @@ block content
     p F4 can automatically detect the requested format from the URL extension:
 
     pre
-      code.
-        <span class="comment">// Same handler, different formats</span>
-        <span class="variable">Route</span>::<span class="function">get</span>(<span class="string">'/api/data.json'</span>, <span class="keyword">function</span>() {
-            <span class="keyword">return</span> [<span class="string">'items'</span> => [<span class="string">'apple'</span>, <span class="string">'banana'</span>, <span class="string">'cherry'</span>]];
+      code.language-php.
+        // Same handler, different formats
+        Route::get('/api/data.json', function() {
+            return ['items' => ['apple', 'banana', 'cherry']];
         });
 
     p Consider these URLs:

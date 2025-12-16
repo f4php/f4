@@ -36,16 +36,16 @@ block content
     h3 Using setTemplate()
 
     pre
-      code.
-        <span class="keyword">use</span> <span class="variable">F4</span>\<span class="variable">Core</span>\<span class="variable">Route</span>;
+      code.language-php.
+        use F4\Core\Route;
 
-        <span class="comment">// Define a route and attach a template</span>
-        <span class="variable">$f4</span>-><span class="function">addRoute</span>(<span class="variable">Route</span>::<span class="function">get</span>(<span class="string">'/hello'</span>, <span class="keyword">function</span>() {
-            <span class="keyword">return</span> [
-                <span class="string">'message'</span> => <span class="string">'Hello World!'</span>,
-                <span class="string">'timestamp'</span> => <span class="function">date</span>(<span class="string">'Y-m-d H:i:s'</span>)
+        // Define a route and attach a template
+        $f4->addRoute(Route::get('/hello', function() {
+            return [
+                'message' => 'Hello World!',
+                'timestamp' => date('Y-m-d H:i:s')
             ];
-        })-><span class="function">setTemplate</span>(<span class="string">'hello.pug'</span>));
+        })->setTemplate('hello.pug'));
 
     .info-box
       strong Key Concept:
@@ -57,11 +57,11 @@ block content
     p F4 looks for templates in the directories specified in your configuration:
 
     pre
-      code.
-        <span class="keyword">class</span> <span class="variable">Config</span> <span class="keyword">extends</span> <span class="variable">AbstractConfig</span>
+      code.language-php.
+        class Config extends AbstractConfig
         {
-            <span class="keyword">public const array</span> <span class="variable">TEMPLATE_PATHS</span> = [
-                <span class="variable">__DIR__</span> . <span class="string">'/../templates'</span>
+            public const array TEMPLATE_PATHS = [
+                __DIR__ . '/../templates'
             ];
         }
 
@@ -92,36 +92,36 @@ block content
     h3 Complete Example
 
     pre
-      code.
-        <span class="comment">// Route handler returns data</span>
-        <span class="variable">$f4</span>-><span class="function">addRoute</span>(<span class="variable">Route</span>::<span class="function">get</span>(<span class="string">'/users/{id:int}'</span>, <span class="keyword">function</span>(<span class="keyword">int</span> <span class="variable">$id</span>) {
-            <span class="variable">$user</span> = <span class="variable">User</span>::<span class="function">find</span>(<span class="variable">$id</span>);
+      code.language-php.
+        // Route handler returns data
+        $f4->addRoute(Route::get('/users/{id:int}', function(int $id) {
+            $user = User::find($id);
 
-            <span class="comment">// Return data to be passed to template</span>
-            <span class="keyword">return</span> [
-                <span class="string">'user'</span> => <span class="variable">$user</span>,
-                <span class="string">'pageTitle'</span> => <span class="string">'User Profile'</span>
+            // Return data to be passed to template
+            return [
+                'user' => $user,
+                'pageTitle' => 'User Profile'
             ];
-        })-><span class="function">setTemplate</span>(<span class="string">'user/profile.pug'</span>));
+        })->setTemplate('user/profile.pug'));
 
     p In your template file (<code>templates/user/profile.pug</code>):
 
     pre
-      code.
-        h1= <span class="variable">$response</span>[<span class="string">'data'</span>][<span class="string">'pageTitle'</span>]
+      code.language-pug.
+        h1= $response['data']['pageTitle']
 
         .user-info
-          h2= <span class="variable">$response</span>[<span class="string">'data'</span>][<span class="string">'user'</span>][<span class="string">'name'</span>]
-          p= <span class="string">'Email: '</span> . <span class="variable">$response</span>[<span class="string">'data'</span>][<span class="string">'user'</span>][<span class="string">'email'</span>]
+          h2= $response['data']['user']['name']
+          p= 'Email: ' . $response['data']['user']['email']
 
     h3 Routes Without Templates
 
     p Not all routes need templates. API routes typically return JSON directly:
 
     pre
-      code.
-        <span class="variable">$f4</span>-><span class="function">addRoute</span>(<span class="variable">Route</span>::<span class="function">get</span>(<span class="string">'/api/users/{id:int}.json'</span>, <span class="keyword">function</span>(<span class="keyword">int</span> <span class="variable">$id</span>) {
-            <span class="keyword">return</span> [<span class="string">'user'</span> => <span class="variable">User</span>::<span class="function">find</span>(<span class="variable">$id</span>)];
+      code.language-php.
+        $f4->addRoute(Route::get('/api/users/{id:int}.json', function(int $id) {
+            return ['user' => User::find($id)];
         }));
 
     p F4 always needs to know how to render a route's response. There are two ways to tell F4 how to do it:
@@ -156,7 +156,7 @@ block content
       h4 Pug Code
 
       pre
-        code.
+        code.language-pug.
           div
             h1 Welcome
             p This is a paragraph
@@ -167,7 +167,7 @@ block content
       h4 Compiled HTML
 
       pre
-        code.
+        code.language-html.
           &lt;div&gt;
             &lt;h1&gt;Welcome&lt;/h1&gt;
             &lt;p&gt;This is a paragraph&lt;/p&gt;
@@ -180,21 +180,21 @@ block content
     h3 Classes and IDs
 
     pre
-      code.
-        <span class="comment">// Div with class</span>
+      code.language-pug.
+        //- Div with class
         .container
           h1.title My Title
           p.description.text-muted Description text
 
-        <span class="comment">// Div with ID</span>
+        //- Div with ID
         #header
           h1 Header Content
 
-        <span class="comment">// Multiple classes</span>
+        //- Multiple classes
         button.btn.btn-primary.btn-lg Click Me
 
-        <span class="comment">// Element with class and ID</span>
-        section\#main-content.container
+        //- Element with class and ID
+        section#main-content.container
           p Content here
 
     .info-box
@@ -204,24 +204,24 @@ block content
     h3 Attributes
 
     pre
-      code.
-        <span class="comment">// Basic attributes</span>
-        a(href=<span class="string">"/about"</span> title=<span class="string">"About Us"</span>) About
+      code.language-pug.
+        //- Basic attributes
+        a(href="/about" title="About Us") About
 
-        <span class="comment">// Boolean attributes</span>
-        input(type=<span class="string">"checkbox"</span> checked)
+        //- Boolean attributes
+        input(type="checkbox" checked)
         button(disabled) Submit
 
-        <span class="comment">// Multiple attributes</span>
+        //- Multiple attributes
         img(
-          src=<span class="string">"/images/logo.png"</span>
-          alt=<span class="string">"Logo"</span>
-          width=<span class="string">"200"</span>
-          height=<span class="string">"100"</span>
+          src="/images/logo.png"
+          alt="Logo"
+          width="200"
+          height="100"
         )
 
-        <span class="comment">// Data attributes</span>
-        div(data-id=<span class="string">"123"</span> data-action=<span class="string">"delete"</span>)
+        // Data attributes
+        div(data-id="123" data-action="delete")
 
   .content-section
     h2 Using PHP in Templates
@@ -231,37 +231,37 @@ block content
     h3 Basic PHP Expressions
 
     pre
-      code.
-        <span class="comment">// Output a variable</span>
-        = <span class="variable">$username</span>
+      code.language-pug.
+        // Output a variable
+        = $username
 
-        <span class="comment">// String concatenation</span>
-        = <span class="string">'Hello, '</span> . <span class="variable">$username</span>
+        // String concatenation
+        = 'Hello, ' . $username
 
-        <span class="comment">// Array access</span>
-        = <span class="variable">$user</span>[<span class="string">'name'</span>]
+        // Array access
+        = $user['name']
 
-        <span class="comment">// Object property</span>
-        = <span class="variable">$post</span>-><span class="variable">title</span>
+        // Object property
+        = $post->title
 
-        <span class="comment">// Function calls</span>
-        = <span class="function">strtoupper</span>(<span class="variable">$message</span>)
-        = <span class="function">date</span>(<span class="string">'Y-m-d'</span>)
+        // Function calls
+        = strtoupper($message)
+        = date('Y-m-d')
 
     h3 String Concatenation in Output
 
     pre
-      code.
-        <span class="comment">// Text output with concatenation</span>
-        p= <span class="string">'Welcome, '</span> . <span class="variable">$username</span> . <span class="string">'!'</span>
-        p= <span class="string">'You have '</span> . <span class="variable">$count</span> . <span class="string">' new messages.'</span>
+      code.language-pug.
+        // Text output with concatenation
+        p= 'Welcome, ' . $username . '!'
+        p= 'You have ' . $count . ' new messages.'
 
-        <span class="comment">// In attributes - build the value first</span>
-        - <span class="variable">$userUrl</span> = <span class="string">'/users/'</span> . <span class="variable">$userId</span>
-        a(href=<span class="variable">$userUrl</span>) View Profile
+        // In attributes - build the value first
+        - $userUrl = '/users/' . $userId
+        a(href=$userUrl) View Profile
 
-        - <span class="variable">$imageSrc</span> = <span class="string">'/images/'</span> . <span class="variable">$filename</span>
-        img(src=<span class="variable">$imageSrc</span>)
+        - $imageSrc = '/images/' . $filename
+        img(src=$imageSrc)
 
     .warning-box
       strong PHP Syntax:
@@ -309,31 +309,31 @@ block content
     h3 Accessing Response Data
 
     pre
-      code.
-        <span class="comment">// Your route returns data in an array</span>
-        <span class="variable">Route</span>::<span class="function">get</span>(<span class="string">'/hello'</span>, <span class="keyword">function</span>() {
-            <span class="keyword">return</span> [
-                <span class="string">'message'</span> => <span class="string">'Hello World'</span>,
-                <span class="string">'timestamp'</span> => <span class="function">time</span>()
+      code.language-php.
+        // Your route returns data in an array
+        Route::get('/hello', function() {
+            return [
+                'message' => 'Hello World',
+                'timestamp' => time()
             ];
         });
 
-        <span class="comment">// In template: access via $response['data']</span>
-        p= <span class="variable">$response</span>[<span class="string">'data'</span>][<span class="string">'message'</span>]
-        p= <span class="function">date</span>(<span class="string">'Y-m-d H:i:s'</span>, <span class="variable">$response</span>[<span class="string">'data'</span>][<span class="string">'timestamp'</span>])
+        // In template: access via $response['data']
+        p= $response['data']['message']
+        p= date('Y-m-d H:i:s', $response['data']['timestamp'])
 
     h3 Accessing Request Data
 
     pre
-      code.
-        <span class="comment">// Current path</span>
-        p= <span class="string">'Current URL: '</span> . <span class="variable">$request</span>[<span class="string">'path'</span>]
+      code.language-pug.
+        // Current path
+        p= 'Current URL: ' . $request['path']
 
-        <span class="comment">// HTTP method</span>
-        p= <span class="string">'Method: '</span> . <span class="variable">$request</span>[<span class="string">'method'</span>]
+        // HTTP method
+        p= 'Method: ' . $request['method']
 
-        <span class="comment">// Query parameters</span>
-        p= <span class="string">'Page: '</span> . (<span class="variable">$request</span>[<span class="string">'parameters'</span>][<span class="string">'page'</span>] ?? <span class="number">1</span>)
+        // Query parameters
+        p= 'Page: ' . ($request['parameters']['page'] ?? 1)
 
   .content-section
     h2 Template Inheritance
@@ -343,52 +343,52 @@ block content
     h3 Base Layout
 
     pre
-      code.
-        <span class="comment">// File: templates/layout.pug</span>
+      code.language-pug.
+        // File: templates/layout.pug
         doctype html
         html
           head
-            title= <span class="variable">$title</span> ?? <span class="string">'My App'</span>
-            meta(charset=<span class="string">"utf-8"</span>)
-            <span class="keyword">block</span> styles
-              link(rel=<span class="string">"stylesheet"</span> href=<span class="string">"/css/app.css"</span>)
+            title= $title ?? 'My App'
+            meta(charset="utf-8")
+            block styles
+              link(rel="stylesheet" href="/css/app.css")
 
           body
             header
-              <span class="keyword">block</span> header
+              block header
                 h1 Default Header
 
             main
-              <span class="keyword">block</span> content
+              block content
                 p Default content
 
             footer
-              <span class="keyword">block</span> footer
+              block footer
                 p © 2025 My App
 
-            <span class="keyword">block</span> scripts
-              script(src=<span class="string">"/js/app.js"</span>)
+            block scripts
+              script(src="/js/app.js")
 
     h3 Extending Layout
 
     pre
-      code.
-        <span class="comment">// File: templates/home.pug</span>
-        <span class="keyword">extends</span> layout.pug
+      code.language-pug.
+        // File: templates/home.pug
+        extends layout.pug
 
-        <span class="keyword">block</span> title
+        block title
           | Home - My App
 
-        <span class="keyword">block</span> content
+        block content
           .container
             h1 Welcome Home
             p This is the home page content
 
-        <span class="keyword">block</span> scripts
-          <span class="comment">// Include parent block content</span>
-          <span class="keyword">block</span>
-          <span class="comment">// Add additional script</span>
-          script(src=<span class="string">"/js/home.js"</span>)
+        block scripts
+          // Include parent block content
+          block
+          // Add additional script
+          script(src="/js/home.js")
 
     .info-box
       strong Key Concept:
@@ -403,42 +403,42 @@ block content
     h3 If/Else Statements
 
     pre
-      code.
-        <span class="comment">// Basic if</span>
-        <span class="keyword">if</span> (<span class="variable">$isLoggedIn</span>)
-          p= <span class="string">'Welcome back, '</span> . <span class="variable">$username</span> . <span class="string">'!'</span>
+      code.language-pug.
+        // Basic if
+        if ($isLoggedIn)
+          p= 'Welcome back, ' . $username . '!'
 
-        <span class="comment">// If/else</span>
-        <span class="keyword">if</span> (<span class="variable">$count</span> > <span class="number">0</span>)
-          p= <span class="string">'You have '</span> . <span class="variable">$count</span> . <span class="string">' messages'</span>
-        <span class="keyword">else</span>
+        // If/else
+        if ($count > 0)
+          p= 'You have ' . $count . ' messages'
+        else
           p No messages
 
-        <span class="comment">// If/elseif/else</span>
-        <span class="keyword">if</span> (<span class="variable">$role</span> === <span class="string">'admin'</span>)
+        // If/elseif/else
+        if ($role === 'admin')
           p Admin Dashboard
-        <span class="keyword">elseif</span> (<span class="variable">$role</span> === <span class="string">'moderator'</span>)
+        elseif ($role === 'moderator')
           p Moderator Panel
-        <span class="keyword">else</span>
+        else
           p User Dashboard
 
     h3 Unless Statement
 
     pre
-      code.
-        <span class="comment">// Unless (if not)</span>
-        <span class="keyword">unless</span> (<span class="variable">$isLoggedIn</span>)
-          a(href=<span class="string">"/login"</span>) Please log in
+      code.language-pug.
+        // Unless (if not)
+        unless ($isLoggedIn)
+          a(href="/login") Please log in
 
     h3 Ternary Operator
 
     pre
-      code.
-        <span class="comment">// In attributes</span>
-        button(class=<span class="variable">$isActive</span> ? <span class="string">'btn-primary'</span> : <span class="string">'btn-secondary'</span>) Toggle
+      code.language-pug.
+        // In attributes
+        button(class=$isActive ? 'btn-primary' : 'btn-secondary') Toggle
 
-        <span class="comment">// In text</span>
-        p= <span class="string">'Status: '</span> . (<span class="variable">$isOnline</span> ? <span class="string">'Online'</span> : <span class="string">'Offline'</span>)
+        // In text
+        p= 'Status: ' . ($isOnline ? 'Online' : 'Offline')
 
   .content-section
     h2 Loops and Iteration
@@ -448,42 +448,42 @@ block content
     h3 Each Loop (foreach)
 
     pre
-      code.
-        <span class="comment">// Simple array</span>
+      code.language-pug.
+        // Simple array
         ul
-          <span class="keyword">each</span> <span class="variable">$item</span> <span class="keyword">in</span> <span class="variable">$items</span>
-            li= <span class="variable">$item</span>
+          each $item in $items
+            li= $item
 
-        <span class="comment">// With index</span>
+        // With index
         ul
-          <span class="keyword">each</span> <span class="variable">$item</span>, <span class="variable">$index</span> <span class="keyword">in</span> <span class="variable">$items</span>
-            li= (<span class="variable">$index</span> + <span class="number">1</span>) . <span class="string">'. '</span> . <span class="variable">$item</span>
+          each $item, $index in $items
+            li= ($index + 1) . '. ' . $item
 
-        <span class="comment">// Array of objects</span>
-        <span class="keyword">each</span> <span class="variable">$user</span> <span class="keyword">in</span> <span class="variable">$users</span>
+        // Array of objects
+        each $user in $users
           .user-card
-            h3= <span class="variable">$user</span>[<span class="string">'name'</span>]
-            p= <span class="variable">$user</span>[<span class="string">'email'</span>]
+            h3= $user['name']
+            p= $user['email']
 
     h3 Handling Empty Arrays
 
     pre
-      code.
+      code.language-pug.
         ul
-          <span class="keyword">each</span> <span class="variable">$post</span> <span class="keyword">in</span> <span class="variable">$posts</span>
-            li= <span class="variable">$post</span>[<span class="string">'title'</span>]
-          <span class="keyword">else</span>
+          each $post in $posts
+            li= $post['title']
+          else
             li No posts found
 
     h3 While Loop
 
     pre
-      code.
-        - <span class="variable">$i</span> = <span class="number">0</span>
+      code.language-pug.
+        - $i = 0
         ul
-          <span class="keyword">while</span> (<span class="variable">$i</span> < <span class="variable">$count</span>)
-            li= <span class="string">'Item '</span> . <span class="variable">$i</span>
-            - <span class="variable">$i</span>++
+          while ($i < $count)
+            li= 'Item ' . $i
+            - $i++
 
   .content-section
     h2 Mixins (Reusable Components)
@@ -493,40 +493,40 @@ block content
     h3 Defining Mixins
 
     pre
-      code.
-        <span class="comment">// Simple mixin</span>
-        <span class="keyword">mixin</span> alert(<span class="variable">$message</span>)
+      code.language-pug.
+        // Simple mixin
+        mixin alert($message)
           .alert
-            p= <span class="variable">$message</span>
+            p= $message
 
-        <span class="comment">// Mixin with parameters</span>
-        <span class="keyword">mixin</span> button(<span class="variable">$text</span>, <span class="variable">$type</span> = <span class="string">'primary'</span>)
-          - <span class="variable">$btnClass</span> = <span class="string">'btn btn-'</span> . <span class="variable">$type</span>
-          button(class=<span class="variable">$btnClass</span>)= <span class="variable">$text</span>
+        // Mixin with parameters
+        mixin button($text, $type = 'primary')
+          - $btnClass = 'btn btn-' . $type
+          button(class=$btnClass)= $text
 
-        <span class="comment">// Mixin with block content</span>
-        <span class="keyword">mixin</span> card(<span class="variable">$title</span>)
+        // Mixin with block content
+        mixin card($title)
           .card
             .card-header
-              h3= <span class="variable">$title</span>
+              h3= $title
             .card-body
-              <span class="keyword">block</span>
+              block
 
     h3 Using Mixins
 
     pre
-      code.
-        <span class="comment">// Call simple mixin</span>
-        +alert(<span class="string">'Welcome to our site!'</span>)
+      code.language-pug.
+        // Call simple mixin
+        +alert('Welcome to our site!')
 
-        <span class="comment">// Call with different parameter</span>
-        +button(<span class="string">'Submit'</span>)
-        +button(<span class="string">'Cancel'</span>, <span class="string">'secondary'</span>)
+        // Call with different parameter
+        +button('Submit')
+        +button('Cancel', 'secondary')
 
-        <span class="comment">// Mixin with content block</span>
-        +card(<span class="string">'User Profile'</span>)
-          p= <span class="string">'Name: '</span> . <span class="variable">$user</span>[<span class="string">'name'</span>]
-          p= <span class="string">'Email: '</span> . <span class="variable">$user</span>[<span class="string">'email'</span>]
+        // Mixin with content block
+        +card('User Profile')
+          p= 'Name: ' . $user['name']
+          p= 'Email: ' . $user['email']
 
   .content-section
     h2 Including Partials
@@ -536,37 +536,37 @@ block content
     h3 Include Syntax
 
     pre
-      code.
-        <span class="comment">// File: templates/layout.pug</span>
+      code.language-pug.
+        // File: templates/layout.pug
         doctype html
         html
           head
-            <span class="keyword">include</span> partials/head.pug
+            include partials/head.pug
           body
             header
-              <span class="keyword">include</span> partials/header.pug
+              include partials/header.pug
 
             main
-              <span class="keyword">block</span> content
+              block content
 
             footer
-              <span class="keyword">include</span> partials/footer.pug
+              include partials/footer.pug
 
     h3 Partial Files
 
     pre
-      code.
-        <span class="comment">// File: templates/partials/head.pug</span>
-        title= <span class="variable">$title</span> ?? <span class="string">'My App'</span>
-        meta(charset=<span class="string">"utf-8"</span>)
-        meta(name=<span class="string">"viewport"</span> content=<span class="string">"width=device-width, initial-scale=1"</span>)
+      code.language-pug.
+        // File: templates/partials/head.pug
+        title= $title ?? 'My App'
+        meta(charset="utf-8")
+        meta(name="viewport" content="width=device-width, initial-scale=1")
 
-        <span class="comment">// File: templates/partials/header.pug</span>
+        // File: templates/partials/header.pug
         nav.navbar
-          a.logo(href=<span class="string">"/"</span>) My App
+          a.logo(href="/") My App
           ul.nav-links
-            li: a(href=<span class="string">"/about"</span>) About
-            li: a(href=<span class="string">"/contact"</span>) Contact
+            li: a(href="/about") About
+            li: a(href="/contact") Contact
 
   .content-section
     h2 Working with Assets
@@ -576,13 +576,13 @@ block content
     h3 Linking CSS / Stylus and JavaScript
 
     pre
-      code.
+      code.language-pug.
         head
-          <span class="comment">// Tell Vite to include resources in a named bundle</span>
-          vite:resource(bundle=<span class="string">"my_bundle"</span> src=<span class="string">"module.js"</span>)
-          vite:resource(bundle=<span class="string">"my_bundle"</span> src=<span class="string">"module.css"</span>)
-          <span class="comment">// Tell F4 to include bundled assets during page render</span>
-          vite:bundle(name=<span class="string">"my_bundle"</span>)
+          // Tell Vite to include resources in a named bundle
+          vite:resource(bundle="my_bundle" src="module.js")
+          vite:resource(bundle="my_bundle" src="module.css")
+          // Tell F4 to include bundled assets during page render
+          vite:bundle(name="my_bundle")
 
     .warning-box
       strong Production build:
@@ -595,13 +595,13 @@ block content
     h3 Static Assets
 
     pre
-      code.
-        <span class="comment">// Public assets (in public/images/)</span>
-        img(src=<span class="string">"/images/logo.png"</span> alt=<span class="string">"Logo"</span>)
+      code.language-pug.
+        // Public assets (in public/images/)
+        img(src="/images/logo.png" alt="Logo")
 
-        <span class="comment">// Dynamic image path</span>
-        - <span class="variable">$imageUrl</span> = <span class="string">'/uploads/'</span> . <span class="variable">$imageName</span>
-        img(src=<span class="variable">$imageUrl</span> alt=<span class="variable">$imageAlt</span>)
+        // Dynamic image path
+        - $imageUrl = '/uploads/' . $imageName
+        img(src=$imageUrl alt=$imageAlt)
 
   .content-section
     h2 Code Blocks
@@ -609,63 +609,52 @@ block content
     p Execute PHP code without outputting:
 
     pre
-      code.
-        <span class="comment">// Define variables</span>
-        - <span class="variable">$fullName</span> = <span class="variable">$firstName</span> . <span class="string">' '</span> . <span class="variable">$lastName</span>
-        - <span class="variable">$isActive</span> = <span class="variable">$status</span> === <span class="string">'active'</span>
+      code.language-pug.
+        // Define variables
+        - $fullName = $firstName . ' ' . $lastName
+        - $isActive = $status === 'active'
 
-        <span class="comment">// Multiple lines</span>
+        // Multiple lines
         -
-          <span class="variable">$total</span> = <span class="number">0</span>;
-          <span class="keyword">foreach</span> (<span class="variable">$items</span> <span class="keyword">as</span> <span class="variable">$item</span>) {
-              <span class="variable">$total</span> += <span class="variable">$item</span>[<span class="string">'price'</span>];
+          $total = 0;
+          foreach ($items as $item) {
+              $total += $item['price'];
           }
 
-        p= <span class="string">'Total: $'</span> . <span class="variable">$total</span>
+        p= 'Total: $' . $total
 
   .content-section
     h2 Comments
 
     pre
-      p
-        code
-          span.comment //- Pug comment (not in output)
-        br/
-        code
-          span.comment //- This won't appear in HTML
+      code.language-pug.
+        //- Pug comment (not in output)
+        //- This won't appear in HTML
 
-      p
-        code
-          span.comment // HTML comment (in output)
-        br/
-        code
-          span.comment // This will be in the HTML
-      p
-        code
-          span.comment //- Block comments
-        br/
-        code
-          span.comment.
-            //-
-              This is a block comment
-              Multiple lines
-              Won't appear in output
+        // HTML comment (in output)
+        // This will be in the HTML
+
+        //- Block comments
+        //-
+          This is a block comment
+          Multiple lines
+          Won't appear in output
 
   .content-section
     h2 Escaping and Raw HTML
 
     pre
-      code.
-        <span class="comment">// Escaped output (default - safe)</span>
-        p= <span class="variable">$userInput</span>  <span class="comment">// HTML entities escaped</span>
+      code.language-pug.
+        // Escaped output (default - safe)
+        p= $userInput  // HTML entities escaped
 
-        <span class="comment">// Unescaped output (use with caution!)</span>
-        p!= <span class="variable">$trustedHtml</span>  <span class="comment">// Raw HTML output</span>
+        // Unescaped output (use with caution!)
+        p!= $trustedHtml  // Raw HTML output
 
-        <span class="comment">// Example</span>
-        - <span class="variable">$html</span> = <span class="string">'&lt;strong&gt;Bold&lt;/strong&gt;'</span>
-        p= <span class="variable">$html</span>   <span class="comment">// Shows: &lt;strong&gt;Bold&lt;/strong&gt;</span>
-        p!= <span class="variable">$html</span>  <span class="comment">// Shows: Bold (rendered)</span>
+        // Example
+        - $html = '<strong>Bold</strong>'
+        p= $html   // Shows: <strong>Bold</strong>
+        p!= $html  // Shows: Bold (rendered)
 
     .warning-box
       strong Security:
@@ -679,21 +668,21 @@ block content
 
     .demo-box
       pre
-        code.
+        code.language-bash.
           templates/
           ├── layouts/
-          │   ├── base.pug           <span class="comment"># Main layout</span>
-          │   ├── admin.pug          <span class="comment"># Admin layout</span>
-          │   └── auth.pug           <span class="comment"># Authentication layout</span>
+          │   ├── base.pug           # Main layout
+          │   ├── admin.pug          # Admin layout
+          │   └── auth.pug           # Authentication layout
           ├── partials/
-          │   ├── head.pug           <span class="comment"># &lt;head&gt; content</span>
-          │   ├── header.pug         <span class="comment"># Site header</span>
-          │   ├── footer.pug         <span class="comment"># Site footer</span>
-          │   └── nav.pug            <span class="comment"># Navigation</span>
+          │   ├── head.pug           # &lt;head&gt; content
+          │   ├── header.pug         # Site header
+          │   ├── footer.pug         # Site footer
+          │   └── nav.pug            # Navigation
           ├── components/
-          │   ├── card.pug           <span class="comment"># Card mixin</span>
-          │   ├── button.pug         <span class="comment"># Button mixin</span>
-          │   └── form.pug           <span class="comment"># Form components</span>
+          │   ├── card.pug           # Card mixin
+          │   ├── button.pug         # Button mixin
+          │   └── form.pug           # Form components
           ├── pages/
           │   ├── home.pug
           │   ├── about.pug
@@ -723,42 +712,42 @@ block content
     h3 Navigation with Active State
 
     pre
-      code.
+      code.language-pug.
         nav
           ul
-            li(class=<span class="variable">$request</span>[<span class="string">'path'</span>] === <span class="string">'/'</span> ? <span class="string">'active'</span> : <span class="string">''</span>)
-              a(href=<span class="string">"/"</span>) Home
-            li(class=<span class="variable">$request</span>[<span class="string">'path'</span>] === <span class="string">'/about'</span> ? <span class="string">'active'</span> : <span class="string">''</span>)
-              a(href=<span class="string">"/about"</span>) About
+            li(class=$request['path'] === '/' ? 'active' : '')
+              a(href="/") Home
+            li(class=$request['path'] === '/about' ? 'active' : '')
+              a(href="/about") About
 
     h3 Pagination
 
     pre
-      code.
+      code.language-pug.
         nav.pagination
-          <span class="keyword">if</span> (<span class="variable">$page</span> > <span class="number">1</span>)
-            - <span class="variable">$prevUrl</span> = <span class="string">'?page='</span> . (<span class="variable">$page</span> - <span class="number">1</span>)
-            a(href=<span class="variable">$prevUrl</span>) Previous
+          if ($page > 1)
+            - $prevUrl = '?page=' . ($page - 1)
+            a(href=$prevUrl) Previous
 
-          <span class="keyword">each</span> <span class="variable">$p</span> <span class="keyword">in</span> <span class="function">range</span>(<span class="number">1</span>, <span class="variable">$totalPages</span>)
-            <span class="keyword">if</span> (<span class="variable">$p</span> === <span class="variable">$page</span>)
-              span.current= <span class="variable">$p</span>
-            <span class="keyword">else</span>
-              - <span class="variable">$pageUrl</span> = <span class="string">'?page='</span> . <span class="variable">$p</span>
-              a(href=<span class="variable">$pageUrl</span>)= <span class="variable">$p</span>
+          each $p in range(1, $totalPages)
+            if ($p === $page)
+              span.current= $p
+            else
+              - $pageUrl = '?page=' . $p
+              a(href=$pageUrl)= $p
 
-          <span class="keyword">if</span> (<span class="variable">$page</span> < <span class="variable">$totalPages</span>)
-            - <span class="variable">$nextUrl</span> = <span class="string">'?page='</span> . (<span class="variable">$page</span> + <span class="number">1</span>)
-            a(href=<span class="variable">$nextUrl</span>) Next
+          if ($page < $totalPages)
+            - $nextUrl = '?page=' . ($page + 1)
+            a(href=$nextUrl) Next
 
     h3 Flash Messages
 
     pre
-      code.
-        <span class="keyword">if</span> (<span class="function">isset</span>(<span class="variable">$session</span>[<span class="string">'flash'</span>]))
-          <span class="keyword">each</span> <span class="variable">$message</span>, <span class="variable">$type</span> <span class="keyword">in</span> <span class="variable">$session</span>[<span class="string">'flash'</span>]
-            - <span class="variable">$alertClass</span> = <span class="string">'alert-'</span> . <span class="variable">$type</span>
-            .alert(class=<span class="variable">$alertClass</span>)= <span class="variable">$message</span>
+      code.language-pug.
+        if (isset($session['flash']))
+          each $message, $type in $session['flash']
+            - $alertClass = 'alert-' . $type
+            .alert(class=$alertClass)= $message
   .content-section
     h2 Try It Yourself
 

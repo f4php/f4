@@ -52,21 +52,21 @@ block content
     p Let's look at a complete module example:
 
     pre
-      code.
-        <span class="keyword">namespace</span> <span class="variable">App</span>\<span class="variable">Tutorial</span>;
+      code.language-php.
+        namespace App\Tutorial;
 
-        <span class="keyword">use</span> <span class="variable">F4</span>\<span class="variable">Core</span>\<span class="variable">CoreApiInterface</span>;
-        <span class="keyword">use</span> <span class="variable">F4</span>\<span class="variable">Core</span>\<span class="variable">Route</span>;
-        <span class="keyword">use</span> <span class="variable">F4</span>\<span class="variable">ModuleInterface</span>;
+        use F4\Core\CoreApiInterface;
+        use F4\Core\Route;
+        use F4\ModuleInterface;
 
-        <span class="keyword">class</span> <span class="variable">TutorialModule</span> <span class="keyword">implements</span> <span class="variable">ModuleInterface</span>
+        class TutorialModule implements ModuleInterface
         {
-            <span class="keyword">public function</span> <span class="function">__construct</span>(<span class="variable">CoreApiInterface</span> &<span class="variable">$f4</span>)
+            public function __construct(CoreApiInterface &$f4)
             {
-                <span class="comment">// Register routes here</span>
-                <span class="variable">$f4</span>-><span class="function">addRoute</span>(<span class="variable">Route</span>::<span class="function">get</span>(<span class="string">'/hello'</span>, <span class="keyword">function</span>() {
-                    <span class="keyword">return</span> [<span class="string">'message'</span> => <span class="string">'Hello World!'</span>];
-                })-><span class="function">setTemplate</span>(<span class="string">'hello.pug'</span>));
+                // Register routes here
+                $f4->addRoute(Route::get('/hello', function() {
+                    return ['message' => 'Hello World!'];
+                })->setTemplate('hello.pug'));
             }
         }
 
@@ -112,17 +112,17 @@ block content
     p After creating a module, you must register it in your configuration file (for details on configuration see Chapter 10):
 
     pre
-      code.
-        <span class="comment">// config/local.php</span>
-        <span class="keyword">namespace</span> <span class="variable">F4</span>;
+      code.language-php.
+        // config/local.php
+        namespace F4;
 
-        <span class="keyword">use</span> <span class="variable">F4</span>\<span class="variable">AbstractConfig</span>;
-        <span class="keyword">use</span> <span class="variable">App</span>\<span class="variable">Tutorial</span>\<span class="variable">TutorialModule</span>;
+        use F4\AbstractConfig;
+        use App\Tutorial\TutorialModule;
 
-        <span class="keyword">class</span> <span class="variable">Config</span> <span class="keyword">extends</span> <span class="variable">AbstractConfig</span>
+        class Config extends AbstractConfig
         {
-            <span class="keyword">public const array</span> <span class="variable">MODULES</span> = [
-                <span class="variable">TutorialModule</span>::<span class="keyword">class</span>
+            public const array MODULES = [
+                TutorialModule::class
             ];
         }
 
@@ -277,19 +277,17 @@ block content
     h3 Using $f4 in Route Handlers
 
     pre
-      code.
-        <span class="keyword">public function</span> <span class="function">__construct</span>(<span class="variable">CoreApiInterface</span> &<span class="variable">$f4</span>)
+      code.language-php.
+        public function __construct(CoreApiInterface &$f4)
         {
-            <span class="variable">$f4</span>-><span class="function">addRoute</span>(<span class="variable">Route</span>::<span class="function">get</span>(<span class="string">'/hello'</span>, <span class="keyword">function</span>() <span class="keyword">use</span> (<span class="variable">$f4</span>) {
+            $f4->addRoute(Route::get('/api/version', function() use ($f4) {
 
-                <span class="comment">// Get localizer for translations</span>
-                <span class="variable">$localizer</span> = <span class="variable">$f4</span>-><span class="function">getLocalizer</span>();
-                <span class="variable">$greeting</span> = <span class="variable">$localizer</span>-><span class="function">translate</span>(<span class="string">'welcome-message'</span>);
-
-                <span class="keyword">return</span> [
-                    <span class="string">'greeting'</span> => <span class="variable">$greeting</span>,
+                // Force JSON response
+                $f4->setResponseFormat('application/json');
+                return [
+                    'version' => '1.0',
                 ];
-            })-><span class="function">setTemplate</span>(<span class="string">'hello.pug'</span>));
+            });
         }
 
     .info-box
@@ -323,31 +321,31 @@ block content
     h3 The Route Definition
 
     pre
-      code.
-        <span class="keyword">namespace</span> <span class="variable">App</span>\<span class="variable">Tutorial</span>;
+      code.language-php.
+        namespace App\Tutorial;
 
-        <span class="keyword">use</span> <span class="variable">F4</span>\<span class="variable">Core</span>\<span class="variable">CoreApiInterface</span>;
-        <span class="keyword">use</span> <span class="variable">F4</span>\<span class="variable">Core</span>\<span class="variable">Route</span>;
-        <span class="keyword">use</span> <span class="variable">F4</span>\<span class="variable">ModuleInterface</span>;
+        use F4\Core\CoreApiInterface;
+        use F4\Core\Route;
+        use F4\ModuleInterface;
 
-        <span class="keyword">class</span> <span class="variable">TutorialModule</span> <span class="keyword">implements</span> <span class="variable">ModuleInterface</span>
+        class TutorialModule implements ModuleInterface
         {
-            <span class="keyword">public function</span> <span class="function">__construct</span>(<span class="variable">CoreApiInterface</span> &<span class="variable">$f4</span>)
+            public function __construct(CoreApiInterface &$f4)
             {
-                <span class="comment">// Register the route for this chapter</span>
-                <span class="variable">$f4</span>-><span class="function">addRoute</span>(<span class="variable">Route</span>::<span class="function">get</span>(<span class="string">'/tutorial/01-hello-world'</span>, <span class="keyword">function</span>() {
-                    <span class="keyword">return</span> [
-                        <span class="string">'message'</span> => <span class="string">'Hello from F4 Framework!'</span>,
-                        <span class="string">'timestamp'</span> => <span class="function">date</span>(<span class="string">'Y-m-d H:i:s'</span>),
-                        <span class="string">'chapter'</span> => <span class="variable">$this</span>-><span class="function">getChapterInfo</span>(<span class="string">'01'</span>),
+                // Register the route for this chapter
+                $f4->addRoute(Route::get('/tutorial/01-hello-world', function() {
+                    return [
+                        'message' => 'Hello from F4 Framework!',
+                        'timestamp' => date('Y-m-d H:i:s'),
+                        'chapter' => $this->getChapterInfo('01'),
                     ];
-                })-><span class="function">setTemplate</span>(<span class="string">'tutorial/chapter-01/chapter-01.pug'</span>));
+                })->setTemplate('tutorial/chapter-01/chapter-01.pug'));
             }
 
-            <span class="keyword">private function</span> <span class="function">getChapterInfo</span>(<span class="keyword">string</span> <span class="variable">$number</span>): <span class="keyword">array</span>
+            private function getChapterInfo(string $number): array
             {
-                <span class="comment">// Helper method to get chapter navigation data</span>
-                <span class="comment">// Returns current, previous, next chapter info</span>
+                // Helper method to get chapter navigation data
+                // Returns current, previous, next chapter info
             }
         }
 
@@ -419,18 +417,18 @@ block content
     p Contains the data you return from your route handler, plus metadata:
 
     pre
-      code.
-        <span class="variable">$response</span> = [
-            <span class="string">'data'</span> => [
-                <span class="comment">// Your route handler's returned data</span>
-                <span class="string">'message'</span> => <span class="string">'Hello from F4 Framework!'</span>,
-                <span class="string">'timestamp'</span> => <span class="string">'2025-12-01 15:30:00'</span>
+      code.language-php.
+        $response = [
+            'data' => [
+                // Your route handler's returned data
+                'message' => 'Hello from F4 Framework!',
+                'timestamp' => '2025-12-01 15:30:00'
             ],
-            <span class="string">'datetime'</span> => <span class="string">'2025-12-01T15:30:00+00:00'</span>,
-            <span class="string">'timezone'</span> => <span class="string">'UTC'</span>,
-            <span class="string">'headers'</span> => [...],
-            <span class="string">'meta'</span> => [...],
-            <span class="string">'exception'</span> => <span class="keyword">null</span> <span class="comment">// or exception details if one occurred</span>
+            'datetime' => '2025-12-01T15:30:00+00:00',
+            'timezone' => 'UTC',
+            'headers' => [...],
+            'meta' => [...],
+            'exception' => null // or exception details if one occurred
         ]
 
     table
@@ -476,21 +474,21 @@ block content
     p Contains details about the incoming HTTP request:
 
     pre
-      code.
-        <span class="variable">$request</span> = [
-            <span class="string">'path'</span> => <span class="string">'/tutorial/01-hello-world'</span>,
-            <span class="string">'method'</span> => <span class="string">'GET'</span>,
-            <span class="string">'headers'</span> => [
-                <span class="string">'User-Agent'</span> => [<span class="string">'Mozilla/5.0...'</span>],
-                <span class="string">'Accept'</span> => [<span class="string">'text/html'</span>]
+      code.language-php.
+        $request = [
+            'path' => '/tutorial/01-hello-world',
+            'method' => 'GET',
+            'headers' => [
+                'User-Agent' => ['Mozilla/5.0...'],
+                'Accept' => ['text/html']
             ],
-            <span class="string">'parameters'</span> => [
-                <span class="comment">// Query string or POST parameters</span>
-                <span class="string">'page'</span> => <span class="number">2</span>,
-                <span class="string">'search'</span> => <span class="string">'hello'</span>
+            'parameters' => [
+                // Query string or POST parameters
+                'page' => 2,
+                'search' => 'hello'
             ],
-            <span class="string">'validated-parameters'</span> => [
-                <span class="comment">// Parameters validated by attributes</span>
+            'validated-parameters' => [
+                // Parameters validated by attributes
             ]
         ]
 
@@ -526,12 +524,12 @@ block content
     p Access to all your application's configuration values:
 
     pre
-      code.
-        <span class="variable">$config</span> = [
-            <span class="string">'DEBUG_MODE'</span> => <span class="keyword">true</span>,
-            <span class="string">'TEMPLATE_PATHS'</span> => [<span class="string">'/path/to/templates'</span>],
-            <span class="string">'DEFAULT_LOCALE'</span> => <span class="string">'en'</span>,
-            <span class="comment">// All other config constants...</span>
+      code.language-php.
+        $config = [
+            'DEBUG_MODE' => true,
+            'TEMPLATE_PATHS' => ['/path/to/templates'],
+            'DEFAULT_LOCALE' => 'en',
+            // All other config constants...
         ]
 
     .warning-box
@@ -544,17 +542,17 @@ block content
     p The currently active locale/language:
 
     pre
-      code.
-        <span class="variable">$locale</span> = <span class="string">'en'</span>  <span class="comment">// or 'es', 'fr', etc.</span>
+      code.language-php.
+        $locale = 'en'  // or 'es', 'fr', etc.
 
     h3 5. $t - Translation Function
 
     p A function for translating strings (covered in Chapter 7):
 
     pre
-      code.
-        <span class="comment">//- In your Pug template</span>
-        <span class="variable">p</span>= $t(<span class="string">'welcome-message'</span>)
+      code.language-pug.
+        //- In your Pug template
+        p= $t('welcome-message')
 
   .content-section
     h2 Accessing Data in Templates
@@ -564,30 +562,30 @@ block content
     h3 Template Code Examples
 
     pre
-      code.
-        <span class="comment">//- Access route handler data</span>
-        <span class="variable">p</span>= $response['data']['message']
-        <span class="variable">p</span>= $response['data']['timestamp']
+      code.language-pug.
+        //- Access route handler data
+        p= $response['data']['message']
+        p= $response['data']['timestamp']
 
-        <span class="comment">//- Access nested data</span>
-        <span class="variable">h1</span>= $response['data']['chapter']['current']['title']
+        //- Access nested data
+        h1= $response['data']['chapter']['current']['title']
 
-        <span class="comment">//- Access request information</span>
-        <span class="variable">p</span> Current path: 
+        //- Access request information
+        p Current path:
           = $request['path']
-        <span class="variable">p</span> HTTP method: 
+        p HTTP method:
           = $request['method']
 
-        <span class="comment">//- Check configuration</span>
+        //- Check configuration
         if $config['DEBUG_MODE']
-          <span class="variable">.debug-banner</span> Debug Mode Active
+          .debug-banner Debug Mode Active
 
-        <span class="comment">//- Use current locale</span>
-        <span class="variable">html</span>(lang=$locale)
+        //- Use current locale
+        html(lang=$locale)
 
-        <span class="comment">//- Loop through arrays</span>
+        //- Loop through arrays
         each $item in $response['data']['items']
-          <span class="variable">li</span>= $item['name']
+          li= $item['name']
 
     h3 PHP Syntax in Templates
 
@@ -632,23 +630,23 @@ block content
     p Here's how the table on this page accesses live data:
 
     pre
-      code.
-        <span class="variable">.demo-box</span>
-          <span class="variable">h4</span> Route Handler Response
-          <span class="variable">table</span>
-            <span class="variable">thead</span>
-              <span class="variable">tr</span>
-                <span class="variable">th</span> Key
-                <span class="variable">th</span> Value
-            <span class="variable">tbody</span>
-              <span class="variable">tr</span>
-                <span class="variable">td</span>
-                  <span class="variable">code</span> message
-                <span class="variable">td</span>= $response['data']['message']
-              <span class="variable">tr</span>
-                <span class="variable">td</span>
-                  <span class="variable">code</span> timestamp
-                <span class="variable">td</span>= $response['data']['timestamp']
+      code.language-pug.
+        .demo-box
+          h4 Route Handler Response
+          table
+            thead
+              tr
+                th Key
+                th Value
+            tbody
+              tr
+                td
+                  code message
+                td= $response['data']['message']
+              tr
+                td
+                  code timestamp
+                td= $response['data']['timestamp']
 
     p This produces:
 

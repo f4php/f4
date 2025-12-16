@@ -164,88 +164,88 @@ block content
     p Substitutes a single scalar value (string, number, boolean, null):
 
     pre
-      code.
-        <span class="comment">// Simple where clause</span>
-        <span class="variable">DB</span>::<span class="function">select</span>()
-            -><span class="function">from</span>(<span class="string">'users'</span>)
-            -><span class="function">where</span>([<span class="string">'"id" = {#}'</span> => <span class="number">123</span>])
-            -><span class="function">asRow</span>();
+      code.language-php.
+        // Simple where clause
+        DB::select()
+            ->from('users')
+            ->where(['"id" = {#}' => 123])
+            ->asRow();
 
-        <span class="comment">// Generates: SELECT * FROM "users" WHERE "id" = $1</span>
-        <span class="comment">// Parameters: [123]</span>
+        // Generates: SELECT * FROM "users" WHERE "id" = $1
+        // Parameters: [123]
 
     pre
-      code.
-        <span class="comment">// Multiple conditions</span>
-        <span class="variable">DB</span>::<span class="function">select</span>()
-            -><span class="function">from</span>(<span class="string">'posts'</span>)
-            -><span class="function">where</span>([
-                <span class="string">'"user_id" = {#}'</span> => <span class="number">5</span>,
-                <span class="string">'"status" = {#}'</span> => <span class="string">'published'</span>,
-                <span class="string">'"created_at" > {#}'</span> => <span class="string">'2024-01-01'</span>
+      code.language-php.
+        // Multiple conditions
+        DB::select()
+            ->from('posts')
+            ->where([
+                '"user_id" = {#}' => 5,
+                '"status" = {#}' => 'published',
+                '"created_at" > {#}' => '2024-01-01'
             ])
-            -><span class="function">asTable</span>();
+            ->asTable();
 
-        <span class="comment">// WHERE "user_id" = $1 AND "status" = $2 AND "created_at" > $3</span>
+        // WHERE "user_id" = $1 AND "status" = $2 AND "created_at" > $3
 
     h3 2. Array Value Placeholder: {#,...#}
 
     p Substitutes an array of values, perfect for IN clauses:
 
     pre
-      code.
-        <span class="comment">// IN clause with multiple values</span>
-        <span class="variable">$ids</span> = [<span class="number">1</span>, <span class="number">2</span>, <span class="number">3</span>, <span class="number">5</span>, <span class="number">8</span>];
+      code.language-php.
+        // IN clause with multiple values
+        $ids = [1, 2, 3, 5, 8];
 
-        <span class="variable">DB</span>::<span class="function">select</span>()
-            -><span class="function">from</span>(<span class="string">'products'</span>)
-            -><span class="function">where</span>([<span class="string">'"id" IN ({#,...#})'</span> => <span class="variable">$ids</span>])
-            -><span class="function">asTable</span>();
+        DB::select()
+            ->from('products')
+            ->where(['"id" IN ({#,...#})' => $ids])
+            ->asTable();
 
-        <span class="comment">// WHERE "id" IN ($1, $2, $3, $4, $5)</span>
-        <span class="comment">// Parameters: [1, 2, 3, 5, 8]</span>
+        // WHERE "id" IN ($1, $2, $3, $4, $5)
+        // Parameters: [1, 2, 3, 5, 8]
 
     pre
-      code.
-        <span class="comment">// Multiple array placeholders</span>
-        <span class="variable">$categories</span> = [<span class="string">'electronics'</span>, <span class="string">'computers'</span>];
-        <span class="variable">$statuses</span> = [<span class="string">'active'</span>, <span class="string">'featured'</span>];
+      code.language-php.
+        // Multiple array placeholders
+        $categories = ['electronics', 'computers'];
+        $statuses = ['active', 'featured'];
 
-        <span class="variable">DB</span>::<span class="function">select</span>()
-            -><span class="function">from</span>(<span class="string">'products'</span>)
-            -><span class="function">where</span>([
-                <span class="string">'"category" IN ({#,...#})'</span> => <span class="variable">$categories</span>,
-                <span class="string">'"status" IN ({#,...#})'</span> => <span class="variable">$statuses</span>
+        DB::select()
+            ->from('products')
+            ->where([
+                '"category" IN ({#,...#})' => $categories,
+                '"status" IN ({#,...#})' => $statuses
             ])
-            -><span class="function">asTable</span>();
+            ->asTable();
 
     h3 3. Subquery Placeholder: {#::#}
 
     p Substitutes another DB query object as a subquery:
 
     pre
-      code.
-        <span class="comment">// Subquery in WHERE clause</span>
-        <span class="variable">$avgPriceQuery</span> = <span class="variable">DB</span>::<span class="function">select</span>(<span class="string">'AVG(price)'</span>)
-            -><span class="function">from</span>(<span class="string">'products'</span>);
+      code.language-php.
+        // Subquery in WHERE clause
+        $avgPriceQuery = DB::select('AVG(price)')
+            ->from('products');
 
-        <span class="variable">DB</span>::<span class="function">select</span>()
-            -><span class="function">from</span>(<span class="string">'products'</span>)
-            -><span class="function">where</span>([<span class="string">'"price" > ({#::#})'</span> => <span class="variable">$avgPriceQuery</span>])
-            -><span class="function">asTable</span>();
+        DB::select()
+            ->from('products')
+            ->where(['"price" > ({#::#})' => $avgPriceQuery])
+            ->asTable();
 
     pre
-      code.
-        <span class="comment">// Subquery in FROM clause</span>
-        <span class="variable">$recentPosts</span> = <span class="variable">DB</span>::<span class="function">select</span>()
-            -><span class="function">from</span>(<span class="string">'posts'</span>)
-            -><span class="function">where</span>([<span class="string">'"created_at" > {#}'</span> => <span class="string">'2024-01-01'</span>]);
+      code.language-php.
+        // Subquery in FROM clause
+        $recentPosts = DB::select()
+            ->from('posts')
+            ->where(['"created_at" > {#}' => '2024-01-01']);
 
-        <span class="variable">DB</span>::<span class="function">select</span>()
-            -><span class="function">from</span>([<span class="string">'({#::#}) AS "recent"'</span> => <span class="variable">$recentPosts</span>])
-            -><span class="function">asTable</span>();
+        DB::select()
+            ->from(['({#::#}) AS "recent"' => $recentPosts])
+            ->asTable();
 
-        <span class="comment">// SELECT * FROM (SELECT * FROM "posts" WHERE "created_at" > $1) AS "recent"</span>
+        // SELECT * FROM (SELECT * FROM "posts" WHERE "created_at" > $1) AS "recent"
 
     .info-box
       strong Powerful Feature:
@@ -257,71 +257,71 @@ block content
     h3 Simple SELECT
 
     pre
-      code.
-        <span class="comment">// Select all columns from a table</span>
-        <span class="variable">$users</span> = <span class="variable">DB</span>::<span class="function">select</span>()
-            -><span class="function">from</span>(<span class="string">'user'</span>)
-            -><span class="function">asTable</span>();
+      code.langauge-php.
+        // Select all columns from a table
+        $users = DB::select()
+            ->from('user')
+            ->asTable();
 
-        <span class="comment">// SELECT * FROM "user"</span>
-
-    pre
-      code.
-        <span class="comment">// Select specific columns</span>
-        <span class="variable">$users</span> = <span class="variable">DB</span>::<span class="function">select</span>([<span class="string">'id'</span>, <span class="string">'username'</span>, <span class="string">'email'</span>])
-            -><span class="function">from</span>(<span class="string">'user'</span>)
-            -><span class="function">asTable</span>();
-
-        <span class="comment">// SELECT "id", "username", "email" FROM "user"</span>
+        // SELECT * FROM "user"
 
     pre
-      code.
-        <span class="comment">// Select with aliases</span>
-        <span class="variable">$data</span> = <span class="variable">DB</span>::<span class="function">select</span>([<span class="string">'"u"."id"'</span>, <span class="string">'"u"."username"'</span>, <span class="string">'"p"."title" AS "post_title"'</span>])
-            -><span class="function">from</span>(<span class="string">'user u'</span>)
-            -><span class="function">join</span>(<span class="string">'post p'</span>)
-            -><span class="function">on</span>([<span class="string">'"u"."id" = "p"."user_id"'</span>])
-            -><span class="function">asTable</span>();
+      code.language-php.
+        // Select specific columns
+        $users = DB::select(['id', 'username', 'email'])
+            ->from('user')
+            ->asTable();
+
+        // SELECT "id", "username", "email" FROM "user"
+
+    pre
+      code.language-php.
+        // Select with aliases
+        $data = DB::select(['"u"."id"', '"u"."username"', '"p"."title" AS "post_title"'])
+            ->from('user u')
+            ->join('post p')
+            ->on(['"u"."id" = "p"."user_id"'])
+            ->asTable();
 
     h3 WHERE Clauses
 
     pre
-      code.
-        <span class="comment">// Simple equality using shorthand (auto-quoted)</span>
-        <span class="variable">DB</span>::<span class="function">select</span>()
-            -><span class="function">from</span>(<span class="string">'user'</span>)
-            -><span class="function">where</span>([
-                <span class="string">'age'</span> => <span class="number">18</span>,
-                <span class="string">'status'</span> => <span class="string">'active'</span>
+      code.language-php.
+        // Simple equality using shorthand (auto-quoted)
+        DB::select()
+            ->from('user')
+            ->where([
+                'age' => 18,
+                'status' => 'active'
             ])
-            -><span class="function">asTable</span>();
+            ->asTable();
 
-        <span class="comment">// WHERE "age" = $1 AND "status" = $2</span>
+        // WHERE "age" = $1 AND "status" = $2
 
     pre
-      code.
-        <span class="comment">// Custom expressions with placeholders</span>
-        <span class="variable">DB</span>::<span class="function">select</span>()
-            -><span class="function">from</span>(<span class="string">'user'</span>)
-            -><span class="function">where</span>([
-                <span class="string">'"age" >= {#}'</span> => <span class="number">18</span>,
-                <span class="string">'status'</span> => <span class="string">'active'</span>
+      code.language-php.
+        // Custom expressions with placeholders
+        DB::select()
+            ->from('user')
+            ->where([
+                '"age" >= {#}' => 18,
+                'status' => 'active'
             ])
-            -><span class="function">asTable</span>();
+            ->asTable();
 
-        <span class="comment">// WHERE "age" >= $1 AND "status" = $2</span>
+        // WHERE "age" >= $1 AND "status" = $2
 
     pre
-      code.
-        <span class="comment">// Complex conditions with LIKE, NULL checks</span>
-        <span class="variable">DB</span>::<span class="function">select</span>()
-            -><span class="function">from</span>(<span class="string">'article'</span>)
-            -><span class="function">where</span>([
-                <span class="string">'"title" LIKE {#}'</span> => <span class="string">'%tutorial%'</span>,
-                <span class="string">'"views" >= {#}'</span> => <span class="number">100</span>,
-                <span class="string">'published_at'</span> => <span class="keyword">null</span>  <span class="comment">// IS NULL</span>
+      code.language-php.
+        // Complex conditions with LIKE, NULL checks
+        DB::select()
+            ->from('article')
+            ->where([
+                '"title" LIKE {#}' => '%tutorial%',
+                '"views" >= {#}' => 100,
+                'published_at' => null  // IS NULL
             ])
-            -><span class="function">asTable</span>();
+            ->asTable();
 
   .content-section
     h2 JOINS
@@ -329,96 +329,96 @@ block content
     p F4 supports all PostgreSQL join types with natural SQL syntax:
 
     pre
-      code.
-        <span class="comment">// INNER JOIN</span>
-        <span class="variable">DB</span>::<span class="function">select</span>([<span class="string">'"u".*'</span>, <span class="string">'"p"."title"'</span>])
-            -><span class="function">from</span>(<span class="string">'user u'</span>)
-            -><span class="function">innerJoin</span>(<span class="string">'post p'</span>)
-            -><span class="function">on</span>([<span class="string">'"u"."id" = "p"."user_id"'</span>])
-            -><span class="function">asTable</span>();
+      code.language-php.
+        // INNER JOIN
+        DB::select(['"u".*', '"p"."title"'])
+            ->from('user u')
+            ->innerJoin('post p')
+            ->on(['"u"."id" = "p"."user_id"'])
+            ->asTable();
 
     pre
-      code.
-        <span class="comment">// LEFT JOIN with conditions</span>
-        <span class="variable">DB</span>::<span class="function">select</span>()
-            -><span class="function">from</span>(<span class="string">'user u'</span>)
-            -><span class="function">leftJoin</span>(<span class="string">'order o'</span>)
-            -><span class="function">on</span>([
-                <span class="string">'"u"."id" = "o"."user_id"'</span>,
-                <span class="string">'"o"."status"'</span> => <span class="string">'completed'</span>
+      code.language-php.
+        // LEFT JOIN with conditions
+        DB::select()
+            ->from('user u')
+            ->leftJoin('order o')
+            ->on([
+                '"u"."id" = "o"."user_id"',
+                '"o"."status"' => 'completed'
             ])
-            -><span class="function">asTable</span>();
+            ->asTable();
 
     pre
-      code.
-        <span class="comment">// USING clause for natural joins</span>
-        <span class="variable">DB</span>::<span class="function">select</span>()
-            -><span class="function">from</span>(<span class="string">'user u'</span>)
-            -><span class="function">join</span>(<span class="string">'profile p'</span>)
-            -><span class="function">using</span>(<span class="string">'user_id'</span>)
-            -><span class="function">asTable</span>();
+      code.language-php.
+        // USING clause for natural joins
+        DB::select()
+            ->from('user u')
+            ->join('profile p')
+            ->using('user_id')
+            ->asTable();
 
   .content-section
     h2 GROUP BY and Aggregates
 
     pre
-      code.
-        <span class="comment">// Simple GROUP BY</span>
-        <span class="variable">DB</span>::<span class="function">select</span>([<span class="string">'category'</span>, <span class="string">'COUNT(*) AS "count"'</span>])
-            -><span class="function">from</span>(<span class="string">'product'</span>)
-            -><span class="function">groupBy</span>(<span class="string">'category'</span>)
-            -><span class="function">asTable</span>();
+      code.language-php.
+        // Simple GROUP BY
+        DB::select(['category', 'COUNT(*) AS "count"'])
+            ->from('product')
+            ->groupBy('category')
+            ->asTable();
 
     pre
-      code.
-        <span class="comment">// GROUP BY with HAVING</span>
-        <span class="variable">DB</span>::<span class="function">select</span>([<span class="string">'user_id'</span>, <span class="string">'COUNT(*) AS "order_count"'</span>])
-            -><span class="function">from</span>(<span class="string">'order'</span>)
-            -><span class="function">groupBy</span>(<span class="string">'user_id'</span>)
-            -><span class="function">having</span>([<span class="string">'COUNT(*) > {#}'</span> => <span class="number">5</span>])
-            -><span class="function">asTable</span>();
+      code.language-php.
+        // GROUP BY with HAVING
+        DB::select(['user_id', 'COUNT(*) AS "order_count"'])
+            ->from('order')
+            ->groupBy('user_id')
+            ->having(['COUNT(*) > {#}' => 5])
+            ->asTable();
 
   .content-section
     h2 ORDER BY, LIMIT, and OFFSET
 
     pre
-      code.
-        <span class="comment">// Ordering results</span>
-        <span class="variable">DB</span>::<span class="function">select</span>()
-            -><span class="function">from</span>(<span class="string">'post'</span>)
-            -><span class="function">orderBy</span>(<span class="string">'"created_at" DESC'</span>, <span class="string">'title ASC'</span>)
-            -><span class="function">asTable</span>();
+      code.language-php.
+        // Ordering results
+        DB::select()
+            ->from('post')
+            ->orderBy('"created_at" DESC', 'title ASC')
+            ->asTable();
 
     pre
-      code.
-        <span class="comment">// Pagination</span>
-        <span class="variable">$page</span> = <span class="number">2</span>;
-        <span class="variable">$perPage</span> = <span class="number">20</span>;
+      code.language-php.
+        // Pagination
+        $page = 2;
+        $perPage = 20;
 
-        <span class="variable">DB</span>::<span class="function">select</span>()
-            -><span class="function">from</span>(<span class="string">'user'</span>)
-            -><span class="function">orderBy</span>(<span class="string">'username'</span>)
-            -><span class="function">limit</span>(<span class="variable">$perPage</span>)
-            -><span class="function">offset</span>((<span class="variable">$page</span> - <span class="number">1</span>) * <span class="variable">$perPage</span>)
-            -><span class="function">asTable</span>();
+        DB::select()
+            ->from('user')
+            ->orderBy('username')
+            ->limit($perPage)
+            ->offset(($page - 1) * $perPage)
+            ->asTable();
 
   .content-section
     h2 INSERT Queries
 
     pre
-      code.
-        <span class="keyword">use</span> <span class="variable">F4</span>\<span class="variable">DB</span>\<span class="variable">Fragment</span>;
+      code.language-php.
+        use F4\DB\Fragment;
 
-        <span class="comment">// Simple INSERT</span>
-        <span class="variable">DB</span>::<span class="function">insert</span>()
-            -><span class="function">into</span>(<span class="string">'user'</span>)
-            -><span class="function">values</span>([
-                <span class="string">'username'</span> => <span class="string">'john_doe'</span>,
-                <span class="string">'email'</span> => <span class="string">'john@example.com'</span>,
-                <span class="string">'age'</span> => <span class="number">25</span>,
-                <span class="string">'created_at'</span> => <span class="keyword">new</span> <span class="variable">Fragment</span>(<span class="string">'NOW()'</span>)
+        // Simple INSERT
+        DB::insert()
+            ->into('user')
+            ->values([
+                'username' => 'john_doe',
+                'email' => 'john@example.com',
+                'age' => 25,
+                'created_at' => new Fragment('NOW()')
             ])
-            -><span class="function">commit</span>();
+            ->commit();
 
     .warning-box
       strong Important - Fragment Required for SQL Functions:
@@ -426,26 +426,26 @@ block content
       | Due to PostgreSQL syntax limitations, you MUST use the <code>Fragment</code> wrapper to include SQL expressions (like <code>NOW()</code>) in <code>values()</code>. Unlike <code>set()</code> where you can use string expressions like <code>'"column" = NOW()'</code>, the <code>values()</code> method requires: <code>'column' => new Fragment('NOW()')</code>.
 
     pre
-      code.
-        <span class="comment">// INSERT with RETURNING</span>
-        <span class="variable">$newUserId</span> = <span class="variable">DB</span>::<span class="function">insert</span>()
-            -><span class="function">into</span>(<span class="string">'user'</span>)
-            -><span class="function">values</span>([
-                <span class="string">'username'</span> => <span class="string">'jane_doe'</span>,
-                <span class="string">'email'</span> => <span class="string">'jane@example.com'</span>
+      code.language-php.
+        // INSERT with RETURNING
+        $newUserId = DB::insert()
+            ->into('user')
+            ->values([
+                'username' => 'jane_doe',
+                'email' => 'jane@example.com'
             ])
-            -><span class="function">returning</span>(<span class="string">'id'</span>)
-            -><span class="function">asValue</span>();
+            ->returning('id')
+            ->asValue();
 
     pre
-      code.
-        <span class="comment">// INSERT with ON CONFLICT (upsert)</span>
-        <span class="variable">DB</span>::<span class="function">insert</span>()
-            -><span class="function">into</span>(<span class="string">'settings'</span>)
-            -><span class="function">values</span>([<span class="string">'key'</span> => <span class="string">'theme'</span>, <span class="string">'value'</span> => <span class="string">'dark'</span>])
-            -><span class="function">onConflict</span>(<span class="string">'key'</span>)
-            -><span class="function">doUpdateSet</span>([<span class="string">'value'</span> => <span class="string">'dark'</span>, <span class="string">'"updated_at" = NOW()'</span>])
-            -><span class="function">commit</span>();
+      code.language-php.
+        // INSERT with ON CONFLICT (upsert)
+        DB::insert()
+            ->into('settings')
+            ->values(['key' => 'theme', 'value' => 'dark'])
+            ->onConflict('key')
+            ->doUpdateSet(['value' => 'dark', '"updated_at" = NOW()'])
+            ->commit();
 
     .info-box
       strong Notice:
@@ -456,60 +456,60 @@ block content
     h2 UPDATE Queries
 
     pre
-      code.
-        <span class="comment">// Simple UPDATE</span>
-        <span class="variable">DB</span>::<span class="function">update</span>(<span class="string">'user'</span>)
-            -><span class="function">set</span>([
-                <span class="string">'status'</span> => <span class="string">'inactive'</span>,
-                <span class="string">'"updated_at" = NOW()'</span>
+      code.language-php.
+        // Simple UPDATE
+        DB::update('user')
+            ->set([
+                'status' => 'inactive',
+                '"updated_at" = NOW()'
             ])
-            -><span class="function">where</span>([<span class="string">'"last_login" < {#}'</span> => <span class="string">'2023-01-01'</span>])
-            -><span class="function">commit</span>();
+            ->where(['"last_login"  => '2023-01-01'])
+            ->commit();
 
     pre
-      code.
-        <span class="comment">// UPDATE with RETURNING</span>
-        <span class="variable">$updated</span> = <span class="variable">DB</span>::<span class="function">update</span>(<span class="string">'product'</span>)
-            -><span class="function">set</span>([<span class="string">'price'</span> => <span class="number">29.99</span>])
-            -><span class="function">where</span>([<span class="string">'"id" = {#}'</span> => <span class="number">100</span>])
-            -><span class="function">returning</span>(<span class="string">'*'</span>)
-            -><span class="function">asRow</span>();
+      code.language-php.
+        // UPDATE with RETURNING
+        $updated = DB::update('product')
+            ->set(['price' => 29.99])
+            ->where(['"id" = {#}' => 100])
+            ->returning('*')
+            ->asRow();
 
   .content-section
     h2 DELETE Queries
 
     pre
-      code.
-        <span class="comment">// Simple DELETE</span>
-        <span class="variable">DB</span>::<span class="function">delete</span>()
-            -><span class="function">from</span>(<span class="string">'session'</span>)
-            -><span class="function">where</span>([<span class="string">'"expires_at" < NOW()'</span>])
-            -><span class="function">commit</span>();
+      code.language-php.
+        // Simple DELETE
+        DB::delete()
+            ->from('session')
+            ->where(['"expires_at" ])
+            ->commit();
 
     pre
-      code.
-        <span class="comment">// DELETE with RETURNING</span>
-        <span class="variable">$deletedIds</span> = <span class="variable">DB</span>::<span class="function">delete</span>()
-            -><span class="function">from</span>(<span class="string">'old_record'</span>)
-            -><span class="function">where</span>([<span class="string">'"created_at" < {#}'</span> => <span class="string">'2020-01-01'</span>])
-            -><span class="function">returning</span>(<span class="string">'id'</span>)
-            -><span class="function">asTable</span>();
+      code.language-php.
+        // DELETE with RETURNING
+        $deletedIds = DB::delete()
+            ->from('old_record')
+            ->where(['"created_at"  => '2020-01-01'])
+            ->returning('id')
+            ->asTable();
 
   .content-section
     h2 Common Table Expressions (CTEs)
 
     pre
-      code.
-        <span class="comment">// WITH clause (CTE)</span>
-        <span class="variable">$recentOrders</span> = <span class="variable">DB</span>::<span class="function">select</span>()
-            -><span class="function">from</span>(<span class="string">'order'</span>)
-            -><span class="function">where</span>([<span class="string">'"created_at" > {#}'</span> => <span class="string">'2024-01-01'</span>]);
+      code.language-php.
+        // WITH clause (CTE)
+        $recentOrders = DB::select()
+            ->from('order')
+            ->where(['"created_at" > {#}' => '2024-01-01']);
 
-        <span class="variable">DB</span>::<span class="function">with</span>([<span class="string">'recent_order'</span> => <span class="variable">$recentOrders</span>])
-            -><span class="function">select</span>([<span class="string">'user_id'</span>, <span class="string">'COUNT(*) AS "order_count"'</span>])
-            -><span class="function">from</span>(<span class="string">'recent_order'</span>)
-            -><span class="function">groupBy</span>(<span class="string">'user_id'</span>)
-            -><span class="function">asTable</span>();
+        DB::with(['recent_order' => $recentOrders])
+            ->select(['user_id', 'COUNT(*) AS "order_count"'])
+            ->from('recent_order')
+            ->groupBy('user_id')
+            ->asTable();
 
   .content-section
     h2 Executing Queries
@@ -545,21 +545,21 @@ block content
           td Get a single column value (COUNT, MAX, etc.)
 
     pre
-      code.
-        <span class="comment">// Fetch one record</span>
-        <span class="variable">$user</span> = <span class="variable">DB</span>::<span class="function">select</span>()
-            -><span class="function">from</span>(<span class="string">'user'</span>)
-            -><span class="function">where</span>([<span class="string">'id'</span> => <span class="number">1</span>])
-            -><span class="function">asRow</span>();
+      code.language-php.
+        // Fetch one record
+        $user = DB::select()
+            ->from('user')
+            ->where(['id' => 1])
+            ->asRow();
 
-        <span class="comment">// Fetch all records</span>
-        <span class="variable">$users</span> = <span class="variable">DB</span>::<span class="function">select</span>()-><span class="function">from</span>(<span class="string">'user'</span>)-><span class="function">asTable</span>();
+        // Fetch all records
+        $users = DB::select()->from('user')->asTable();
 
-        <span class="comment">// Get scalar value</span>
-        <span class="variable">$count</span> = <span class="variable">DB</span>::<span class="function">select</span>(<span class="string">'COUNT(*)'</span>)-><span class="function">from</span>(<span class="string">'user'</span>)-><span class="function">asValue</span>();
+        // Get scalar value
+        $count = DB::select('COUNT(*)')->from('user')->asValue();
 
-        <span class="comment">// Execute INSERT/UPDATE/DELETE</span>
-        <span class="variable">DB</span>::<span class="function">delete</span>()-><span class="function">from</span>(<span class="string">'user'</span>)-><span class="function">where</span>([<span class="string">'active'</span> => <span class="keyword">false</span>])-><span class="function">commit</span>();
+        // Execute INSERT/UPDATE/DELETE
+        DB::delete()->from('user')->where(['active' => false])->commit();
 
   .content-section
     h2 Raw SQL
@@ -567,12 +567,12 @@ block content
     p When you need full control, use raw SQL with placeholders:
 
     pre
-      code.
-        <span class="comment">// Raw query with placeholders</span>
-        <span class="variable">$results</span> = <span class="variable">DB</span>::<span class="function">raw</span>(
-            <span class="string">'SELECT * FROM "user" WHERE "age" > {#} AND "city" = {#}'</span>,
-            [<span class="number">18</span>, <span class="string">'New York'</span>]
-        )-><span class="function">asTable</span>();
+      code.language-php.
+        // Raw query with placeholders
+        $results = DB::raw(
+            'SELECT * FROM "user" WHERE "age" > {#} AND "city" = {#}',
+            [18, 'New York']
+        )->asTable();
 
   .content-section
     h2 Best Practices

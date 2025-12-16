@@ -32,15 +32,15 @@ block content
     p F4 lets you register exception handlers using the <code>on()</code> method:
 
     pre
-      code.
-        <span class="keyword">use</span> <span class="variable">F4</span>\<span class="variable">Core</span>\<span class="variable">Exception</span>\<span class="variable">HttpException</span>;
+      code.language-php.
+        use F4\Core\Exception\HttpException;
 
-        <span class="comment">// Global exception handler</span>
-        <span class="variable">$f4</span>-><span class="function">on</span>(<span class="variable">HttpException</span>::<span class="keyword">class</span>,
-            <span class="keyword">function</span>(<span class="variable">$exception</span>, <span class="variable">$request</span>, <span class="variable">$response</span>, <span class="variable">$route</span>) {
-                <span class="keyword">return</span> <span class="variable">$response</span>
-                    -><span class="function">setData</span>([<span class="string">'error'</span> => <span class="variable">$exception</span>-><span class="function">getMessage</span>()])
-                    -><span class="function">withStatus</span>(<span class="variable">$exception</span>-><span class="function">getCode</span>());
+        // Global exception handler
+        $f4->on(HttpException::class,
+            function($exception, $request, $response, $route) {
+                return $response
+                    ->setData(['error' => $exception->getMessage()])
+                    ->withStatus($exception->getCode());
             }
         );
 
@@ -94,28 +94,28 @@ block content
     h3 Throwing HTTP Exceptions
 
     pre
-      code.
-        <span class="keyword">use</span> <span class="variable">F4</span>\<span class="variable">Core</span>\<span class="variable">Exception</span>\<span class="variable">HttpException</span>;
+      code.language-php.
+        use F4\Core\Exception\HttpException;
 
-        <span class="comment">// 404 Not Found</span>
-        <span class="variable">Route</span>::<span class="function">get</span>(<span class="string">'/posts/{id:int}'</span>, <span class="keyword">function</span>(<span class="keyword">int</span> <span class="variable">$id</span>) {
-            <span class="variable">$post</span> = <span class="variable">Post</span>::<span class="function">find</span>(<span class="variable">$id</span>);
+        // 404 Not Found
+        Route::get('/posts/{id:int}', function(int $id) {
+            $post = Post::find($id);
 
-            <span class="keyword">if</span> (!<span class="variable">$post</span>) {
-                <span class="keyword">throw new</span> <span class="variable">HttpException</span>(<span class="string">'Post not found'</span>, <span class="number">404</span>);
+            if (!$post) {
+                throw new HttpException('Post not found', 404);
             }
 
-            <span class="keyword">return</span> [<span class="string">'post'</span> => <span class="variable">$post</span>];
+            return ['post' => $post];
         });
 
-        <span class="comment">// 403 Forbidden</span>
-        <span class="variable">Route</span>::<span class="function">delete</span>(<span class="string">'/posts/{id:int}'</span>, <span class="keyword">function</span>(<span class="keyword">int</span> <span class="variable">$id</span>) {
-            <span class="keyword">if</span> (!<span class="function">isAdmin</span>()) {
-                <span class="keyword">throw new</span> <span class="variable">HttpException</span>(<span class="string">'Admin access required'</span>, <span class="number">403</span>);
+        // 403 Forbidden
+        Route::delete('/posts/{id:int}', function(int $id) {
+            if (!isAdmin()) {
+                throw new HttpException('Admin access required', 403);
             }
 
-            <span class="variable">Post</span>::<span class="function">delete</span>(<span class="variable">$id</span>);
-            <span class="keyword">return</span> [<span class="string">'success'</span> => <span class="keyword">true</span>];
+            Post::delete($id);
+            return ['success' => true];
         });
 
   .content-section
@@ -124,53 +124,53 @@ block content
     p Register handlers for different exception types:
 
     pre
-      code.
-        <span class="keyword">use</span> <span class="variable">F4</span>\<span class="variable">Core</span>\<span class="variable">Exception</span>\{<span class="variable">HttpException</span>, <span class="variable">ValidationFailedException</span>};
-        <span class="keyword">use</span> <span class="variable">F4</span>\<span class="variable">DB</span>\<span class="variable">Exception</span>\<span class="variable">DatabaseException</span>;
+      code.language-php.
+        use F4\Core\Exception\{HttpException, ValidationFailedException};
+        use F4\DB\Exception\DatabaseException;
 
-        <span class="comment">// Handle HTTP exceptions</span>
-        <span class="variable">$f4</span>-><span class="function">on</span>(<span class="variable">HttpException</span>::<span class="keyword">class</span>,
-            <span class="keyword">function</span>(<span class="variable">$exception</span>, <span class="variable">$request</span>, <span class="variable">$response</span>, <span class="variable">$route</span>) {
-                <span class="keyword">return</span> <span class="variable">$response</span>
-                    -><span class="function">setData</span>([
-                        <span class="string">'error'</span> => <span class="variable">$exception</span>-><span class="function">getMessage</span>(),
-                        <span class="string">'code'</span> => <span class="variable">$exception</span>-><span class="function">getCode</span>()
+        // Handle HTTP exceptions
+        $f4->on(HttpException::class,
+            function($exception, $request, $response, $route) {
+                return $response
+                    ->setData([
+                        'error' => $exception->getMessage(),
+                        'code' => $exception->getCode()
                     ])
-                    -><span class="function">withStatus</span>(<span class="variable">$exception</span>-><span class="function">getCode</span>());
+                    ->withStatus($exception->getCode());
             }
         );
 
-        <span class="comment">// Handle validation errors</span>
-        <span class="variable">$f4</span>-><span class="function">on</span>(<span class="variable">ValidationFailedException</span>::<span class="keyword">class</span>,
-            <span class="keyword">function</span>(<span class="variable">$exception</span>, <span class="variable">$request</span>, <span class="variable">$response</span>, <span class="variable">$route</span>) {
-                <span class="keyword">return</span> <span class="variable">$response</span>
-                    -><span class="function">setData</span>([
-                        <span class="string">'error'</span> => <span class="string">'Validation failed'</span>,
-                        <span class="string">'errors'</span> => <span class="variable">$exception</span>-><span class="function">getErrors</span>()
+        // Handle validation errors
+        $f4->on(ValidationFailedException::class,
+            function($exception, $request, $response, $route) {
+                return $response
+                    ->setData([
+                        'error' => 'Validation failed',
+                        'errors' => $exception->getErrors()
                     ])
-                    -><span class="function">withStatus</span>(<span class="number">422</span>);
+                    ->withStatus(422);
             }
         );
 
-        <span class="comment">// Handle database errors</span>
-        <span class="variable">$f4</span>-><span class="function">on</span>(<span class="variable">DatabaseException</span>::<span class="keyword">class</span>,
-            <span class="keyword">function</span>(<span class="variable">$exception</span>, <span class="variable">$request</span>, <span class="variable">$response</span>, <span class="variable">$route</span>) {
-                <span class="function">error_log</span>(<span class="string">"Database error: "</span> . <span class="variable">$exception</span>-><span class="function">getMessage</span>());
+        // Handle database errors
+        $f4->on(DatabaseException::class,
+            function($exception, $request, $response, $route) {
+                error_log("Database error: " . $exception->getMessage());
 
-                <span class="keyword">return</span> <span class="variable">$response</span>
-                    -><span class="function">setData</span>([<span class="string">'error'</span> => <span class="string">'Database error occurred'</span>])
-                    -><span class="function">withStatus</span>(<span class="number">500</span>);
+                return $response
+                    ->setData(['error' => 'Database error occurred'])
+                    ->withStatus(500);
             }
         );
 
-        <span class="comment">// Catch-all for unexpected exceptions</span>
-        <span class="variable">$f4</span>-><span class="function">on</span>(\<span class="variable">Exception</span>::<span class="keyword">class</span>,
-            <span class="keyword">function</span>(<span class="variable">$exception</span>, <span class="variable">$request</span>, <span class="variable">$response</span>, <span class="variable">$route</span>) {
-                <span class="function">error_log</span>(<span class="string">"Unexpected error: "</span> . <span class="variable">$exception</span>-><span class="function">getMessage</span>());
+        // Catch-all for unexpected exceptions
+        $f4->on(\Exception::class,
+            function($exception, $request, $response, $route) {
+                error_log("Unexpected error: " . $exception->getMessage());
 
-                <span class="keyword">return</span> <span class="variable">$response</span>
-                    -><span class="function">setData</span>([<span class="string">'error'</span> => <span class="string">'An unexpected error occurred'</span>])
-                    -><span class="function">withStatus</span>(<span class="number">500</span>);
+                return $response
+                    ->setData(['error' => 'An unexpected error occurred'])
+                    ->withStatus(500);
             }
         );
 
@@ -180,17 +180,17 @@ block content
     p Handle exceptions for specific routes:
 
     pre
-      code.
-        <span class="variable">$f4</span>-><span class="function">addRoute</span>(
-            <span class="variable">Route</span>::<span class="function">get</span>(<span class="string">'/api/data'</span>, <span class="keyword">function</span>() {
-                <span class="keyword">throw new</span> \<span class="variable">Exception</span>(<span class="string">'Something went wrong'</span>);
+      code.language-php.
+        $f4->addRoute(
+            Route::get('/api/data', function() {
+                throw new \Exception('Something went wrong');
             })
-            -><span class="function">on</span>(\<span class="variable">Exception</span>::<span class="keyword">class</span>,
-                <span class="keyword">function</span>(<span class="variable">$exception</span>, <span class="variable">$request</span>, <span class="variable">$response</span>) {
-                    <span class="comment">// Route-specific error handling</span>
-                    <span class="keyword">return</span> <span class="variable">$response</span>
-                        -><span class="function">setData</span>([<span class="string">'error'</span> => <span class="string">'API error'</span>])
-                        -><span class="function">withStatus</span>(<span class="number">500</span>);
+            ->on(\Exception::class,
+                function($exception, $request, $response) {
+                    // Route-specific error handling
+                    return $response
+                        ->setData(['error' => 'API error'])
+                        ->withStatus(500);
                 }
             )
         );
@@ -205,31 +205,31 @@ block content
     p <code>ValidationFailedException</code> is thrown automatically when parameter validation fails:
 
     pre
-      code.
-        <span class="keyword">use</span> <span class="variable">F4</span>\<span class="variable">Core</span>\<span class="variable">Validator</span>\{<span class="variable">IsNotEmpty</span>, <span class="variable">IsEmail</span>};
+      code.language-php.
+        use F4\Core\Validator\{IsNotEmpty, IsEmail};
 
-        <span class="variable">Route</span>::<span class="function">post</span>(<span class="string">'/register'</span>, <span class="keyword">function</span>(
-            \#[<span class="variable">IsNotEmpty</span>]
-            <span class="keyword">string</span> <span class="variable">$name</span>,
+        Route::post('/register', function(
+            #[IsNotEmpty]
+            string $name,
 
-            \#[<span class="variable">IsEmail</span>]
-            <span class="keyword">string</span> <span class="variable">$email</span>
+            #[IsEmail]
+            string $email
         ) {
-            <span class="comment">// If validation fails, ValidationFailedException is thrown</span>
-            <span class="comment">// Your handler can return a 422 response with error details</span>
-            <span class="keyword">return</span> [<span class="string">'success'</span> => <span class="keyword">true</span>];
+            // If validation fails, ValidationFailedException is thrown
+            // Your handler can return a 422 response with error details
+            return ['success' => true];
         });
 
     h3 Validation Error Format
 
     pre
-      code.
-        <span class="comment">// Exception handler response</span>
+      code.language-json.
+        // Exception handler response
         {
-            <span class="string">"error"</span>: <span class="string">"Validation failed"</span>,
-            <span class="string">"errors"</span>: {
-                <span class="string">"email"</span>: [<span class="string">"Email address is invalid"</span>],
-                <span class="string">"name"</span>: [<span class="string">"Name cannot be empty"</span>]
+            "error": "Validation failed",
+            "errors": {
+                "email": ["Email address is invalid"],
+                "name": ["Name cannot be empty"]
             }
         }
 
@@ -241,27 +241,27 @@ block content
     h3 404 Error Page
 
     pre
-      code.
-        <span class="variable">$f4</span>-><span class="function">on</span>(<span class="variable">HttpException</span>::<span class="keyword">class</span>,
-            <span class="keyword">function</span>(<span class="variable">$exception</span>, <span class="variable">$request</span>, <span class="variable">$response</span>, <span class="variable">$route</span>) {
-                <span class="variable">$code</span> = <span class="variable">$exception</span>-><span class="function">getCode</span>();
+      code.language-php.
+        $f4->on(HttpException::class,
+            function($exception, $request, $response, $route) {
+                $code = $exception->getCode();
 
-                <span class="comment">// Use custom template for 404 errors</span>
-                <span class="keyword">if</span> (<span class="variable">$code</span> === <span class="number">404</span>) {
-                    <span class="keyword">return</span> <span class="variable">$response</span>
-                        -><span class="function">setTemplate</span>(<span class="string">'errors/404.pug'</span>)
-                        -><span class="function">setData</span>([<span class="string">'message'</span> => <span class="variable">$exception</span>-><span class="function">getMessage</span>()])
-                        -><span class="function">withStatus</span>(<span class="number">404</span>);
+                // Use custom template for 404 errors
+                if ($code === 404) {
+                    return $response
+                        ->setTemplate('errors/404.pug')
+                        ->setData(['message' => $exception->getMessage()])
+                        ->withStatus(404);
                 }
 
-                <span class="comment">// Generic error page</span>
-                <span class="keyword">return</span> <span class="variable">$response</span>
-                    -><span class="function">setTemplate</span>(<span class="string">'errors/generic.pug'</span>)
-                    -><span class="function">setData</span>([
-                        <span class="string">'code'</span> => <span class="variable">$code</span>,
-                        <span class="string">'message'</span> => <span class="variable">$exception</span>-><span class="function">getMessage</span>()
+                // Generic error page
+                return $response
+                    ->setTemplate('errors/generic.pug')
+                    ->setData([
+                        'code' => $code,
+                        'message' => $exception->getMessage()
                     ])
-                    -><span class="function">withStatus</span>(<span class="variable">$code</span>);
+                    ->withStatus($code);
             }
         );
 
@@ -271,17 +271,17 @@ block content
     p Handle requests to non-existent routes:
 
     pre
-      code.
-        <span class="variable">$f4</span>-><span class="function">after</span>(<span class="keyword">function</span>(<span class="variable">$response</span>, <span class="variable">$request</span>, <span class="variable">$route</span>) {
-            <span class="comment">// If no route matched</span>
-            <span class="keyword">if</span> (!<span class="variable">$route</span>) {
-                <span class="keyword">return</span> <span class="variable">$response</span>
-                    -><span class="function">setTemplate</span>(<span class="string">'errors/404.pug'</span>)
-                    -><span class="function">setData</span>([<span class="string">'error'</span> => <span class="string">'Page not found'</span>])
-                    -><span class="function">withStatus</span>(<span class="number">404</span>);
+      code.language-php.
+        $f4->after(function($response, $request, $route) {
+            // If no route matched
+            if (!$route) {
+                return $response
+                    ->setTemplate('errors/404.pug')
+                    ->setData(['error' => 'Page not found'])
+                    ->withStatus(404);
             }
 
-            <span class="keyword">return</span> <span class="variable">$response</span>;
+            return $response;
         });
 
   .content-section
@@ -290,28 +290,28 @@ block content
     p Show different error information based on environment:
 
     pre
-      code.
-        <span class="keyword">use</span> <span class="variable">F4</span>\<span class="variable">Config</span>;
+      code.language-php.
+        use F4\Config;
 
-        <span class="variable">$f4</span>-><span class="function">on</span>(\<span class="variable">Exception</span>::<span class="keyword">class</span>,
-            <span class="keyword">function</span>(<span class="variable">$exception</span>, <span class="variable">$request</span>, <span class="variable">$response</span>, <span class="variable">$route</span>) {
-                <span class="comment">// Log error</span>
-                <span class="function">error_log</span>(<span class="variable">$exception</span>-><span class="function">getMessage</span>());
-                <span class="function">error_log</span>(<span class="variable">$exception</span>-><span class="function">getTraceAsString</span>());
+        $f4->on(\Exception::class,
+            function($exception, $request, $response, $route) {
+                // Log error
+                error_log($exception->getMessage());
+                error_log($exception->getTraceAsString());
 
-                <span class="variable">$data</span> = [<span class="string">'error'</span> => <span class="string">'An error occurred'</span>];
+                $data = ['error' => 'An error occurred'];
 
-                <span class="comment">// Show details in development mode</span>
-                <span class="keyword">if</span> (<span class="variable">Config</span>::<span class="variable">DEBUG_MODE</span>) {
-                    <span class="variable">$data</span>[<span class="string">'message'</span>] = <span class="variable">$exception</span>-><span class="function">getMessage</span>();
-                    <span class="variable">$data</span>[<span class="string">'file'</span>] = <span class="variable">$exception</span>-><span class="function">getFile</span>();
-                    <span class="variable">$data</span>[<span class="string">'line'</span>] = <span class="variable">$exception</span>-><span class="function">getLine</span>();
-                    <span class="variable">$data</span>[<span class="string">'trace'</span>] = <span class="variable">$exception</span>-><span class="function">getTrace</span>();
+                // Show details in development mode
+                if (Config::DEBUG_MODE) {
+                    $data['message'] = $exception->getMessage();
+                    $data['file'] = $exception->getFile();
+                    $data['line'] = $exception->getLine();
+                    $data['trace'] = $exception->getTrace();
                 }
 
-                <span class="keyword">return</span> <span class="variable">$response</span>
-                    -><span class="function">setData</span>(<span class="variable">$data</span>)
-                    -><span class="function">withStatus</span>(<span class="number">500</span>);
+                return $response
+                    ->setData($data)
+                    ->withStatus(500);
             }
         );
 
@@ -373,27 +373,27 @@ block content
     p Implement comprehensive error logging:
 
     pre
-      code.
-        <span class="variable">$f4</span>-><span class="function">on</span>(\<span class="variable">Exception</span>::<span class="keyword">class</span>,
-            <span class="keyword">function</span>(<span class="variable">$exception</span>, <span class="variable">$request</span>, <span class="variable">$response</span>, <span class="variable">$route</span>) {
-                <span class="comment">// Log comprehensive error information</span>
-                <span class="variable">$logMessage</span> = <span class="function">sprintf</span>(
-                    <span class="string">"[%s] %s: %s in %s:%d\nRequest: %s %s\nTrace:\n%s"</span>,
-                    <span class="function">date</span>(<span class="string">'Y-m-d H:i:s'</span>),
-                    <span class="function">get_class</span>(<span class="variable">$exception</span>),
-                    <span class="variable">$exception</span>-><span class="function">getMessage</span>(),
-                    <span class="variable">$exception</span>-><span class="function">getFile</span>(),
-                    <span class="variable">$exception</span>-><span class="function">getLine</span>(),
-                    <span class="variable">$request</span>-><span class="function">getMethod</span>(),
-                    <span class="variable">$request</span>-><span class="function">getPath</span>(),
-                    <span class="variable">$exception</span>-><span class="function">getTraceAsString</span>()
+      code.language-php.
+        $f4->on(\Exception::class,
+            function($exception, $request, $response, $route) {
+                // Log comprehensive error information
+                $logMessage = sprintf(
+                    "[%s] %s: %s in %s:%d\nRequest: %s %s\nTrace:\n%s",
+                    date('Y-m-d H:i:s'),
+                    get_class($exception),
+                    $exception->getMessage(),
+                    $exception->getFile(),
+                    $exception->getLine(),
+                    $request->getMethod(),
+                    $request->getPath(),
+                    $exception->getTraceAsString()
                 );
 
-                <span class="function">error_log</span>(<span class="variable">$logMessage</span>);
+                error_log($logMessage);
 
-                <span class="keyword">return</span> <span class="variable">$response</span>
-                    -><span class="function">setData</span>([<span class="string">'error'</span> => <span class="string">'Server error'</span>])
-                    -><span class="function">withStatus</span>(<span class="number">500</span>);
+                return $response
+                    ->setData(['error' => 'Server error'])
+                    ->withStatus(500);
             }
         );
 
@@ -401,74 +401,74 @@ block content
     h2 Complete Error Handling Example
 
     pre
-      code.
-        <span class="keyword">use</span> <span class="variable">F4</span>\<span class="variable">Core</span>\<span class="variable">Exception</span>\{<span class="variable">HttpException</span>, <span class="variable">ValidationFailedException</span>};
-        <span class="keyword">use</span> <span class="variable">F4</span>\<span class="variable">Config</span>;
+      code.language-php.
+        use F4\Core\Exception\{HttpException, ValidationFailedException};
+        use F4\Config;
 
-        <span class="keyword">class</span> <span class="variable">ErrorHandlerModule</span> <span class="keyword">implements</span> <span class="variable">ModuleInterface</span>
+        class ErrorHandlerModule implements ModuleInterface
         {
-            <span class="keyword">public function</span> <span class="function">__construct</span>(<span class="variable">CoreApiInterface</span> &<span class="variable">$f4</span>)
+            public function __construct(CoreApiInterface &$f4)
             {
-                <span class="comment">// Validation errors</span>
-                <span class="variable">$f4</span>-><span class="function">on</span>(<span class="variable">ValidationFailedException</span>::<span class="keyword">class</span>,
-                    <span class="keyword">function</span>(<span class="variable">$e</span>, <span class="variable">$req</span>, <span class="variable">$res</span>) {
-                        <span class="keyword">return</span> <span class="variable">$res</span>
-                            -><span class="function">setData</span>([
-                                <span class="string">'error'</span> => <span class="string">'Validation failed'</span>,
-                                <span class="string">'errors'</span> => <span class="variable">$e</span>-><span class="function">getErrors</span>()
+                // Validation errors
+                $f4->on(ValidationFailedException::class,
+                    function($e, $req, $res) {
+                        return $res
+                            ->setData([
+                                'error' => 'Validation failed',
+                                'errors' => $e->getErrors()
                             ])
-                            -><span class="function">withStatus</span>(<span class="number">422</span>);
+                            ->withStatus(422);
                     }
                 );
 
-                <span class="comment">// HTTP errors (404, 403, etc.)</span>
-                <span class="variable">$f4</span>-><span class="function">on</span>(<span class="variable">HttpException</span>::<span class="keyword">class</span>,
-                    <span class="keyword">function</span>(<span class="variable">$e</span>, <span class="variable">$req</span>, <span class="variable">$res</span>) {
-                        <span class="variable">$code</span> = <span class="variable">$e</span>-><span class="function">getCode</span>();
+                // HTTP errors (404, 403, etc.)
+                $f4->on(HttpException::class,
+                    function($e, $req, $res) {
+                        $code = $e->getCode();
 
-                        <span class="keyword">if</span> (<span class="variable">$code</span> === <span class="number">404</span>) {
-                            <span class="keyword">return</span> <span class="variable">$res</span>
-                                -><span class="function">setTemplate</span>(<span class="string">'errors/404.pug'</span>)
-                                -><span class="function">setData</span>([<span class="string">'message'</span> => <span class="variable">$e</span>-><span class="function">getMessage</span>()])
-                                -><span class="function">withStatus</span>(<span class="number">404</span>);
+                        if ($code === 404) {
+                            return $res
+                                ->setTemplate('errors/404.pug')
+                                ->setData(['message' => $e->getMessage()])
+                                ->withStatus(404);
                         }
 
-                        <span class="keyword">return</span> <span class="variable">$res</span>
-                            -><span class="function">setData</span>([<span class="string">'error'</span> => <span class="variable">$e</span>-><span class="function">getMessage</span>()])
-                            -><span class="function">withStatus</span>(<span class="variable">$code</span>);
+                        return $res
+                            ->setData(['error' => $e->getMessage()])
+                            ->withStatus($code);
                     }
                 );
 
-                <span class="comment">// Catch-all for unexpected errors</span>
-                <span class="variable">$f4</span>-><span class="function">on</span>(\<span class="variable">Exception</span>::<span class="keyword">class</span>,
-                    <span class="keyword">function</span>(<span class="variable">$e</span>, <span class="variable">$req</span>, <span class="variable">$res</span>) {
-                        <span class="function">error_log</span>(<span class="variable">$e</span>-><span class="function">getMessage</span>());
+                // Catch-all for unexpected errors
+                $f4->on(\Exception::class,
+                    function($e, $req, $res) {
+                        error_log($e->getMessage());
 
-                        <span class="variable">$data</span> = [<span class="string">'error'</span> => <span class="string">'Internal server error'</span>];
+                        $data = ['error' => 'Internal server error'];
 
-                        <span class="keyword">if</span> (<span class="variable">Config</span>::<span class="variable">DEBUG_MODE</span>) {
-                            <span class="variable">$data</span>[<span class="string">'debug'</span>] = [
-                                <span class="string">'message'</span> => <span class="variable">$e</span>-><span class="function">getMessage</span>(),
-                                <span class="string">'file'</span> => <span class="variable">$e</span>-><span class="function">getFile</span>(),
-                                <span class="string">'line'</span> => <span class="variable">$e</span>-><span class="function">getLine</span>()
+                        if (Config::DEBUG_MODE) {
+                            $data['debug'] = [
+                                'message' => $e->getMessage(),
+                                'file' => $e->getFile(),
+                                'line' => $e->getLine()
                             ];
                         }
 
-                        <span class="keyword">return</span> <span class="variable">$res</span>
-                            -><span class="function">setData</span>(<span class="variable">$data</span>)
-                            -><span class="function">withStatus</span>(<span class="number">500</span>);
+                        return $res
+                            ->setData($data)
+                            ->withStatus(500);
                     }
                 );
 
-                <span class="comment">// Handle 404 for unmatched routes</span>
-                <span class="variable">$f4</span>-><span class="function">after</span>(<span class="keyword">function</span>(<span class="variable">$res</span>, <span class="variable">$req</span>, <span class="variable">$route</span>) {
-                    <span class="keyword">if</span> (!<span class="variable">$route</span>) {
-                        <span class="keyword">return</span> <span class="variable">$res</span>
-                            -><span class="function">setTemplate</span>(<span class="string">'errors/404.pug'</span>)
-                            -><span class="function">setData</span>([<span class="string">'error'</span> => <span class="string">'Page not found'</span>])
-                            -><span class="function">withStatus</span>(<span class="number">404</span>);
+                // Handle 404 for unmatched routes
+                $f4->after(function($res, $req, $route) {
+                    if (!$route) {
+                        return $res
+                            ->setTemplate('errors/404.pug')
+                            ->setData(['error' => 'Page not found'])
+                            ->withStatus(404);
                     }
-                    <span class="keyword">return</span> <span class="variable">$res</span>;
+                    return $res;
                 });
             }
         }

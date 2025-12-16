@@ -50,29 +50,29 @@ block content
     h3 Global Before Middleware
 
     pre
-      code.
-        <span class="comment">// Runs before ALL routes</span>
-        <span class="variable">$f4</span>-><span class="function">before</span>(<span class="keyword">function</span>(<span class="variable">$request</span>, <span class="variable">$response</span>, <span class="variable">$route</span>) {
-            <span class="comment">// Log every request</span>
-            <span class="function">error_log</span>(<span class="string">"Request: "</span> . <span class="variable">$request</span>-><span class="function">getPath</span>());
+      code.language-php.
+        // Runs before ALL routes
+        $f4->before(function($request, $response, $route) {
+            // Log every request
+            error_log("Request: " . $request->getPath());
 
-            <span class="comment">// Must return the request</span>
-            <span class="keyword">return</span> <span class="variable">$request</span>;
+            // Must return the request
+            return $request;
         });
 
     h3 Route-Level Before Middleware
 
     pre
-      code.
-        <span class="variable">$f4</span>-><span class="function">addRoute</span>(<span class="variable">Route</span>::<span class="function">get</span>(<span class="string">'/admin'</span>, <span class="keyword">function</span>() {
-            <span class="keyword">return</span> [<span class="string">'admin'</span> => <span class="keyword">true</span>];
+      code.language-php.
+        $f4->addRoute(Route::get('/admin', function() {
+            return ['admin' => true];
         })
-        -><span class="function">before</span>(<span class="keyword">function</span>(<span class="variable">$request</span>, <span class="variable">$response</span>, <span class="variable">$route</span>) {
-            <span class="comment">// Check if user is admin</span>
-            <span class="keyword">if</span> (!<span class="variable">$_SESSION</span>[<span class="string">'is_admin'</span>]) {
-                <span class="keyword">throw new</span> <span class="variable">HttpException</span>(<span class="string">'Unauthorized'</span>, <span class="number">403</span>);
+        ->before(function($request, $response, $route) {
+            // Check if user is admin
+            if (!$_SESSION['is_admin']) {
+                throw new HttpException('Unauthorized', 403);
             }
-            <span class="keyword">return</span> <span class="variable">$request</span>;
+            return $request;
         }));
 
     .info-box
@@ -88,25 +88,25 @@ block content
     h3 Global After Middleware
 
     pre
-      code.
-        <span class="comment">// Runs after ALL routes</span>
-        <span class="variable">$f4</span>-><span class="function">after</span>(<span class="keyword">function</span>(<span class="variable">$response</span>, <span class="variable">$request</span>, <span class="variable">$route</span>) {
-            <span class="comment">// Add custom header to all responses</span>
-            <span class="keyword">return</span> <span class="variable">$response</span>-><span class="function">withHeader</span>(<span class="string">'X-Powered-By'</span>, <span class="string">'F4'</span>);
+      code.language-php.
+        // Runs after ALL routes
+        $f4->after(function($response, $request, $route) {
+            // Add custom header to all responses
+            return $response->withHeader('X-Powered-By', 'F4');
         });
 
     h3 Route-Level After Middleware
 
     pre
-      code.
-        <span class="variable">$f4</span>-><span class="function">addRoute</span>(<span class="variable">Route</span>::<span class="function">get</span>(<span class="string">'/api/data'</span>, <span class="keyword">function</span>() {
-            <span class="keyword">return</span> [<span class="string">'items'</span> => [<span class="number">1</span>, <span class="number">2</span>, <span class="number">3</span>]];
+      code.language-php.
+        $f4->addRoute(Route::get('/api/data', function() {
+            return ['items' => [1, 2, 3]];
         })
-        -><span class="function">after</span>(<span class="keyword">function</span>(<span class="variable">$response</span>, <span class="variable">$request</span>, <span class="variable">$route</span>) {
-            <span class="comment">// Add metadata to response</span>
-            <span class="variable">$data</span> = <span class="variable">$response</span>-><span class="function">getData</span>();
-            <span class="variable">$data</span>[<span class="string">'timestamp'</span>] = <span class="function">time</span>();
-            <span class="keyword">return</span> <span class="variable">$response</span>-><span class="function">setData</span>(<span class="variable">$data</span>);
+        ->after(function($response, $request, $route) {
+            // Add metadata to response
+            $data = $response->getData();
+            $data['timestamp'] = time();
+            return $response->setData($data);
         }));
 
   .content-section
@@ -121,7 +121,7 @@ block content
         1. Global Before Middleware
         2. Route Group Before Middleware
         3. Route Before Middleware
-        4. → Route Handler Executes ←
+        4. »» Route Handler Executes ««
         5. Route After Middleware
         6. Route Group After Middleware
         7. Global After Middleware
@@ -134,56 +134,56 @@ block content
     h3 Authentication Middleware
 
     pre
-      code.
-        <span class="keyword">function</span> <span class="function">requireAuth</span>(<span class="variable">$request</span>, <span class="variable">$response</span>, <span class="variable">$route</span>) {
-            <span class="keyword">if</span> (!<span class="keyword">isset</span>(<span class="variable">$_SESSION</span>[<span class="string">'user_id'</span>])) {
-                <span class="keyword">throw new</span> <span class="variable">HttpException</span>(<span class="string">'Please log in'</span>, <span class="number">401</span>);
+      code.language-php.
+        function requireAuth($request, $response, $route) {
+            if (!isset($_SESSION['user_id'])) {
+                throw new HttpException('Please log in', 401);
             }
-            <span class="keyword">return</span> <span class="variable">$request</span>;
+            return $request;
         }
 
-        <span class="comment">// Apply to protected routes</span>
-        <span class="variable">$f4</span>-><span class="function">addRoute</span>(<span class="variable">Route</span>::<span class="function">get</span>(<span class="string">'/profile'</span>, <span class="keyword">function</span>() {
-            <span class="keyword">return</span> [<span class="string">'user'</span> => <span class="variable">$_SESSION</span>[<span class="string">'user_id'</span>]];
-        })-><span class="function">before</span>(<span class="string">'requireAuth'</span>));
+        // Apply to protected routes
+        $f4->addRoute(Route::get('/profile', function() {
+            return ['user' => $_SESSION['user_id']];
+        })->before('requireAuth'));
 
     h3 CORS Middleware
 
     pre
-      code.
-        <span class="variable">$f4</span>-><span class="function">after</span>(<span class="keyword">function</span>(<span class="variable">$response</span>, <span class="variable">$request</span>, <span class="variable">$route</span>) {
-            <span class="keyword">return</span> <span class="variable">$response</span>
-                -><span class="function">withHeader</span>(<span class="string">'Access-Control-Allow-Origin'</span>, <span class="string">'*'</span>)
-                -><span class="function">withHeader</span>(<span class="string">'Access-Control-Allow-Methods'</span>, <span class="string">'GET, POST, PUT, DELETE'</span>)
-                -><span class="function">withHeader</span>(<span class="string">'Access-Control-Allow-Headers'</span>, <span class="string">'Content-Type'</span>);
+      code.language-php.
+        $f4->after(function($response, $request, $route) {
+            return $response
+                ->withHeader('Access-Control-Allow-Origin', '*')
+                ->withHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE')
+                ->withHeader('Access-Control-Allow-Headers', 'Content-Type');
         });
 
     h3 Request Timing Middleware
 
     pre
-      code.
-        <span class="variable">$f4</span>-><span class="function">before</span>(<span class="keyword">function</span>(<span class="variable">$request</span>, <span class="variable">$response</span>, <span class="variable">$route</span>) {
-            <span class="variable">$request</span>-><span class="function">setAttribute</span>(<span class="string">'start_time'</span>, <span class="function">microtime</span>(<span class="keyword">true</span>));
-            <span class="keyword">return</span> <span class="variable">$request</span>;
+      code.language-php.
+        $f4->before(function($request, $response, $route) {
+            $request->setAttribute('start_time', microtime(true));
+            return $request;
         });
 
-        <span class="variable">$f4</span>-><span class="function">after</span>(<span class="keyword">function</span>(<span class="variable">$response</span>, <span class="variable">$request</span>, <span class="variable">$route</span>) {
-            <span class="variable">$duration</span> = <span class="function">microtime</span>(<span class="keyword">true</span>) - <span class="variable">$request</span>-><span class="function">getAttribute</span>(<span class="string">'start_time'</span>);
-            <span class="keyword">return</span> <span class="variable">$response</span>-><span class="function">withHeader</span>(<span class="string">'X-Response-Time'</span>, <span class="variable">$duration</span>);
+        $f4->after(function($response, $request, $route) {
+            $duration = microtime(true) - $request->getAttribute('start_time');
+            return $response->withHeader('X-Response-Time', $duration);
         });
 
     h3 Logging Middleware
 
     pre
-      code.
-        <span class="variable">$f4</span>-><span class="function">before</span>(<span class="keyword">function</span>(<span class="variable">$request</span>, <span class="variable">$response</span>, <span class="variable">$route</span>) {
-            <span class="function">error_log</span>(<span class="function">sprintf</span>(
-                <span class="string">"[%s] %s %s"</span>,
-                <span class="function">date</span>(<span class="string">'Y-m-d H:i:s'</span>),
-                <span class="variable">$request</span>-><span class="function">getMethod</span>(),
-                <span class="variable">$request</span>-><span class="function">getPath</span>()
+      code.language-php.
+        $f4->before(function($request, $response, $route) {
+            error_log(sprintf(
+                "[%s] %s %s",
+                date('Y-m-d H:i:s'),
+                $request->getMethod(),
+                $request->getPath()
             ));
-            <span class="keyword">return</span> <span class="variable">$request</span>;
+            return $request;
         });
 
   .content-section
@@ -192,22 +192,22 @@ block content
     p Route groups can have their own middleware that applies to all routes in the group:
 
     pre
-      code.
-        <span class="keyword">use</span> <span class="variable">F4</span>\<span class="variable">Core</span>\<span class="variable">RouteGroup</span>;
+      code.language-php.
+        use F4\Core\RouteGroup;
 
-        <span class="variable">$apiGroup</span> = <span class="keyword">new</span> <span class="variable">RouteGroup</span>(<span class="string">'/api'</span>)
-            -><span class="function">before</span>(<span class="keyword">function</span>(<span class="variable">$request</span>, <span class="variable">$response</span>, <span class="variable">$route</span>) {
-                <span class="comment">// Validate API key for all /api/* routes</span>
-                <span class="variable">$apiKey</span> = <span class="variable">$request</span>-><span class="function">getHeader</span>(<span class="string">'X-API-Key'</span>);
-                <span class="keyword">if</span> (!<span class="function">isValidApiKey</span>(<span class="variable">$apiKey</span>)) {
-                    <span class="keyword">throw new</span> <span class="variable">HttpException</span>(<span class="string">'Invalid API key'</span>, <span class="number">403</span>);
+        $apiGroup = new RouteGroup('/api')
+            ->before(function($request, $response, $route) {
+                // Validate API key for all /api/* routes
+                $apiKey = $request->getHeader('X-API-Key');
+                if (!isValidApiKey($apiKey)) {
+                    throw new HttpException('Invalid API key', 403);
                 }
-                <span class="keyword">return</span> <span class="variable">$request</span>;
+                return $request;
             })
-            -><span class="function">addRoute</span>(<span class="variable">Route</span>::<span class="function">get</span>(<span class="string">'/users'</span>, <span class="keyword">function</span>() { <span class="comment">/* ... */</span> }))
-            -><span class="function">addRoute</span>(<span class="variable">Route</span>::<span class="function">get</span>(<span class="string">'/posts'</span>, <span class="keyword">function</span>() { <span class="comment">/* ... */</span> }));
+            ->addRoute(Route::get('/users', function() { /* ... */ }))
+            ->addRoute(Route::get('/posts', function() { /* ... */ }));
 
-        <span class="variable">$f4</span>-><span class="function">addRouteGroup</span>(<span class="variable">$apiGroup</span>);
+        $f4->addRouteGroup($apiGroup);
 
   .content-section
     h2 Short-Circuiting with Exception Handlers
@@ -217,78 +217,77 @@ block content
     h3 Exception Handler Registration
 
     pre
-      code.
-        <span class="keyword">use</span> <span class="variable">F4</span>\<span class="variable">Core</span>\<span class="variable">Exception</span>\{<span class="variable">HttpException</span>, <span class="variable">AccessForbiddenException</span>};
+      code.language-php.
+        use F4\Core\Exception\{HttpException, AccessForbiddenException};
 
-        <span class="comment">// Register exception handlers for specific exception types</span>
-        <span class="variable">$apiGroup</span> = <span class="keyword">new</span> <span class="variable">RouteGroup</span>(<span class="string">'/admin'</span>)
-            -><span class="function">on</span>(<span class="variable">AccessForbiddenException</span>::<span class="keyword">class</span>,
-                <span class="keyword">function</span> (<span class="variable">AccessForbiddenException</span> <span class="variable">$e</span>, <span class="variable">Request</span> <span class="variable">$request</span>, <span class="variable">Response</span> <span class="variable">$response</span>): <span class="variable">Response</span> {
-                    <span class="comment">// Handle access forbidden - return error page with exception</span>
-                    <span class="keyword">return</span> <span class="variable">$response</span>
-                        -><span class="function">setMetaData</span>(<span class="string">'authorizations'</span>, <span class="variable">$AuthService</span>-><span class="function">getAuthorizations</span>())
-                        -><span class="function">setException</span>(<span class="variable">$e</span>);
+        // Register exception handlers for specific exception types
+        $apiGroup = new RouteGroup('/admin')
+            ->on(AccessForbiddenException::class,
+                function (AccessForbiddenException $e, Request $request, Response $response): Response {
+                    // Handle access forbidden - return error page with exception
+                    return $response
+                        ->setException($e);
                 }
             )
-            -><span class="function">on</span>(<span class="variable">UnauthorizedAccessException</span>::<span class="keyword">class</span>,
-                <span class="keyword">fn</span> (<span class="variable">UnauthorizedAccessException</span> <span class="variable">$e</span>, <span class="variable">Request</span> <span class="variable">$request</span>, <span class="variable">Response</span> <span class="variable">$response</span>): <span class="variable">Response</span> =>
-                    <span class="comment">// Redirect unauthorized users to login</span>
-                    <span class="variable">$response</span>-><span class="function">withRedirect</span>(<span class="string">'/admin/login'</span>)
+            ->on(UnauthorizedAccessException::class,
+                fn (UnauthorizedAccessException $e, Request $request, Response $response): Response =>
+                    // Redirect unauthorized users to login
+                    $response->withRedirect('/admin/login')
             );
 
     h3 Throwing Exceptions in Before Middleware
 
     pre
-      code.
-        <span class="variable">$apiGroup</span>
-            -><span class="function">before</span>(<span class="keyword">function</span> (<span class="variable">Request</span> <span class="variable">$request</span>) {
-                <span class="comment">// Check authentication status</span>
-                <span class="keyword">if</span> (!<span class="variable">$AuthService</span>-><span class="function">getAuthenticatedManager</span>()) {
-                    <span class="comment">// Throw exception - will be caught by UnauthorizedAccessException handler</span>
-                    <span class="keyword">throw new</span> <span class="variable">UnauthorizedAccessException</span>;
+      code.language-php.
+        $apiGroup
+            ->before(function (Request $request) {
+                // Check authentication status
+                if (!$AuthService->getAuthenticatedManager()) {
+                    // Throw exception - will be caught by UnauthorizedAccessException handler
+                    throw new UnauthorizedAccessException;
                 }
             });
 
     h3 Complete Short-Circuit Example
 
     pre
-      code.
-        <span class="comment">// Define allowed public paths</span>
-        <span class="variable">$publicPaths</span> = [<span class="string">'/admin/login'</span>];
+      code.language-php.
+        // Define allowed public paths
+        $publicPaths = ['/admin/login'];
 
-        <span class="variable">$adminGroup</span> = <span class="keyword">new</span> <span class="variable">RouteGroup</span>(<span class="string">'/admin'</span>)
-            <span class="comment">// Handle access forbidden (403)</span>
-            -><span class="function">on</span>(<span class="variable">AccessForbiddenException</span>::<span class="keyword">class</span>,
-                <span class="keyword">function</span> (<span class="variable">$e</span>, <span class="variable">$request</span>, <span class="variable">$response</span>) <span class="keyword">use</span> (<span class="variable">$AuthService</span>): <span class="variable">Response</span> {
-                    <span class="keyword">return</span> <span class="variable">$response</span>
-                        -><span class="function">setMetaData</span>(<span class="string">'authorizations'</span>, <span class="variable">$AuthService</span>-><span class="function">getAuthorizations</span>())
-                        -><span class="function">setException</span>(<span class="variable">$e</span>);
+        $adminGroup = new RouteGroup('/admin')
+            // Handle access forbidden (403)
+            ->on(AccessForbiddenException::class,
+                function ($e, $request, $response) use ($AuthService): Response {
+                    return $response
+                        ->setMetaData('authorizations', $AuthService->getAuthorizations())
+                        ->setException($e);
                 }
             )
-            <span class="comment">// Handle unauthorized access (redirect to login)</span>
-            -><span class="function">on</span>(<span class="variable">UnauthorizedAccessException</span>::<span class="keyword">class</span>,
-                <span class="keyword">fn</span> (<span class="variable">$e</span>, <span class="variable">$request</span>, <span class="variable">$response</span>): <span class="variable">Response</span> =>
-                    <span class="variable">$response</span>-><span class="function">withRedirect</span>(<span class="string">'/admin/login'</span>)
+            // Handle unauthorized access (redirect to login)
+            ->on(UnauthorizedAccessException::class,
+                fn ($e, $request, $response): Response =>
+                    $response->withRedirect('/admin/login')
             )
-            <span class="comment">// Handle other HTTP exceptions</span>
-            -><span class="function">on</span>(<span class="variable">HttpException</span>::<span class="keyword">class</span>,
-                <span class="keyword">function</span> (<span class="variable">$e</span>, <span class="variable">$request</span>, <span class="variable">$response</span>) <span class="keyword">use</span> (<span class="variable">$AuthService</span>): <span class="variable">Response</span> {
-                    <span class="keyword">return</span> <span class="variable">$response</span>
-                        -><span class="function">setMetaData</span>(<span class="string">'authorizations'</span>, <span class="variable">$AuthService</span>-><span class="function">getAuthorizations</span>())
-                        -><span class="function">setException</span>(<span class="variable">$e</span>);
+            // Handle other HTTP exceptions
+            ->on(HttpException::class,
+                function ($e, $request, $response) use ($AuthService): Response {
+                    return $response
+                        ->setMetaData('authorizations', $AuthService->getAuthorizations())
+                        ->setException($e);
                 }
             )
-            <span class="comment">// Check authentication before every request</span>
-            -><span class="function">before</span>(<span class="keyword">function</span> (<span class="variable">Request</span> <span class="variable">$request</span>) <span class="keyword">use</span> (<span class="variable">$publicPaths</span>) {
-                <span class="keyword">if</span> (!<span class="keyword">new</span> <span class="variable">AuthenticationService</span>()-><span class="function">getAuthenticatedManager</span>()
-                    && !<span class="function">in_array</span>(<span class="variable">$request</span>-><span class="function">getPath</span>(), <span class="variable">$publicPaths</span>)) {
-                    <span class="keyword">throw new</span> <span class="variable">UnauthorizedAccessException</span>;
+            // Check authentication before every request
+            ->before(function (Request $request) use ($publicPaths) {
+                if (!new AuthenticationService()->getAuthenticatedManager()
+                    && !in_array($request->getPath(), $publicPaths)) {
+                    throw new UnauthorizedAccessException;
                 }
             })
-            -><span class="function">addRoute</span>(<span class="variable">Route</span>::<span class="function">get</span>(<span class="string">'/dashboard'</span>, <span class="keyword">function</span>() { <span class="comment">/* ... */</span> }))
-            -><span class="function">addRoute</span>(<span class="variable">Route</span>::<span class="function">get</span>(<span class="string">'/login'</span>, <span class="keyword">function</span>() { <span class="comment">/* ... */</span> }));
+            ->addRoute(Route::get('/dashboard', function() { /* ... */ }))
+            ->addRoute(Route::get('/login', function() { /* ... */ }));
 
-        <span class="variable">$f4</span>-><span class="function">addRouteGroup</span>(<span class="variable">$adminGroup</span>);
+        $f4->addRouteGroup($adminGroup);
 
     .info-box
       strong Key Concept:
@@ -331,60 +330,60 @@ block content
     p For <code>after</code> middleware, the parameter order is different:
 
     pre
-      code.
-        <span class="comment">// Before: (request, response, route)</span>
-        <span class="variable">$f4</span>-><span class="function">before</span>(<span class="keyword">function</span>(<span class="variable">$request</span>, <span class="variable">$response</span>, <span class="variable">$route</span>) { });
+      code.language-php.
+        // Before: (request, response, route)
+        $f4->before(function($request, $response, $route) { });
 
-        <span class="comment">// After: (response, request, route)</span>
-        <span class="variable">$f4</span>-><span class="function">after</span>(<span class="keyword">function</span>(<span class="variable">$response</span>, <span class="variable">$request</span>, <span class="variable">$route</span>) { });
+        // After: (response, request, route)
+        $f4->after(function($response, $request, $route) { });
 
   .content-section
     h2 Real-World Example: API Authentication
 
     pre
-      code.
-        <span class="keyword">use</span> <span class="variable">F4</span>\<span class="variable">Core</span>\{<span class="variable">Route</span>, <span class="variable">RouteGroup</span>};
-        <span class="keyword">use</span> <span class="variable">F4</span>\<span class="variable">Core</span>\<span class="variable">Exception</span>\<span class="variable">HttpException</span>;
+      code.language-php.
+        use F4\Core\{Route, RouteGroup};
+        use F4\Core\Exception\HttpException;
 
-        <span class="comment">// Public routes (no auth required)</span>
-        <span class="variable">$f4</span>-><span class="function">addRoute</span>(<span class="variable">Route</span>::<span class="function">get</span>(<span class="string">'/'</span>, <span class="keyword">function</span>() {
-            <span class="keyword">return</span> [<span class="string">'message'</span> => <span class="string">'Welcome'</span>];
+        // Public routes (no auth required)
+        $f4->addRoute(Route::get('/', function() {
+            return ['message' => 'Welcome'];
         }));
 
-        <span class="comment">// Protected API routes</span>
-        <span class="variable">$apiGroup</span> = <span class="keyword">new</span> <span class="variable">RouteGroup</span>(<span class="string">'/api/v1'</span>)
-            -><span class="function">before</span>(<span class="keyword">function</span>(<span class="variable">$request</span>, <span class="variable">$response</span>, <span class="variable">$route</span>) {
-                <span class="comment">// Check Bearer token</span>
-                <span class="variable">$auth</span> = <span class="variable">$request</span>-><span class="function">getHeader</span>(<span class="string">'Authorization'</span>);
-                <span class="keyword">if</span> (!<span class="function">str_starts_with</span>(<span class="variable">$auth</span>, <span class="string">'Bearer '</span>)) {
-                    <span class="keyword">throw new</span> <span class="variable">HttpException</span>(<span class="string">'Missing token'</span>, <span class="number">401</span>);
+        // Protected API routes
+        $apiGroup = new RouteGroup('/api/v1')
+            ->before(function($request, $response, $route) {
+                // Check Bearer token
+                $auth = $request->getHeader('Authorization');
+                if (!str_starts_with($auth, 'Bearer ')) {
+                    throw new HttpException('Missing token', 401);
                 }
 
-                <span class="variable">$token</span> = <span class="function">substr</span>(<span class="variable">$auth</span>, <span class="number">7</span>);
-                <span class="variable">$user</span> = <span class="function">validateToken</span>(<span class="variable">$token</span>);
+                $token = substr($auth, 7);
+                $user = validateToken($token);
 
-                <span class="keyword">if</span> (!<span class="variable">$user</span>) {
-                    <span class="keyword">throw new</span> <span class="variable">HttpException</span>(<span class="string">'Invalid token'</span>, <span class="number">403</span>);
+                if (!$user) {
+                    throw new HttpException('Invalid token', 403);
                 }
 
-                <span class="comment">// Attach user to request</span>
-                <span class="variable">$request</span>-><span class="function">setAttribute</span>(<span class="string">'user'</span>, <span class="variable">$user</span>);
-                <span class="keyword">return</span> <span class="variable">$request</span>;
+                // Attach user to request
+                $request->setAttribute('user', $user);
+                return $request;
             })
-            -><span class="function">after</span>(<span class="keyword">function</span>(<span class="variable">$response</span>, <span class="variable">$request</span>, <span class="variable">$route</span>) {
-                <span class="comment">// Add CORS headers to all API responses</span>
-                <span class="keyword">return</span> <span class="variable">$response</span>
-                    -><span class="function">withHeader</span>(<span class="string">'Access-Control-Allow-Origin'</span>, <span class="string">'*'</span>);
+            ->after(function($response, $request, $route) {
+                // Add CORS headers to all API responses
+                return $response
+                    ->withHeader('Access-Control-Allow-Origin', '*');
             })
-            -><span class="function">addRoute</span>(<span class="variable">Route</span>::<span class="function">get</span>(<span class="string">'/profile'</span>, <span class="keyword">function</span>(<span class="variable">$request</span>) {
-                <span class="variable">$user</span> = <span class="variable">$request</span>-><span class="function">getAttribute</span>(<span class="string">'user'</span>);
-                <span class="keyword">return</span> [<span class="string">'user'</span> => <span class="variable">$user</span>];
+            ->addRoute(Route::get('/profile', function($request) {
+                $user = $request->getAttribute('user');
+                return ['user' => $user];
             }))
-            -><span class="function">addRoute</span>(<span class="variable">Route</span>::<span class="function">get</span>(<span class="string">'/posts'</span>, <span class="keyword">function</span>() {
-                <span class="keyword">return</span> [<span class="string">'posts'</span> => [<span class="comment">/* ... */</span>]];
+            ->addRoute(Route::get('/posts', function() {
+                return ['posts' => [/* ... */]];
             }));
 
-        <span class="variable">$f4</span>-><span class="function">addRouteGroup</span>(<span class="variable">$apiGroup</span>);
+        $f4->addRouteGroup($apiGroup);
 
   .content-section
     h2 Best Practices

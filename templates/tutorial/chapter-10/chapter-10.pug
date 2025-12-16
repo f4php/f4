@@ -32,22 +32,22 @@ block content
     p F4 configuration is based on extending <code>AbstractConfig</code> which provides default values for all framework settings:
 
     pre
-      code.
-        <span class="keyword">namespace</span> <span class="variable">F4</span>;
+      code.language-php.
+        namespace F4;
 
-        <span class="keyword">use</span> <span class="variable">F4</span>\<span class="variable">AbstractConfig</span>;
+        use F4\AbstractConfig;
 
-        <span class="keyword">class</span> <span class="variable">Config</span> <span class="keyword">extends</span> <span class="variable">AbstractConfig</span>
+        class Config extends AbstractConfig
         {
-            <span class="comment">// Override default settings by defining constants</span>
-            <span class="keyword">public const bool</span> <span class="variable">DEBUG_MODE</span> = <span class="keyword">false</span>;
+            // Override default settings by defining constants
+            public const bool DEBUG_MODE = false;
 
-            <span class="keyword">public const array</span> <span class="variable">MODULES</span> = [
-                \<span class="variable">App</span>\<span class="variable">Example</span>::<span class="keyword">class</span>
+            public const array MODULES = [
+                \App\Example::class
             ];
 
-            <span class="keyword">public const array</span> <span class="variable">TEMPLATE_PATHS</span> = [
-                <span class="variable">__DIR__</span> . <span class="string">'/../templates'</span>
+            public const array TEMPLATE_PATHS = [
+                __DIR__ . '/../templates'
             ];
         }
 
@@ -66,23 +66,23 @@ block content
     p Environments are defined in your project's <code>composer.json</code> file under the <code>extra.f4.environments</code> section:
 
     pre
-      code.
+      code.language-json.
         {
-          <span class="string">"extra"</span>: {
-            <span class="string">"f4"</span>: {
-              <span class="string">"environments"</span>: {
-                <span class="string">"production"</span>: {
-                  <span class="string">"config"</span>: <span class="string">"config/production.php"</span>
+          "extra": {
+            "f4": {
+              "environments": {
+                "production": {
+                  "config": "config/production.php"
                 },
-                <span class="string">"test"</span>: {
-                  <span class="string">"config"</span>: <span class="string">"config/test.php"</span>
+                "test": {
+                  "config": "config/test.php"
                 },
-                <span class="string">"local"</span>: {
-                  <span class="string">"config"</span>: <span class="string">"config/local.php"</span>,
-                  <span class="string">"server"</span>: <span class="string">"localhost:8080"</span>
+                "local": {
+                  "config": "config/local.php",
+                  "server": "localhost:8080"
                 },
-                <span class="string">"default"</span>: {
-                  <span class="string">"config"</span>: <span class="string">"config/default.php"</span>
+                "default": {
+                  "config": "config/default.php"
                 }
               }
             }
@@ -94,9 +94,9 @@ block content
     p F4 loads configuration files based on a priority system. In your bootstrap file (<code>public/index.php</code>), you specify which environments to try:
 
     pre
-      code.
-        <span class="variable">Loader</span>::<span class="function">loadEnvironmentConfig</span>(
-            environments: [(<span class="variable">$_SERVER</span>[<span class="string">'F4_ENVIRONMENT'</span>] ?? <span class="keyword">null</span>) ?: <span class="string">'local'</span>, <span class="string">'default'</span>]
+      code.language-php.
+        Loader::loadEnvironmentConfig(
+            environments: [($_SERVER['F4_ENVIRONMENT'] ?? null) ?: 'local', 'default']
         );
 
     p This configuration attempts to load environments in the following order:
@@ -116,30 +116,30 @@ block content
       h4 Option 1: Environment Variable
 
       pre
-        code.
-          <span class="comment"># Linux/macOS</span>
+        code.language-bash.
+          # Linux/macOS
           export F4_ENVIRONMENT=production
           php -S localhost:8080 -t public/
 
-          <span class="comment"># Windows</span>
+          # Windows
           set F4_ENVIRONMENT=production
           php -S localhost:8080 -t public/
 
       h4 Option 2: Web Server Configuration
 
       pre
-        code.
-          <span class="comment"># Apache (.htaccess)</span>
+        code.language-bash.
+          # Apache (.htaccess)
           SetEnv F4_ENVIRONMENT production
 
-          <span class="comment"># Nginx</span>
+          # Nginx
           fastcgi_param F4_ENVIRONMENT production;
 
       h4 Option 3: Docker
 
       pre
-        code.
-          <span class="comment"># docker-compose.yml</span>
+        code.language-yaml.
+          # docker-compose.yml
           services:
             app:
               environment:
@@ -186,42 +186,42 @@ block content
     h3 Example: default.php
 
     pre
-      code.
-        <span class="keyword">namespace</span> <span class="variable">F4</span>;
+      code.language-php.
+        namespace F4;
 
-        <span class="keyword">use</span> <span class="variable">App</span>\<span class="variable">Tutorial</span>\<span class="variable">TutorialModule</span>;
-        <span class="keyword">use</span> <span class="variable">F4</span>\<span class="variable">AbstractConfig</span>;
+        use App\Tutorial\TutorialModule;
+        use F4\AbstractConfig;
 
-        <span class="keyword">class</span> <span class="variable">Config</span> <span class="keyword">extends</span> <span class="variable">AbstractConfig</span>
+        class Config extends AbstractConfig
         {
-            <span class="keyword">public const array</span> <span class="variable">MODULES</span> = [
-                <span class="variable">TutorialModule</span>::<span class="keyword">class</span>
+            public const array MODULES = [
+                TutorialModule::class
             ];
 
-            <span class="keyword">public const array</span> <span class="variable">TEMPLATE_PATHS</span> = [
-                <span class="variable">__DIR__</span> . <span class="string">'/../templates'</span>
+            public const array TEMPLATE_PATHS = [
+                __DIR__ . '/../templates'
             ];
 
-            <span class="keyword">public const string</span> <span class="variable">DEFAULT_TEMPLATE</span> = <span class="string">'index.pug'</span>;
+            public const string DEFAULT_TEMPLATE = 'index.pug';
         }
 
     h3 Example: local.php
 
     pre
-      code.
-        <span class="keyword">namespace</span> <span class="variable">F4</span>;
+      code.language-php.
+        namespace F4;
 
-        <span class="keyword">use</span> <span class="variable">F4</span>\<span class="variable">AbstractConfig</span>;
+        use F4\AbstractConfig;
 
-        <span class="comment">// Local config overrides default.php</span>
-        <span class="keyword">class</span> <span class="variable">Config</span> <span class="keyword">extends</span> <span class="variable">AbstractConfig</span>
+        // Local config overrides default.php
+        class Config extends AbstractConfig
         {
-            <span class="keyword">public const bool</span> <span class="variable">DEBUG_MODE</span> = <span class="keyword">true</span>;
+            public const bool DEBUG_MODE = true;
 
-            <span class="keyword">public const string</span> <span class="variable">DB_HOST</span> = <span class="string">'localhost'</span>;
-            <span class="keyword">public const string</span> <span class="variable">DB_NAME</span> = <span class="string">'myapp_dev'</span>;
-            <span class="keyword">public const string</span> <span class="variable">DB_USERNAME</span> = <span class="string">'dev_user'</span>;
-            <span class="keyword">public const string</span> <span class="variable">DB_PASSWORD</span> = <span class="string">'dev_pass'</span>;
+            public const string DB_HOST = 'localhost';
+            public const string DB_NAME = 'myapp_dev';
+            public const string DB_USERNAME = 'dev_user';
+            public const string DB_PASSWORD = 'dev_pass';
         }
 
     .warning-box
@@ -234,30 +234,30 @@ block content
     p F4 supports reading configuration from environment variables using the <code>\#[ENV]</code> attribute:
 
     pre
-      code.
-        <span class="keyword">namespace</span> <span class="variable">F4</span>;
+      code.language-php.
+        namespace F4;
 
-        <span class="keyword">use</span> <span class="variable">F4</span>\<span class="variable">AbstractConfig</span>;
-        <span class="keyword">use</span> <span class="variable">F4</span>\<span class="variable">Config</span>\<span class="variable">FromEnvironmentVariable</span> <span class="keyword">as</span> <span class="variable">ENV</span>;
+        use F4\AbstractConfig;
+        use F4\Config\FromEnvironmentVariable as ENV;
 
-        <span class="keyword">class</span> <span class="variable">Config</span> <span class="keyword">extends</span> <span class="variable">AbstractConfig</span>
+        class Config extends AbstractConfig
         {
-            <span class="comment">// Read from F4_DEBUG_MODE environment variable</span>
-            \#[<span class="variable">ENV</span>(name: <span class="string">'F4_DEBUG_MODE'</span>)]
-            <span class="keyword">public const bool</span> <span class="variable">DEBUG_MODE</span> = <span class="keyword">true</span>;
+            // Read from F4_DEBUG_MODE environment variable
+            #[ENV(name: 'F4_DEBUG_MODE')]
+            public const bool DEBUG_MODE = true;
 
-            <span class="comment">// Read database credentials from environment</span>
-            \#[<span class="variable">ENV</span>(name: <span class="string">'DATABASE_HOST'</span>)]
-            <span class="keyword">public const string</span> <span class="variable">DB_HOST</span> = <span class="keyword">parent</span>::<span class="variable">DB_HOST</span>;
+            // Read database credentials from environment
+            #[ENV(name: 'DATABASE_HOST')]
+            public const string DB_HOST = parent::DB_HOST;
 
-            \#[<span class="variable">ENV</span>(name: <span class="string">'DATABASE_NAME'</span>)]
-            <span class="keyword">public const string</span> <span class="variable">DB_NAME</span> = <span class="string">''</span>;
+            #[ENV(name: 'DATABASE_NAME')]
+            public const string DB_NAME = '';
 
-            \#[<span class="variable">ENV</span>(name: <span class="string">'DATABASE_USER'</span>)]
-            <span class="keyword">public const string</span> <span class="variable">DB_USERNAME</span> = <span class="string">''</span>;
+            #[ENV(name: 'DATABASE_USER')]
+            public const string DB_USERNAME = '';
 
-            \#[<span class="variable">ENV</span>(name: <span class="string">'DATABASE_PASSWORD'</span>)]
-            <span class="keyword">public const string</span> <span class="variable">DB_PASSWORD</span> = <span class="string">''</span>;
+            #[ENV(name: 'DATABASE_PASSWORD')]
+            public const string DB_PASSWORD = '';
         }
 
     h3 Setting Environment Variables
@@ -290,16 +290,16 @@ block content
     p F4 can read configuration from INI files using the <code>\#[INI]</code> attribute:
 
     pre
-      code.
-        <span class="keyword">use</span> <span class="variable">F4</span>\<span class="variable">Config</span>\<span class="variable">FromIniFile</span> <span class="keyword">as</span> <span class="variable">INI</span>;
+      code.language-php.
+        use F4\Config\FromIniFile as INI;
 
-        <span class="keyword">class</span> <span class="variable">Config</span> <span class="keyword">extends</span> <span class="variable">AbstractConfig</span>
+        class Config extends AbstractConfig
         {
-            \#[<span class="variable">INI</span>(name: <span class="string">'TEMPLATE_CACHE_LIFETIME'</span>, file: <span class="string">'local-settings.ini'</span>)]
-            <span class="keyword">public const int</span> <span class="variable">TEMPLATE_CACHE_LIFETIME</span> = <span class="keyword">parent</span>::<span class="variable">TEMPLATE_CACHE_LIFETIME</span>;
+            #[INI(name: 'TEMPLATE_CACHE_LIFETIME', file: 'local-settings.ini')]
+            public const int TEMPLATE_CACHE_LIFETIME = parent::TEMPLATE_CACHE_LIFETIME;
 
-            \#[<span class="variable">INI</span>(name: <span class="string">'APP_NAME'</span>, file: <span class="string">'app.ini'</span>)]
-            <span class="keyword">public const string</span> <span class="variable">DB_APP_NAME</span> = <span class="keyword">null</span>;
+            #[INI(name: 'APP_NAME', file: 'app.ini')]
+            public const string DB_APP_NAME = null;
         }
 
     h3 INI File Format
@@ -344,9 +344,9 @@ block content
           td '+debug'
 
     pre
-      code.
-        <span class="keyword">public const bool</span> <span class="variable">DEBUG_MODE</span> = <span class="keyword">true</span>;
-        <span class="keyword">public const string</span> <span class="variable">DEBUG_EXTENSION</span> = <span class="string">'+debug'</span>;
+      code.language-php.
+        public const bool DEBUG_MODE = true;
+        public const string DEBUG_EXTENSION = '+debug';
 
     h3 Database Configuration
 
@@ -399,14 +399,14 @@ block content
           td Use persistent connections
 
     pre
-      code.
-        <span class="keyword">public const string</span> <span class="variable">DB_HOST</span> = <span class="string">'localhost'</span>;
-        <span class="keyword">public const string</span> <span class="variable">DB_PORT</span> = <span class="string">'5432'</span>;
-        <span class="keyword">public const string</span> <span class="variable">DB_NAME</span> = <span class="string">'myapp'</span>;
-        <span class="keyword">public const string</span> <span class="variable">DB_USERNAME</span> = <span class="string">'dbuser'</span>;
-        <span class="keyword">public const string</span> <span class="variable">DB_PASSWORD</span> = <span class="string">'secret'</span>;
-        <span class="keyword">public const string</span> <span class="variable">DB_SCHEMA</span> = <span class="string">'public'</span>;
-        <span class="keyword">public const bool</span> <span class="variable">DB_PERSIST</span> = <span class="keyword">true</span>;
+      code.language-php.
+        public const string DB_HOST = 'localhost';
+        public const string DB_PORT = '5432';
+        public const string DB_NAME = 'myapp';
+        public const string DB_USERNAME = 'dbuser';
+        public const string DB_PASSWORD = 'secret';
+        public const string DB_SCHEMA = 'public';
+        public const bool DB_PERSIST = true;
 
     h3 Template Configuration
 
@@ -444,14 +444,14 @@ block content
           td Cache lifetime in seconds
 
     pre
-      code.
-        <span class="keyword">public const array</span> <span class="variable">TEMPLATE_PATHS</span> = [
-            <span class="variable">__DIR__</span> . <span class="string">'/../templates'</span>
+      code.language-php.
+        public const array TEMPLATE_PATHS = [
+            __DIR__ . '/../templates'
         ];
-        <span class="keyword">public const string</span> <span class="variable">DEFAULT_TEMPLATE</span> = <span class="string">'index.pug'</span>;
-        <span class="keyword">public const bool</span> <span class="variable">TEMPLATE_CACHE_ENABLED</span> = <span class="keyword">true</span>;
-        <span class="keyword">public const string</span> <span class="variable">TEMPLATE_CACHE_PATH</span> = <span class="string">'/tmp/f4-cache'</span>;
-        <span class="keyword">public const int</span> <span class="variable">TEMPLATE_CACHE_LIFETIME</span> = <span class="number">3600</span>;
+        public const string DEFAULT_TEMPLATE = 'index.pug';
+        public const bool TEMPLATE_CACHE_ENABLED = true;
+        public const string TEMPLATE_CACHE_PATH = '/tmp/f4-cache';
+        public const int TEMPLATE_CACHE_LIFETIME = 3600;
 
     h3 Session Configuration
 
@@ -494,12 +494,12 @@ block content
           td SameSite policy
 
     pre
-      code.
-        <span class="keyword">public const bool</span> <span class="variable">SESSION_ENABLED</span> = <span class="keyword">true</span>;
-        <span class="keyword">public const string</span> <span class="variable">SESSION_COOKIE_NAME</span> = <span class="string">'F4_SESSION_ID'</span>;
-        <span class="keyword">public const bool</span> <span class="variable">SESSION_SECURE_ONLY</span> = <span class="keyword">true</span>;
-        <span class="keyword">public const bool</span> <span class="variable">SESSION_HTTP_ONLY</span> = <span class="keyword">true</span>;
-        <span class="keyword">public const string</span> <span class="variable">SESSION_SAME_SITE</span> = <span class="string">'Strict'</span>;
+      code.language-php.
+        public const bool SESSION_ENABLED = true;
+        public const string SESSION_COOKIE_NAME = 'F4_SESSION_ID';
+        public const bool SESSION_SECURE_ONLY = true;
+        public const bool SESSION_HTTP_ONLY = true;
+        public const string SESSION_SAME_SITE = 'Strict';
 
   .content-section
     h2 Module Registration
@@ -507,11 +507,11 @@ block content
     p Register modules in the <code>MODULES</code> array:
 
     pre
-      code.
-        <span class="keyword">public const array</span> <span class="variable">MODULES</span> = [
-            \<span class="variable">App</span>\<span class="variable">Auth</span>\<span class="variable">AuthModule</span>::<span class="keyword">class</span>,
-            \<span class="variable">App</span>\<span class="variable">Blog</span>\<span class="variable">BlogModule</span>::<span class="keyword">class</span>,
-            \<span class="variable">App</span>\<span class="variable">Admin</span>\<span class="variable">AdminModule</span>::<span class="keyword">class</span>,
+      code.language-php.
+        public const array MODULES = [
+            \App\Auth\AuthModule::class,
+            \App\Blog\BlogModule::class,
+            \App\Admin\AdminModule::class,
         ];
 
     .info-box
@@ -524,17 +524,17 @@ block content
     p Configure response emitters for different content types:
 
     pre
-      code.
-        <span class="keyword">public const string</span> <span class="variable">DEFAULT_RESPONSE_FORMAT</span> = <span class="string">'text/html'</span>;
+      code.language-php.
+        public const string DEFAULT_RESPONSE_FORMAT = 'text/html';
 
-        <span class="keyword">public const array</span> <span class="variable">RESPONSE_EMITTERS</span> = [
-            <span class="string">'text/html'</span> => [
-                <span class="string">'extensions'</span> => [<span class="string">'.html'</span>, <span class="string">'.htm'</span>],
-                <span class="string">'class'</span> => \<span class="variable">F4</span>\<span class="variable">Core</span>\<span class="variable">ResponseEmitter</span>\<span class="variable">Html</span>::<span class="keyword">class</span>,
+        public const array RESPONSE_EMITTERS = [
+            'text/html' => [
+                'extensions' => ['.html', '.htm'],
+                'class' => \F4\Core\ResponseEmitter\Html::class,
             ],
-            <span class="string">'application/json'</span> => [
-                <span class="string">'extensions'</span> => [<span class="string">'.json'</span>],
-                <span class="string">'class'</span> => \<span class="variable">F4</span>\<span class="variable">Core</span>\<span class="variable">ResponseEmitter</span>\<span class="variable">Json</span>::<span class="keyword">class</span>,
+            'application/json' => [
+                'extensions' => ['.json'],
+                'class' => \F4\Core\ResponseEmitter\Json::class,
             ],
         ];
 
@@ -544,21 +544,21 @@ block content
     p Configure internationalization settings:
 
     pre
-      code.
-        <span class="keyword">public const string</span> <span class="variable">DEFAULT_LOCALE</span> = <span class="string">'en'</span>;
-        <span class="keyword">public const bool</span> <span class="variable">REMEMBER_LOCALE</span> = <span class="keyword">true</span>;
-        <span class="keyword">public const bool</span> <span class="variable">LOCALE_HEADERS</span> = <span class="keyword">true</span>;
+      code.language-php.
+        public const string DEFAULT_LOCALE = 'en';
+        public const bool REMEMBER_LOCALE = true;
+        public const bool LOCALE_HEADERS = true;
 
-        <span class="keyword">public const array</span> <span class="variable">LOCALES</span> = [
-            <span class="string">'en'</span> => [
-                <span class="string">'extensions'</span> => [<span class="string">'.en'</span>],
-                <span class="string">'resources'</span> => [<span class="string">'locales/messages.en.ftl'</span>],
-                <span class="string">'weight'</span> => <span class="number">1</span>,
+        public const array LOCALES = [
+            'en' => [
+                'extensions' => ['.en'],
+                'resources' => ['locales/messages.en.ftl'],
+                'weight' => 1,
             ],
-            <span class="string">'es'</span> => [
-                <span class="string">'extensions'</span> => [<span class="string">'.es'</span>],
-                <span class="string">'resources'</span> => [<span class="string">'locales/messages.es.ftl'</span>],
-                <span class="string">'weight'</span> => <span class="number">0.8</span>,
+            'es' => [
+                'extensions' => ['.es'],
+                'resources' => ['locales/messages.es.ftl'],
+                'weight' => 0.8,
             ],
         ];
 
@@ -568,16 +568,16 @@ block content
     p Mark sensitive configuration parameters using the <code>\#[SensitiveParameter]</code> attribute:
 
     pre
-      code.
-        <span class="keyword">use</span> <span class="variable">F4</span>\<span class="variable">Config</span>\<span class="variable">SensitiveParameter</span>;
+      code.language-php.
+        use F4\Config\SensitiveParameter;
 
-        <span class="keyword">class</span> <span class="variable">Config</span> <span class="keyword">extends</span> <span class="variable">AbstractConfig</span>
+        class Config extends AbstractConfig
         {
-            \#[<span class="variable">SensitiveParameter</span>]
-            <span class="keyword">public const string</span> <span class="variable">DB_PASSWORD</span> = <span class="string">''</span>;
+            #[SensitiveParameter]
+            public const string DB_PASSWORD = '';
 
-            \#[<span class="variable">SensitiveParameter</span>]
-            <span class="keyword">public const string</span> <span class="variable">API_SECRET_KEY</span> = <span class="string">''</span>;
+            #[SensitiveParameter]
+            public const string API_SECRET_KEY = '';
         }
 
     .info-box
@@ -590,25 +590,25 @@ block content
     p Access configuration values through the <code>$f4</code> core API:
 
     pre
-      code.
-        <span class="comment">// In a route handler</span>
-        <span class="variable">$f4</span>-><span class="function">addRoute</span>(<span class="variable">Route</span>::<span class="function">get</span>(<span class="string">'/info'</span>, <span class="keyword">function</span>() <span class="keyword">use</span> (<span class="variable">$f4</span>) {
-            <span class="variable">$debugMode</span> = <span class="variable">$f4</span>-><span class="function">config</span>(<span class="string">'DEBUG_MODE'</span>);
-            <span class="variable">$dbHost</span> = <span class="variable">$f4</span>-><span class="function">config</span>(<span class="string">'DB_HOST'</span>);
+      code.language-php.
+        // In a route handler
+        $f4->addRoute(Route::get('/info', function() use ($f4) {
+            $debugMode = $f4->config('DEBUG_MODE');
+            $dbHost = $f4->config('DB_HOST');
 
-            <span class="keyword">return</span> [
-                <span class="string">'debug'</span> => <span class="variable">$debugMode</span>,
-                <span class="string">'host'</span> => <span class="variable">$dbHost</span>
+            return [
+                'debug' => $debugMode,
+                'host' => $dbHost
             ];
         }));
 
-        <span class="comment">// In a module constructor</span>
-        <span class="keyword">class</span> <span class="variable">MyModule</span> <span class="keyword">implements</span> <span class="variable">ModuleInterface</span>
+        // In a module constructor
+        class MyModule implements ModuleInterface
         {
-            <span class="keyword">public function</span> <span class="function">__construct</span>(<span class="variable">CoreApiInterface</span> &<span class="variable">$f4</span>)
+            public function __construct(CoreApiInterface &$f4)
             {
-                <span class="keyword">if</span> (<span class="variable">$f4</span>-><span class="function">config</span>(<span class="string">'DEBUG_MODE'</span>)) {
-                    <span class="comment">// Add debug routes</span>
+                if ($f4->config('DEBUG_MODE')) {
+                    // Add debug routes
                 }
             }
         }
@@ -643,61 +643,61 @@ block content
     h2 Complete Configuration Example
 
     pre
-      code.
-        <span class="keyword">namespace</span> <span class="variable">F4</span>;
+      code.language-php.
+        namespace F4;
 
-        <span class="keyword">use</span> <span class="variable">F4</span>\<span class="variable">AbstractConfig</span>;
-        <span class="keyword">use</span> <span class="variable">F4</span>\<span class="variable">Config</span>\<span class="variable">FromEnvironmentVariable</span> <span class="keyword">as</span> <span class="variable">ENV</span>;
-        <span class="keyword">use</span> <span class="variable">F4</span>\<span class="variable">Config</span>\<span class="variable">SensitiveParameter</span>;
+        use F4\AbstractConfig;
+        use F4\Config\FromEnvironmentVariable as ENV;
+        use F4\Config\SensitiveParameter;
 
-        <span class="keyword">class</span> <span class="variable">Config</span> <span class="keyword">extends</span> <span class="variable">AbstractConfig</span>
+        class Config extends AbstractConfig
         {
-            <span class="comment">// Debug settings</span>
-            \#[<span class="variable">ENV</span>(name: <span class="string">'F4_DEBUG_MODE'</span>)]
-            <span class="keyword">public const bool</span> <span class="variable">DEBUG_MODE</span> = <span class="keyword">false</span>;
+            // Debug settings
+            #[ENV(name: 'F4_DEBUG_MODE')]
+            public const bool DEBUG_MODE = false;
 
-            \#[<span class="variable">ENV</span>(name: <span class="string">'F4_DEBUG_EXTENSION'</span>)]
-            <span class="keyword">public const string</span> <span class="variable">DEBUG_EXTENSION</span> = <span class="string">'+debug'</span>;
+            #[ENV(name: 'F4_DEBUG_EXTENSION')]
+            public const string DEBUG_EXTENSION = '+debug';
 
-            <span class="comment">// Database configuration</span>
-            \#[<span class="variable">ENV</span>(name: <span class="string">'DATABASE_HOST'</span>)]
-            <span class="keyword">public const string</span> <span class="variable">DB_HOST</span> = <span class="string">'localhost'</span>;
+            // Database configuration
+            #[ENV(name: 'DATABASE_HOST')]
+            public const string DB_HOST = 'localhost';
 
-            \#[<span class="variable">ENV</span>(name: <span class="string">'DATABASE_NAME'</span>)]
-            <span class="keyword">public const string</span> <span class="variable">DB_NAME</span> = <span class="string">'myapp'</span>;
+            #[ENV(name: 'DATABASE_NAME')]
+            public const string DB_NAME = 'myapp';
 
-            \#[<span class="variable">ENV</span>(name: <span class="string">'DATABASE_USER'</span>)]
-            <span class="keyword">public const string</span> <span class="variable">DB_USERNAME</span> = <span class="string">'dbuser'</span>;
+            #[ENV(name: 'DATABASE_USER')]
+            public const string DB_USERNAME = 'dbuser';
 
-            \#[<span class="variable">ENV</span>(name: <span class="string">'DATABASE_PASSWORD'</span>)]
-            \#[<span class="variable">SensitiveParameter</span>]
-            <span class="keyword">public const string</span> <span class="variable">DB_PASSWORD</span> = <span class="string">''</span>;
+            #[ENV(name: 'DATABASE_PASSWORD')]
+            #[SensitiveParameter]
+            public const string DB_PASSWORD = '';
 
-            <span class="comment">// Modules</span>
-            <span class="keyword">public const array</span> <span class="variable">MODULES</span> = [
-                \<span class="variable">App</span>\<span class="variable">Auth</span>\<span class="variable">AuthModule</span>::<span class="keyword">class</span>,
-                \<span class="variable">App</span>\<span class="variable">Blog</span>\<span class="variable">BlogModule</span>::<span class="keyword">class</span>,
+            // Modules
+            public const array MODULES = [
+                \App\Auth\AuthModule::class,
+                \App\Blog\BlogModule::class,
             ];
 
-            <span class="comment">// Templates</span>
-            <span class="keyword">public const array</span> <span class="variable">TEMPLATE_PATHS</span> = [
-                <span class="variable">__DIR__</span> . <span class="string">'/../templates'</span>
+            // Templates
+            public const array TEMPLATE_PATHS = [
+                __DIR__ . '/../templates'
             ];
-            <span class="keyword">public const bool</span> <span class="variable">TEMPLATE_CACHE_ENABLED</span> = <span class="keyword">true</span>;
-            <span class="keyword">public const int</span> <span class="variable">TEMPLATE_CACHE_LIFETIME</span> = <span class="number">3600</span>;
+            public const bool TEMPLATE_CACHE_ENABLED = true;
+            public const int TEMPLATE_CACHE_LIFETIME = 3600;
 
-            <span class="comment">// Sessions</span>
-            <span class="keyword">public const bool</span> <span class="variable">SESSION_ENABLED</span> = <span class="keyword">true</span>;
-            <span class="keyword">public const bool</span> <span class="variable">SESSION_SECURE_ONLY</span> = <span class="keyword">true</span>;
-            <span class="keyword">public const string</span> <span class="variable">SESSION_SAME_SITE</span> = <span class="string">'Strict'</span>;
+            // Sessions
+            public const bool SESSION_ENABLED = true;
+            public const bool SESSION_SECURE_ONLY = true;
+            public const string SESSION_SAME_SITE = 'Strict';
 
-            <span class="comment">// Locales</span>
-            <span class="keyword">public const string</span> <span class="variable">DEFAULT_LOCALE</span> = <span class="string">'en'</span>;
-            <span class="keyword">public const array</span> <span class="variable">LOCALES</span> = [
-                <span class="string">'en'</span> => [
-                    <span class="string">'extensions'</span> => [<span class="string">'.en'</span>],
-                    <span class="string">'resources'</span> => [<span class="string">'locales/messages.en.ftl'</span>],
-                    <span class="string">'weight'</span> => <span class="number">1</span>
+            // Locales
+            public const string DEFAULT_LOCALE = 'en';
+            public const array LOCALES = [
+                'en' => [
+                    'extensions' => ['.en'],
+                    'resources' => ['locales/messages.en.ftl'],
+                    'weight' => 1
                 ]
             ];
         }
@@ -724,24 +724,24 @@ block content
       h4 Pattern 1: Feature Flags
 
       pre
-        code.
-          <span class="keyword">public const bool</span> <span class="variable">FEATURE_NEW_EDITOR</span> = <span class="keyword">false</span>;
-          <span class="keyword">public const bool</span> <span class="variable">FEATURE_BETA_API</span> = <span class="keyword">true</span>;
+        code.language-php.
+          public const bool FEATURE_NEW_EDITOR = false;
+          public const bool FEATURE_BETA_API = true;
 
       h4 Pattern 2: Third-Party API Keys
 
       pre
-        code.
-          \#[<span class="variable">ENV</span>(name: <span class="string">'STRIPE_API_KEY'</span>)]
-          \#[<span class="variable">SensitiveParameter</span>]
-          <span class="keyword">public const string</span> <span class="variable">STRIPE_API_KEY</span> = <span class="string">''</span>;
+        code.language-php.
+          \#[ENV(name: 'STRIPE_API_KEY')]
+          \#[SensitiveParameter]
+          public const string STRIPE_API_KEY = '';
 
       h4 Pattern 3: Service URLs
 
       pre
-        code.
-          \#[<span class="variable">ENV</span>(name: <span class="string">'API_BASE_URL'</span>)]
-          <span class="keyword">public const string</span> <span class="variable">API_BASE_URL</span> = <span class="string">'https://api.example.com'</span>;
+        code.language-php.
+          \#[ENV(name: 'API_BASE_URL')]
+          public const string API_BASE_URL = 'https://api.example.com';
 
   .content-section
     h2 Try It Yourself

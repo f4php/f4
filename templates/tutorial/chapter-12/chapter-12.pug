@@ -32,8 +32,8 @@ block content
     h3 Running the Production Build
 
     pre
-      code.
-        <span class="comment"># Build optimized production assets</span>
+      code.language-bash.
+        # Build optimized production assets
         npm run build
 
     p This command:
@@ -51,13 +51,13 @@ block content
 
     .demo-box
       pre
-        code.
+        code.language-bash.
           public/assets/
           ├── .vite/
-          │   └── manifest.json       <span class="comment"># Asset manifest for cache-busting</span>
-          ├── app-[hash].js           <span class="comment"># Bundled JavaScript</span>
-          ├── app-[hash].css          <span class="comment"># Bundled CSS</span>
-          └── images/                 <span class="comment"># Optimized images</span>
+          │   └── manifest.json       # Asset manifest for cache-busting
+          ├── app-[hash].js           # Bundled JavaScript
+          ├── app-[hash].css          # Bundled CSS
+          └── images/                 # Optimized images
 
     .info-box
       strong Cache Busting:
@@ -71,11 +71,11 @@ block content
     h3 Public Folder Structure
 
     pre
-      code.
+      code.language-bash.
         public/
-        ├── index.php               <span class="comment"># Application entry point</span>
-        ├── .htaccess              <span class="comment"># Apache rewrite rules</span>
-        └── assets/                <span class="comment"># Built static assets (CSS, JS, images)</span>
+        ├── index.php               # Application entry point
+        ├── .htaccess              # Apache rewrite rules
+        └── assets/                # Built static assets (CSS, JS, images)
 
     h3 Why Public as Document Root?
 
@@ -96,44 +96,44 @@ block content
     h3 Creating config/production.php
 
     pre
-      code.
-        <span class="keyword">namespace</span> <span class="variable">F4</span>;
+      code.language-php.
+        namespace F4;
 
-        <span class="keyword">use</span> <span class="variable">F4</span>\<span class="variable">AbstractConfig</span>;
-        <span class="keyword">use</span> <span class="variable">F4</span>\<span class="variable">Config</span>\<span class="variable">FromEnvironmentVariable</span> <span class="keyword">as</span> <span class="variable">ENV</span>;
-        <span class="keyword">use</span> <span class="variable">F4</span>\<span class="variable">Config</span>\<span class="variable">SensitiveParameter</span>;
+        use F4\AbstractConfig;
+        use F4\Config\FromEnvironmentVariable as ENV;
+        use F4\Config\SensitiveParameter;
 
-        <span class="keyword">class</span> <span class="variable">Config</span> <span class="keyword">extends</span> <span class="variable">AbstractConfig</span>
+        class Config extends AbstractConfig
         {
-            <span class="comment">// CRITICAL: Debug mode must be FALSE in production</span>
-            <span class="keyword">public const bool</span> <span class="variable">DEBUG_MODE</span> = <span class="keyword">false</span>;
+            // CRITICAL: Debug mode must be FALSE in production
+            public const bool DEBUG_MODE = false;
 
-            <span class="comment">// Database from environment variables</span>
-            \#[<span class="variable">ENV</span>(name: <span class="string">'DB_HOST'</span>)]
-            <span class="keyword">public const string</span> <span class="variable">DB_HOST</span> = <span class="string">'localhost'</span>;
+            // Database from environment variables
+            #[ENV(name: 'DB_HOST')]
+            public const string DB_HOST = 'localhost';
 
-            \#[<span class="variable">ENV</span>(name: <span class="string">'DB_NAME'</span>)]
-            <span class="keyword">public const string</span> <span class="variable">DB_NAME</span> = <span class="string">''</span>;
+            #[ENV(name: 'DB_NAME')]
+            public const string DB_NAME = '';
 
-            \#[<span class="variable">ENV</span>(name: <span class="string">'DB_USERNAME'</span>)]
-            <span class="keyword">public const string</span> <span class="variable">DB_USERNAME</span> = <span class="string">''</span>;
+            #[ENV(name: 'DB_USERNAME')]
+            public const string DB_USERNAME = '';
 
-            \#[<span class="variable">ENV</span>(name: <span class="string">'DB_PASSWORD'</span>)]
-            \#[<span class="variable">SensitiveParameter</span>]
-            <span class="keyword">public const string</span> <span class="variable">DB_PASSWORD</span> = <span class="string">''</span>;
+            #[ENV(name: 'DB_PASSWORD')]
+            #[SensitiveParameter]
+            public const string DB_PASSWORD = '';
 
-            <span class="comment">// Template caching enabled for performance</span>
-            <span class="keyword">public const bool</span> <span class="variable">TEMPLATE_CACHE_ENABLED</span> = <span class="keyword">true</span>;
-            <span class="keyword">public const int</span> <span class="variable">TEMPLATE_CACHE_LIFETIME</span> = <span class="number">3600</span>;
+            // Template caching enabled for performance
+            public const bool TEMPLATE_CACHE_ENABLED = true;
+            public const int TEMPLATE_CACHE_LIFETIME = 3600;
 
-            <span class="comment">// Modules</span>
-            <span class="keyword">public const array</span> <span class="variable">MODULES</span> = [
-                \<span class="variable">App</span>\<span class="variable">Main</span>\<span class="variable">MainModule</span>::<span class="keyword">class</span>,
+            // Modules
+            public const array MODULES = [
+                \App\Main\MainModule::class,
             ];
 
-            <span class="comment">// Template paths</span>
-            <span class="keyword">public const array</span> <span class="variable">TEMPLATE_PATHS</span> = [
-                <span class="variable">__DIR__</span> . <span class="string">'/../templates'</span>
+            // Template paths
+            public const array TEMPLATE_PATHS = [
+                __DIR__ . '/../templates'
             ];
         }
 
@@ -152,26 +152,26 @@ block content
     h3 Recommended composer.json Setup
 
     pre
-      code.
+      code.language-json.
         {
-          <span class="string">"extra"</span>: {
-            <span class="string">"f4"</span>: {
-              <span class="string">"environments"</span>: {
-                <span class="string">"production"</span>: {
-                  <span class="string">"config"</span>: <span class="string">"config/production.php"</span>
+          "extra": {
+            "f4": {
+              "environments": {
+                "production": {
+                  "config": "config/production.php"
                 },
-                <span class="string">"staging"</span>: {
-                  <span class="string">"config"</span>: <span class="string">"config/staging.php"</span>
+                "staging": {
+                  "config": "config/staging.php"
                 },
-                <span class="string">"test"</span>: {
-                  <span class="string">"config"</span>: <span class="string">"config/test.php"</span>
+                "test": {
+                  "config": "config/test.php"
                 },
-                <span class="string">"local"</span>: {
-                  <span class="string">"config"</span>: <span class="string">"config/local.php"</span>,
-                  <span class="string">"server"</span>: <span class="string">"localhost:8080"</span>
+                "local": {
+                  "config": "config/local.php",
+                  "server": "localhost:8080"
                 },
-                <span class="string">"default"</span>: {
-                  <span class="string">"config"</span>: <span class="string">"config/default.php"</span>
+                "default": {
+                  "config": "config/default.php"
                 }
               }
             }
@@ -194,20 +194,20 @@ block content
       h4 Production Server
 
       pre
-        code.
-          <span class="comment"># Set in your deployment script or server config</span>
+        code.language-bash.
+          # Set in your deployment script or server config
           export F4_ENVIRONMENT=production
 
       h4 Staging Server
 
       pre
-        code.
+        code.language-bash.
           export F4_ENVIRONMENT=staging
 
       h4 Test Server
 
       pre
-        code.
+        code.language-bash.
           export F4_ENVIRONMENT=test
 
     .info-box
@@ -222,7 +222,7 @@ block content
     p The included <code>.htaccess</code> file handles routing for Apache:
 
     pre
-      code.
+      code.language-bash.
         DirectoryIndex /index.php
 
         ErrorDocument 403 /index.php
@@ -241,7 +241,7 @@ block content
     h4 Apache Virtual Host
 
     pre
-      code.
+      code.language-bash.
         &lt;VirtualHost *:80&gt;
             ServerName example.com
             DocumentRoot /var/www/myapp/public
@@ -251,14 +251,14 @@ block content
                 Require all granted
             &lt;/Directory&gt;
 
-            <span class="comment"># Set environment</span>
+            # Set environment
             SetEnv F4_ENVIRONMENT production
         &lt;/VirtualHost&gt;
 
     h3 Nginx Configuration
 
     pre
-      code.
+      code.language-bash.
         server {
             listen 80;
             server_name example.com;
@@ -266,22 +266,22 @@ block content
             root /var/www/myapp/public;
             index index.php;
 
-            <span class="comment"># Set environment variable</span>
+            # Set environment variable
             fastcgi_param F4_ENVIRONMENT production;
 
-            <span class="comment"># Serve static files directly</span>
+            # Serve static files directly
             location /assets {
                 try_files $uri =404;
                 expires 1y;
                 add_header Cache-Control "public, immutable";
             }
 
-            <span class="comment"># Route all other requests through index.php</span>
+            # Route all other requests through index.php
             location / {
                 try_files $uri $uri/ /index.php?$query_string;
             }
 
-            <span class="comment"># PHP-FPM configuration</span>
+            # PHP-FPM configuration
             location ~ \.php$ {
                 fastcgi_pass unix:/var/run/php/php8.3-fpm.sock;
                 fastcgi_index index.php;
@@ -289,7 +289,7 @@ block content
                 include fastcgi_params;
             }
 
-            <span class="comment"># Deny access to hidden files</span>
+            # Deny access to hidden files
             location ~ /\. {
                 deny all;
             }
@@ -316,14 +316,14 @@ block content
     h3 Initial Deployment
 
     pre
-      code.
-        <span class="comment"># On your local machine</span>
+      code.language-bash.
+        # On your local machine
         npm run build
         git add public/assets
-        git commit -m <span class="string">"Build production assets"</span>
+        git commit -m "Build production assets"
         git push production main
 
-        <span class="comment"># On production server</span>
+        # On production server
         git pull
         composer install --no-dev --optimize-autoloader
         export F4_ENVIRONMENT=production
@@ -331,18 +331,18 @@ block content
     h3 Updating Deployment
 
     pre
-      code.
-        <span class="comment"># Local: rebuild assets if frontend changed</span>
+      code.language-bash.
+        # Local: rebuild assets if frontend changed
         npm run build
         git add -A
-        git commit -m <span class="string">"Update application"</span>
+        git commit -m "Update application"
         git push production main
 
-        <span class="comment"># Production: pull and update</span>
+        # Production: pull and update
         git pull
         composer install --no-dev --optimize-autoloader
 
-        <span class="comment"># Clear template cache if needed</span>
+        # Clear template cache if needed
         rm -rf var/cache/templates/*
 
   .content-section
@@ -353,20 +353,20 @@ block content
     h3 Option 1: System Environment Variables
 
     pre
-      code.
-        <span class="comment"># Add to /etc/environment or ~/.bashrc</span>
+      code.language-bash.
+        # Add to /etc/environment or ~/.bashrc
         export F4_ENVIRONMENT=production
         export DB_HOST=prod-db.example.com
         export DB_NAME=myapp_prod
         export DB_USERNAME=prod_user
-        export DB_PASSWORD=<span class="string">'secure-password-here'</span>
+        export DB_PASSWORD='secure-password-here'
 
     h3 Option 2: Web Server Environment
 
     p <strong>Apache:</strong> Use <code>SetEnv</code> in VirtualHost or <code>.htaccess</code>
 
     pre
-      code.
+      code.language-bash.
         SetEnv F4_ENVIRONMENT production
         SetEnv DB_HOST prod-db.example.com
         SetEnv DB_NAME myapp_prod
@@ -376,7 +376,7 @@ block content
     p <strong>Nginx:</strong> Use <code>fastcgi_param</code>
 
     pre
-      code.
+      code.language-bash.
         fastcgi_param F4_ENVIRONMENT production;
         fastcgi_param DB_HOST prod-db.example.com;
         fastcgi_param DB_NAME myapp_prod;
@@ -386,8 +386,8 @@ block content
     h3 Option 3: Docker
 
     pre
-      code.
-        <span class="comment"># docker-compose.yml</span>
+      code.language-yaml.
+        # docker-compose.yml
         services:
           app:
             environment:
@@ -466,20 +466,20 @@ block content
     p For production applications, consider using blue-green deployment or rolling updates:
 
     pre
-      code.
-        <span class="comment"># 1. Deploy to new directory</span>
+      code.language-bash.
+        # 1. Deploy to new directory
         git clone repo /var/www/myapp-new
         cd /var/www/myapp-new
         composer install --no-dev --optimize-autoloader
         npm run build
 
-        <span class="comment"># 2. Switch symlink atomically</span>
+        # 2. Switch symlink atomically
         ln -sfn /var/www/myapp-new /var/www/myapp-current
 
-        <span class="comment"># 3. Reload web server</span>
+        # 3. Reload web server
         sudo systemctl reload nginx
 
-        <span class="comment"># 4. Keep old version for rollback</span>
+        # 4. Keep old version for rollback
         mv /var/www/myapp-old /var/www/myapp-backup
 
   .content-section

@@ -1,12 +1,19 @@
 doctype html
 html(lang="en")
   head
+    //- empty icon
+    link(rel="icon" href="data:image/png;base64,iVBORw0KGgo=")
     meta(charset="UTF-8")
     meta(name="viewport" content="width=device-width, initial-scale=1.0")
     title
       block title
         | F4 Framework Tutorial
+
+    //- Prism.js syntax highlighting
+    //- link(rel="stylesheet" href="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/themes/prism-okaidia.min.css")
+
     vite:resource(src="tutorial.styl" bundle="tutorial")
+    vite:resource(src="tutorial_prism_theme.styl" bundle="tutorial")
     vite:bundle(name="tutorial")
 
   body
@@ -50,3 +57,7 @@ html(lang="en")
               a.next(href=$chapter['next']['path'])
                 .label Next
                 .title= $chapter['next']['title']
+
+  //- Prism.js scripts (loaded at end for performance)
+  script(src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-core.min.js")
+  script(src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/plugins/autoloader/prism-autoloader.min.js")

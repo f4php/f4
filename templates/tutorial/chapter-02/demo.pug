@@ -61,12 +61,12 @@ block content
 
         h4 Route Definition
         pre
-          code.
-            <span class="variable">Route</span>::<span class="function">get</span>(<span class="string">'/tutorial/02-routing/demo/{id:int}'</span>,
-                <span class="keyword">function</span>(<span class="keyword">int</span> <span class="variable">$id</span>) {
-                    <span class="keyword">return</span> [
-                        <span class="string">'id'</span> => <span class="variable">$id</span>,
-                        <span class="string">'type'</span> => <span class="string">'integer'</span>
+          code.language-php.
+            Route::get('/tutorial/02-routing/demo/{id:int}',
+                function(int $id) {
+                    return [
+                        'id' => $id,
+                        'type' => 'integer'
                     ];
                 }
             );
@@ -176,14 +176,14 @@ block content
     p Routes can capture multiple parameters. Try building routes like:
 
     pre
-      code.
-        <span class="comment">// Two parameters</span>
+      code.language-php.
+        // Two parameters
         /users/{userId:int}/posts/{postId:int}
 
-        <span class="comment">// Date-based</span>
+        // Date-based
         /archive/{year:int}/{month:int}/{day:int}
 
-        <span class="comment">// Mixed types</span>
+        // Mixed types
         /category/{slug:string}/item/{id:int}
 
   .content-section

@@ -45,33 +45,33 @@ block content
     h3 Basic Syntax
 
     pre
-      code.
-        <span class="keyword">use</span> <span class="variable">F4</span>\<span class="variable">Core</span>\{<span class="variable">Route</span>, <span class="variable">RouteGroup</span>};
+      code.language-php.
+        use F4\Core\{Route, RouteGroup};
 
-        <span class="variable">$group</span> = <span class="keyword">new</span> <span class="variable">RouteGroup</span>(<span class="string">'/api'</span>);
+        $group = new RouteGroup('/api');
 
-        <span class="variable">$group</span>-><span class="function">addRoute</span>(<span class="variable">Route</span>::<span class="function">get</span>(<span class="string">'/users'</span>, <span class="keyword">function</span>() {
-            <span class="keyword">return</span> [<span class="string">'users'</span> => [<span class="comment">/* ... */</span>]];
+        $group->addRoute(Route::get('/users', function() {
+            return ['users' => [/* ... */]];
         }));
 
-        <span class="variable">$group</span>-><span class="function">addRoute</span>(<span class="variable">Route</span>::<span class="function">get</span>(<span class="string">'/posts'</span>, <span class="keyword">function</span>() {
-            <span class="keyword">return</span> [<span class="string">'posts'</span> => [<span class="comment">/* ... */</span>]];
+        $group->addRoute(Route::get('/posts', function() {
+            return ['posts' => [/* ... */]];
         }));
 
-        <span class="variable">$f4</span>-><span class="function">addRouteGroup</span>(<span class="variable">$group</span>);
+        $f4->addRouteGroup($group);
 
-        <span class="comment">// Creates routes: /api/users and /api/posts</span>
+        // Creates routes: /api/users and /api/posts
 
     h3 Alternative: fromRoutes()
 
     pre
-      code.
-        <span class="variable">$group</span> = <span class="variable">RouteGroup</span>::<span class="function">fromRoutes</span>(
-            <span class="variable">Route</span>::<span class="function">get</span>(<span class="string">'/users'</span>, <span class="keyword">function</span>() { <span class="comment">/* ... */</span> }),
-            <span class="variable">Route</span>::<span class="function">get</span>(<span class="string">'/posts'</span>, <span class="keyword">function</span>() { <span class="comment">/* ... */</span> })
-        )-><span class="function">setPathPrefix</span>(<span class="string">'/api'</span>);
+      code.language-php.
+        $group = RouteGroup::fromRoutes(
+            Route::get('/users', function() { /* ... */ }),
+            Route::get('/posts', function() { /* ... */ })
+        )->setPathPrefix('/api');
 
-        <span class="variable">$f4</span>-><span class="function">addRouteGroup</span>(<span class="variable">$group</span>);
+        $f4->addRouteGroup($group);
 
   .content-section
     h2 Path Prefixes
@@ -113,20 +113,20 @@ block content
     p Apply middleware to all routes in the group:
 
     pre
-      code.
-        <span class="variable">$apiGroup</span> = <span class="keyword">new</span> <span class="variable">RouteGroup</span>(<span class="string">'/api'</span>)
-            -><span class="function">before</span>(<span class="keyword">function</span>(<span class="variable">$request</span>, <span class="variable">$response</span>, <span class="variable">$route</span>) {
-                <span class="comment">// Validate API key for ALL /api/* routes</span>
-                <span class="variable">$apiKey</span> = <span class="variable">$request</span>-><span class="function">getHeader</span>(<span class="string">'X-API-Key'</span>);
-                <span class="keyword">if</span> (!<span class="function">validateApiKey</span>(<span class="variable">$apiKey</span>)) {
-                    <span class="keyword">throw new</span> <span class="variable">HttpException</span>(<span class="string">'Invalid API key'</span>, <span class="number">403</span>);
+      code.language-php.
+        $apiGroup = new RouteGroup('/api')
+            ->before(function($request, $response, $route) {
+                // Validate API key for ALL /api/* routes
+                $apiKey = $request->getHeader('X-API-Key');
+                if (!validateApiKey($apiKey)) {
+                    throw new HttpException('Invalid API key', 403);
                 }
-                <span class="keyword">return</span> <span class="variable">$request</span>;
+                return $request;
             })
-            -><span class="function">after</span>(<span class="keyword">function</span>(<span class="variable">$response</span>, <span class="variable">$request</span>, <span class="variable">$route</span>) {
-                <span class="comment">// Add CORS headers to all API responses</span>
-                <span class="keyword">return</span> <span class="variable">$response</span>
-                    -><span class="function">withHeader</span>(<span class="string">'Access-Control-Allow-Origin'</span>, <span class="string">'*'</span>);
+            ->after(function($response, $request, $route) {
+                // Add CORS headers to all API responses
+                return $response
+                    ->withHeader('Access-Control-Allow-Origin', '*');
             });
 
   .content-section
@@ -135,35 +135,35 @@ block content
     p Route groups are perfect for RESTful APIs:
 
     pre
-      code.
-        <span class="keyword">use</span> <span class="variable">F4</span>\<span class="variable">Core</span>\{<span class="variable">Route</span>, <span class="variable">RouteGroup</span>};
+      code.language-php.
+        use F4\Core\{Route, RouteGroup};
 
-        <span class="variable">$usersApi</span> = <span class="keyword">new</span> <span class="variable">RouteGroup</span>(<span class="string">'/api/users'</span>)
-            -><span class="function">addRoute</span>(<span class="variable">Route</span>::<span class="function">get</span>(<span class="string">''</span>, <span class="keyword">function</span>() {
-                <span class="comment">// GET /api/users - List all users</span>
-                <span class="keyword">return</span> [<span class="string">'users'</span> => <span class="variable">User</span>::<span class="function">all</span>()];
+        $usersApi = new RouteGroup('/api/users')
+            ->addRoute(Route::get('', function() {
+                // GET /api/users - List all users
+                return ['users' => User::all()];
             }))
-            -><span class="function">addRoute</span>(<span class="variable">Route</span>::<span class="function">post</span>(<span class="string">''</span>, <span class="keyword">function</span>(<span class="variable">$name</span>, <span class="variable">$email</span>) {
-                <span class="comment">// POST /api/users - Create new user</span>
-                <span class="variable">$user</span> = <span class="variable">User</span>::<span class="function">create</span>(<span class="variable">$name</span>, <span class="variable">$email</span>);
-                <span class="keyword">return</span> [<span class="string">'user'</span> => <span class="variable">$user</span>];
+            ->addRoute(Route::post('', function($name, $email) {
+                // POST /api/users - Create new user
+                $user = User::create($name, $email);
+                return ['user' => $user];
             }))
-            -><span class="function">addRoute</span>(<span class="variable">Route</span>::<span class="function">get</span>(<span class="string">'/{id:int}'</span>, <span class="keyword">function</span>(<span class="keyword">int</span> <span class="variable">$id</span>) {
-                <span class="comment">// GET /api/users/123 - Get specific user</span>
-                <span class="keyword">return</span> [<span class="string">'user'</span> => <span class="variable">User</span>::<span class="function">find</span>(<span class="variable">$id</span>)];
+            ->addRoute(Route::get('/{id:int}', function(int $id) {
+                // GET /api/users/123 - Get specific user
+                return ['user' => User::find($id)];
             }))
-            -><span class="function">addRoute</span>(<span class="variable">Route</span>::<span class="function">put</span>(<span class="string">'/{id:int}'</span>, <span class="keyword">function</span>(<span class="keyword">int</span> <span class="variable">$id</span>, <span class="variable">$name</span>, <span class="variable">$email</span>) {
-                <span class="comment">// PUT /api/users/123 - Update user</span>
-                <span class="variable">$user</span> = <span class="variable">User</span>::<span class="function">update</span>(<span class="variable">$id</span>, <span class="variable">$name</span>, <span class="variable">$email</span>);
-                <span class="keyword">return</span> [<span class="string">'user'</span> => <span class="variable">$user</span>];
+            ->addRoute(Route::put('/{id:int}', function(int $id, $name, $email) {
+                // PUT /api/users/123 - Update user
+                $user = User::update($id, $name, $email);
+                return ['user' => $user];
             }))
-            -><span class="function">addRoute</span>(<span class="variable">Route</span>::<span class="function">delete</span>(<span class="string">'/{id:int}'</span>, <span class="keyword">function</span>(<span class="keyword">int</span> <span class="variable">$id</span>) {
-                <span class="comment">// DELETE /api/users/123 - Delete user</span>
-                <span class="variable">User</span>::<span class="function">delete</span>(<span class="variable">$id</span>);
-                <span class="keyword">return</span> [<span class="string">'success'</span> => <span class="keyword">true</span>];
+            ->addRoute(Route::delete('/{id:int}', function(int $id) {
+                // DELETE /api/users/123 - Delete user
+                User::delete($id);
+                return ['success' => true];
             }));
 
-        <span class="variable">$f4</span>-><span class="function">addRouteGroup</span>(<span class="variable">$usersApi</span>);
+        $f4->addRouteGroup($usersApi);
 
   .content-section
     h2 RESTful Resource Pattern
@@ -215,29 +215,29 @@ block content
     h3 Version 1 API
 
     pre
-      code.
-        <span class="variable">$v1</span> = <span class="keyword">new</span> <span class="variable">RouteGroup</span>(<span class="string">'/api/v1'</span>)
-            -><span class="function">addRoute</span>(<span class="variable">Route</span>::<span class="function">get</span>(<span class="string">'/users'</span>, <span class="keyword">function</span>() {
-                <span class="comment">// Old response format</span>
-                <span class="keyword">return</span> [<span class="string">'data'</span> => <span class="variable">User</span>::<span class="function">all</span>()];
+      code.language-php.
+        $v1 = new RouteGroup('/api/v1')
+            ->addRoute(Route::get('/users', function() {
+                // Old response format
+                return ['data' => User::all()];
             }));
 
-        <span class="variable">$f4</span>-><span class="function">addRouteGroup</span>(<span class="variable">$v1</span>);
+        $f4->addRouteGroup($v1);
 
     h3 Version 2 API
 
     pre
-      code.
-        <span class="variable">$v2</span> = <span class="keyword">new</span> <span class="variable">RouteGroup</span>(<span class="string">'/api/v2'</span>)
-            -><span class="function">addRoute</span>(<span class="variable">Route</span>::<span class="function">get</span>(<span class="string">'/users'</span>, <span class="keyword">function</span>() {
-                <span class="comment">// New response format with pagination</span>
-                <span class="keyword">return</span> [
-                    <span class="string">'data'</span> => <span class="variable">User</span>::<span class="function">paginate</span>(),
-                    <span class="string">'meta'</span> => [<span class="string">'version'</span> => <span class="string">'2.0'</span>]
+      code.language-php.
+        $v2 = new RouteGroup('/api/v2')
+            ->addRoute(Route::get('/users', function() {
+                // New response format with pagination
+                return [
+                    'data' => User::paginate(),
+                    'meta' => ['version' => '2.0']
                 ];
             }));
 
-        <span class="variable">$f4</span>-><span class="function">addRouteGroup</span>(<span class="variable">$v2</span>);
+        $f4->addRouteGroup($v2);
 
     p Both versions coexist:
     ul
@@ -254,42 +254,42 @@ block content
     p Here's how to organize a full application:
 
     pre
-      code.
-        <span class="keyword">use</span> <span class="variable">F4</span>\<span class="variable">Core</span>\{<span class="variable">Route</span>, <span class="variable">RouteGroup</span>};
+      code.language-php.
+        use F4\Core\{Route, RouteGroup};
 
-        <span class="comment">// Public routes (no auth)</span>
-        <span class="variable">$f4</span>-><span class="function">addRoute</span>(<span class="variable">Route</span>::<span class="function">get</span>(<span class="string">'/'</span>, <span class="keyword">function</span>() {
-            <span class="keyword">return</span> [<span class="string">'page'</span> => <span class="string">'home'</span>];
+        // Public routes (no auth)
+        $f4->addRoute(Route::get('/', function() {
+            return ['page' => 'home'];
         }));
 
-        <span class="variable">$f4</span>-><span class="function">addRoute</span>(<span class="variable">Route</span>::<span class="function">get</span>(<span class="string">'/about'</span>, <span class="keyword">function</span>() {
-            <span class="keyword">return</span> [<span class="string">'page'</span> => <span class="string">'about'</span>];
+        $f4->addRoute(Route::get('/about', function() {
+            return ['page' => 'about'];
         }));
 
-        <span class="comment">// Public API</span>
-        <span class="variable">$publicApi</span> = <span class="keyword">new</span> <span class="variable">RouteGroup</span>(<span class="string">'/api/public'</span>)
-            -><span class="function">after</span>(<span class="function">corsHeaders</span>())
-            -><span class="function">addRoute</span>(<span class="variable">Route</span>::<span class="function">get</span>(<span class="string">'/posts'</span>, <span class="keyword">function</span>() { <span class="comment">/* ... */</span> }))
-            -><span class="function">addRoute</span>(<span class="variable">Route</span>::<span class="function">get</span>(<span class="string">'/products'</span>, <span class="keyword">function</span>() { <span class="comment">/* ... */</span> }));
+        // Public API
+        $publicApi = new RouteGroup('/api/public')
+            ->after(corsHeaders())
+            ->addRoute(Route::get('/posts', function() { /* ... */ }))
+            ->addRoute(Route::get('/products', function() { /* ... */ }));
 
-        <span class="comment">// Protected API (requires authentication)</span>
-        <span class="variable">$authApi</span> = <span class="keyword">new</span> <span class="variable">RouteGroup</span>(<span class="string">'/api/auth'</span>)
-            -><span class="function">before</span>(<span class="function">requireAuth</span>())
-            -><span class="function">after</span>(<span class="function">corsHeaders</span>())
-            -><span class="function">addRoute</span>(<span class="variable">Route</span>::<span class="function">get</span>(<span class="string">'/profile'</span>, <span class="keyword">function</span>() { <span class="comment">/* ... */</span> }))
-            -><span class="function">addRoute</span>(<span class="variable">Route</span>::<span class="function">post</span>(<span class="string">'/orders'</span>, <span class="keyword">function</span>() { <span class="comment">/* ... */</span> }));
+        // Protected API (requires authentication)
+        $authApi = new RouteGroup('/api/auth')
+            ->before(requireAuth())
+            ->after(corsHeaders())
+            ->addRoute(Route::get('/profile', function() { /* ... */ }))
+            ->addRoute(Route::post('/orders', function() { /* ... */ }));
 
-        <span class="comment">// Admin panel</span>
-        <span class="variable">$adminPanel</span> = <span class="keyword">new</span> <span class="variable">RouteGroup</span>(<span class="string">'/admin'</span>)
-            -><span class="function">before</span>(<span class="function">requireAdmin</span>())
-            -><span class="function">addRoute</span>(<span class="variable">Route</span>::<span class="function">get</span>(<span class="string">'/dashboard'</span>, <span class="keyword">function</span>() { <span class="comment">/* ... */</span> }))
-            -><span class="function">addRoute</span>(<span class="variable">Route</span>::<span class="function">get</span>(<span class="string">'/users'</span>, <span class="keyword">function</span>() { <span class="comment">/* ... */</span> }))
-            -><span class="function">addRoute</span>(<span class="variable">Route</span>::<span class="function">get</span>(<span class="string">'/settings'</span>, <span class="keyword">function</span>() { <span class="comment">/* ... */</span> }));
+        // Admin panel
+        $adminPanel = new RouteGroup('/admin')
+            ->before(requireAdmin())
+            ->addRoute(Route::get('/dashboard', function() { /* ... */ }))
+            ->addRoute(Route::get('/users', function() { /* ... */ }))
+            ->addRoute(Route::get('/settings', function() { /* ... */ }));
 
-        <span class="comment">// Register all groups</span>
-        <span class="variable">$f4</span>-><span class="function">addRouteGroup</span>(<span class="variable">$publicApi</span>);
-        <span class="variable">$f4</span>-><span class="function">addRouteGroup</span>(<span class="variable">$authApi</span>);
-        <span class="variable">$f4</span>-><span class="function">addRouteGroup</span>(<span class="variable">$adminPanel</span>);
+        // Register all groups
+        $f4->addRouteGroup($publicApi);
+        $f4->addRouteGroup($authApi);
+        $f4->addRouteGroup($adminPanel);
 
   .content-section
     h2 Module Organization
@@ -297,19 +297,19 @@ block content
     p Split large applications into modules, each with its own route group:
 
     pre
-      code.
-        <span class="comment">// src/App/Modules/UserModule.php</span>
-        <span class="keyword">namespace</span> <span class="variable">App</span>\<span class="variable">Modules</span>;
+      code.language-php.
+        // src/App/Modules/UserModule.php
+        namespace App\Modules;
 
-        <span class="keyword">class</span> <span class="variable">UserModule</span> <span class="keyword">implements</span> <span class="variable">ModuleInterface</span>
+        class UserModule implements ModuleInterface
         {
-            <span class="keyword">public function</span> <span class="function">__construct</span>(<span class="variable">CoreApiInterface</span> &<span class="variable">$f4</span>)
+            public function __construct(CoreApiInterface &$f4)
             {
-                <span class="variable">$group</span> = <span class="keyword">new</span> <span class="variable">RouteGroup</span>(<span class="string">'/users'</span>)
-                    -><span class="function">addRoute</span>(<span class="variable">Route</span>::<span class="function">get</span>(<span class="string">''</span>, [<span class="variable">UserController</span>::<span class="keyword">class</span>, <span class="string">'index'</span>]))
-                    -><span class="function">addRoute</span>(<span class="variable">Route</span>::<span class="function">get</span>(<span class="string">'/{id:int}'</span>, [<span class="variable">UserController</span>::<span class="keyword">class</span>, <span class="string">'show'</span>]));
+                $group = new RouteGroup('/users')
+                    ->addRoute(Route::get('', [UserController::class, 'index']))
+                    ->addRoute(Route::get('/{id:int}', [UserController::class, 'show']));
 
-                <span class="variable">$f4</span>-><span class="function">addRouteGroup</span>(<span class="variable">$group</span>);
+                $f4->addRouteGroup($group);
             }
         }
 
@@ -353,30 +353,6 @@ block content
       li Document group middleware behavior
       li Nest groups for complex hierarchies
       li Use consistent naming conventions
-
-  .content-section
-    h2 Common Patterns
-
-    h3 Multi-Tenant Applications
-
-    pre
-      code.
-        <span class="comment">// Each tenant has their own route group</span>
-        <span class="variable">$tenantGroup</span> = <span class="keyword">new</span> <span class="variable">RouteGroup</span>(<span class="string">'/tenant/{tenantId:int}'</span>)
-            -><span class="function">before</span>(<span class="function">validateTenant</span>())
-            -><span class="function">addRoute</span>(<span class="variable">Route</span>::<span class="function">get</span>(<span class="string">'/dashboard'</span>, <span class="keyword">function</span>() { <span class="comment">/* ... */</span> }));
-
-    h3 Language Prefixes
-
-    pre
-      code.
-        <span class="comment">// /en/products, /fr/products, etc.</span>
-        <span class="keyword">foreach</span> ([<span class="string">'en'</span>, <span class="string">'fr'</span>, <span class="string">'de'</span>] <span class="keyword">as</span> <span class="variable">$lang</span>) {
-            <span class="variable">$group</span> = <span class="keyword">new</span> <span class="variable">RouteGroup</span>(<span class="string">"/{$lang}"</span>)
-                -><span class="function">before</span>(<span class="function">setLocale</span>(<span class="variable">$lang</span>))
-                -><span class="function">addRoute</span>(<span class="variable">Route</span>::<span class="function">get</span>(<span class="string">'/products'</span>, <span class="keyword">function</span>() { <span class="comment">/* ... */</span> }));
-            <span class="variable">$f4</span>-><span class="function">addRouteGroup</span>(<span class="variable">$group</span>);
-        }
 
   .content-section
     h2 Try It Yourself
