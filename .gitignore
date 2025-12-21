@@ -3,12 +3,12 @@
 .env.*
 
 # Framework-specific files
-/public/assets
-/vendor
-/config/*
-!/config/default.php
-!/config/local.example.php
-!/config/README.md
+public/assets/
+vendor/
+config/*
+!config/default.php
+!config/local.example.php
+!config/README.md
 
 # Logs
 logs
@@ -32,7 +32,7 @@ lerna-debug.log*
 *.sw?
 
 # Miscellaneous
-node_modules
+node_modules/
 dist
 dist-ssr
 *.local

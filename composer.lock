@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "48e4a64e3139dae5bf6866389138ba96",
+    "content-hash": "d8200fbb23aa64194a036ec6a8dbe462",
     "packages": [
         {
             "name": "cekurte/environment",
@@ -199,16 +199,16 @@
         },
         {
             "name": "f4php/framework",
-            "version": "v0.1.37",
+            "version": "v0.1.42",
             "source": {
                 "type": "git",
                 "url": "https://github.com/f4php/framework.git",
-                "reference": "7e1db68666c2b944ae175d94230090ccebae33b4"
+                "reference": "cea3bac221363459120f9acbccf8c7af9e5b5ea7"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/f4php/framework/zipball/7e1db68666c2b944ae175d94230090ccebae33b4",
-                "reference": "7e1db68666c2b944ae175d94230090ccebae33b4",
+                "url": "https://api.github.com/repos/f4php/framework/zipball/cea3bac221363459120f9acbccf8c7af9e5b5ea7",
+                "reference": "cea3bac221363459120f9acbccf8c7af9e5b5ea7",
                 "shasum": ""
             },
             "require": {
@@ -237,9 +237,6 @@
             },
             "type": "library",
             "autoload": {
-                "files": [
-                    "src/functions.php"
-                ],
                 "psr-4": {
                     "F4\\": "src/F4"
                 }
@@ -261,9 +258,9 @@
             ],
             "support": {
                 "issues": "https://github.com/f4php/framework/issues",
-                "source": "https://github.com/f4php/framework/tree/v0.1.37"
+                "source": "https://github.com/f4php/framework/tree/v0.1.42"
             },
-            "time": "2025-12-14T13:57:48+00:00"
+            "time": "2025-12-20T19:39:43+00:00"
         },
         {
             "name": "f4php/hookmanager",
@@ -2398,7 +2395,7 @@
     "prefer-stable": true,
     "prefer-lowest": false,
     "platform": {
-        "php": "^8.3",
+        "php": "^8.4.1",
         "composer-runtime-api": "*"
     },
     "platform-dev": {},
