@@ -9,7 +9,7 @@ export default defineConfig({
     vue({
     }),
     f4({
-      debug: true,
+      debug: false,
       backendUrl: `http://${composerExtra.f4.environments.local.server}`,
       dependencies: Object.keys(packageJson.dependencies),
     })

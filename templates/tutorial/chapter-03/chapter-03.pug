@@ -578,30 +578,134 @@ block content
     pre
       code.language-pug.
         head
-          // Tell Vite to include resources in a named bundle
+          //- Tell Vite to include these resources in a named bundle
           vite:resource(bundle="my_bundle" src="module.js")
           vite:resource(bundle="my_bundle" src="module.css")
-          // Tell F4 to include bundled assets during page render
+          vite:resource(bundle="my_bundle" src="module.styl")
+          //- Tell F4 to include bundled assets during page render
           vite:bundle(name="my_bundle")
+
+    p This template code will render the following production HTML (replacing xxxxx with unique file checksum):
+
+    pre
+      code.language-html.
+        &lt;head&gt;
+          &lt;link rel="stylesheet" href="/assets/my_bundle.xxxxx.css"/&gt;
+          &lt;script type="module" src="/assets/my_bundle.xxxxx.js"&gt;&lt;/script&gt;
+        &lt;/head&gt;
 
     .warning-box
       strong Production build:
       |  
       | Vite uses different asset bundling methods for development and production servers, meaning that you have to run
+      |  
       code
         | npm run build
-      | before deploying your code to production.
+      |  
+      | before testing production code and deploying it to the server.
 
-    h3 Static Assets
+    .warning-box
+      strong Development build:
+      |  
+      | To see how the system operates in development mode, just run
+      |  
+      code
+        | npm run dev
+      |  
+      | and follow onscreen instructions.
+
+    h3 Support for preload
 
     pre
       code.language-pug.
-        // Public assets (in public/images/)
-        img(src="/images/logo.png" alt="Logo")
+        head
+          vite:resource(bundle="my_bundle" src="module.js")
+          vite:resource(bundle="my_bundle" src="module.css")
+          //- Tell Vite to preload bundle resources
+          vite:bundle(name="my_bundle" preload)
+    
+    p This template code will render the following production HTML (replacing xxxxx with unique file checksum):
 
-        // Dynamic image path
-        - $imageUrl = '/uploads/' . $imageName
-        img(src=$imageUrl alt=$imageAlt)
+    pre
+      code.language-html.
+        &lt;head&gt;
+          &lt;link rel="preload" as="style" href="/assets/my_bundle.xxxxx.css"/&gt;
+          &lt;link rel="stylesheet" href="/assets/my_bundle.xxxxx.css"/&gt;
+          &lt;link rel="preload" as="script" crossorigin="anonymous" href="/assets/my_bundle.xxxxx.js"/&gt;
+          &lt;script type="module" src="/assets/my_bundle.xxxxx.js"&gt;&lt;/script&gt;
+        &lt;/head&gt;
+
+    h3 Using tags as templates
+
+    p 
+      | You can also customize bundle rendering by supplying 
+      code script
+      |  
+      | or
+      |  
+      code link
+      |  
+      | elements to be used as rendeing template. The engine will only add 
+      code href
+      | or 
+      code src
+      | attributes to your templates, so you have complete control over how the resources are added to the page.
+
+    pre
+      code.language-pug.
+        head
+          vite:resource(bundle="my_bundle" src="module.js")
+          vite:resource(bundle="my_bundle" src="module.css")
+          vite:bundle(name="my_bundle")
+            link(blocking="render" rel="stylesheet")
+            script(blocking="render" type="module")
+
+    p This template code will render the following production HTML (replacing xxxxx with unique file checksum):
+
+    pre
+      code.language-html.
+        &lt;head&gt;
+          &lt;link blocking="render" rel="stylesheet" href="/assets/my_bundle.xxxxx.css"/&gt;
+          &lt;script blocking="render" type="module" src="/assets/my_bundle.xxxxx.js"&gt;&lt;/script&gt;
+        &lt;/head&gt;
+
+    h3 Integration with Vue
+
+    p
+      | F4 provides native support for Vue SFCs, which comes in two flavors. You may choose to mount your SFCs as regular DOM elements, 
+      | or use them as modern Web Components with shadow DOM and Custom Elements:
+
+    h4 Mounting to normal elements
+
+    pre
+      code.language-pug.
+        head
+          //- Tell Vite to include .vue SFC and mount it to the specified element
+          vite:resource(bundle="my_bundle" src="module.vue" element="my-module")
+          vite:bundle(name="my_bundle")
+        body
+          //- F4 will automatically create and mount vue app here
+          my-module
+
+    h4 Using Web Components
+
+    pre
+      code.language-pug.
+        head
+          //- Tell Vite to include .ce.vue SFC and initialize it as a web component
+          vite:resource(bundle="my_bundle" src="module.ce.vue" custom-element="my-module")
+          vite:bundle(name="my_bundle")
+        body
+          //- F4 will automatically use this element as a shadow DOM root
+          my-module
+    .warning-box
+      strong Web Components Support:
+      |  
+      | Please note that you MUST use 
+      code .ce.vue
+      | extension in order for SFCs to work as web components. This is based on 
+      a(href="https://vuejs.org/guide/extras/web-components") vuejs file naming convention
+      |.
 
   .content-section
     h2 Code Blocks

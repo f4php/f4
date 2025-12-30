@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "d8200fbb23aa64194a036ec6a8dbe462",
+    "content-hash": "bcf7bc471bfbc692783db68128f15b8c",
     "packages": [
         {
             "name": "cekurte/environment",
@@ -199,16 +199,16 @@
         },
         {
             "name": "f4php/framework",
-            "version": "v0.1.42",
+            "version": "v0.1.43",
             "source": {
                 "type": "git",
                 "url": "https://github.com/f4php/framework.git",
-                "reference": "cea3bac221363459120f9acbccf8c7af9e5b5ea7"
+                "reference": "8f9156fcc3e9cae5463087c7905d86bf09a7fddf"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/f4php/framework/zipball/cea3bac221363459120f9acbccf8c7af9e5b5ea7",
-                "reference": "cea3bac221363459120f9acbccf8c7af9e5b5ea7",
+                "url": "https://api.github.com/repos/f4php/framework/zipball/8f9156fcc3e9cae5463087c7905d86bf09a7fddf",
+                "reference": "8f9156fcc3e9cae5463087c7905d86bf09a7fddf",
                 "shasum": ""
             },
             "require": {
@@ -258,9 +258,9 @@
             ],
             "support": {
                 "issues": "https://github.com/f4php/framework/issues",
-                "source": "https://github.com/f4php/framework/tree/v0.1.42"
+                "source": "https://github.com/f4php/framework/tree/v0.1.43"
             },
-            "time": "2025-12-20T19:39:43+00:00"
+            "time": "2025-12-30T23:11:32+00:00"
         },
         {
             "name": "f4php/hookmanager",
@@ -873,16 +873,16 @@
         },
         {
             "name": "nette/utils",
-            "version": "v4.1.0",
+            "version": "v4.1.1",
             "source": {
                 "type": "git",
                 "url": "https://github.com/nette/utils.git",
-                "reference": "fa1f0b8261ed150447979eb22e373b7b7ad5a8e0"
+                "reference": "c99059c0315591f1a0db7ad6002000288ab8dc72"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/nette/utils/zipball/fa1f0b8261ed150447979eb22e373b7b7ad5a8e0",
-                "reference": "fa1f0b8261ed150447979eb22e373b7b7ad5a8e0",
+                "url": "https://api.github.com/repos/nette/utils/zipball/c99059c0315591f1a0db7ad6002000288ab8dc72",
+                "reference": "c99059c0315591f1a0db7ad6002000288ab8dc72",
                 "shasum": ""
             },
             "require": {
@@ -956,9 +956,9 @@
             ],
             "support": {
                 "issues": "https://github.com/nette/utils/issues",
-                "source": "https://github.com/nette/utils/tree/v4.1.0"
+                "source": "https://github.com/nette/utils/tree/v4.1.1"
             },
-            "time": "2025-12-01T17:49:23+00:00"
+            "time": "2025-12-22T12:14:32+00:00"
         },
         {
             "name": "nyholm/psr7",

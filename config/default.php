@@ -7,7 +7,6 @@ use F4\AbstractConfig;
 class Config extends AbstractConfig
 {
     public const array MODULES = [
-        // Example::class,
         \App\Tutorial\TutorialModule::class,
     ];
     public const bool DEBUG_MODE = true;
