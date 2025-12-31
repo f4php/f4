@@ -10,14 +10,14 @@ error_reporting(error_level: E_ALL & ~E_DEPRECATED);
 require_once __DIR__.'/../vendor/autoload.php';
 
 Loader::setPath(path: __DIR__ . '/../');
-// Loader::setAssetPath(path: __DIR__ . '/assets/');
+Loader::setPublicPath(publicPath: __DIR__);
 Loader::loadEnvironmentConfig(environments: [($_SERVER['F4_ENVIRONMENT']??null)?:'local', 'default']);
 
-(new Core(/*
+new Core(/*
         $alternativeCoreApiProxyClassName,
         $alternativeRouterClassName,
         $alternativeDebuggerClassName,
-    */))
+    */)
     ->setUpRequestResponse(
         /*
         function($defaultHandler) {

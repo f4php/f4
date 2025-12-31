@@ -635,6 +635,39 @@ block content
           &lt;script type="module" src="/assets/my_bundle.xxxxx.js"&gt;&lt;/script&gt;
         &lt;/head&gt;
 
+    h3 Support for SRI
+
+    p
+      | F4 supports automatic calculation of hashes and can add integrity attribute to all bundled assets. To enable this feature, just add 
+      code with-sri
+      | attribute to vite:bundle tag. Providing empty attribute value will result in a
+      code sha384
+      | hash.
+    p
+      | Supported values are 
+      code sha256
+      | , 
+      code sha384
+      |  and  
+      code sha512
+      | ,  
+      | which may be specified alone or in any combination separated by space.
+
+    pre
+      code.language-pug.
+        head
+          vite:resource(bundle="my_bundle" src="module.js")
+          //- Tell Vite to add SRI to bundled resources
+          vite:bundle(name="my_bundle" with-sri="sha512")
+    
+    p This template code will render the following production HTML (replacing xxxxx with unique file checksum and ... with content hash):
+
+    pre
+      code.language-html.
+        &lt;head&gt;
+          &lt;script type="module" src="/assets/my_bundle.xxxxx.js" integrity="sha512-..."&gt;&lt;/script&gt;
+        &lt;/head&gt;
+
     h3 Using tags as templates
 
     p 
@@ -645,11 +678,13 @@ block content
       |  
       code link
       |  
-      | elements to be used as rendeing template. The engine will only add 
+      | elements to be used as templates. The engine will only add 
       code href
-      | or 
+      | ,  
       code src
-      | attributes to your templates, so you have complete control over how the resources are added to the page.
+      |  and optionally 
+      code integrity
+      |  attributes to your templates, which gives you complete control over resource tag rendering.
 
     pre
       code.language-pug.
