@@ -31,7 +31,7 @@ To run both the built-in PHP development web server and Vite development server,
 $ npm run dev
 ```
 
-You can now open http://localhost:5173 in your browser and proceed with the Web Application Developer's Guide.
+You can now open http://localhost:5173 in your browser and proceed with the included Tutorial app.
 
 ## More Technical Details on Development Server
 
