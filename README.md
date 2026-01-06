@@ -16,7 +16,7 @@ To configure and run your app using F4 you will need:
 To start developing your app called `myapp` with F4, use the following composer command:
 
 ```
-$ composer create-project f4php/f4 myapp
+composer create-project f4php/f4 myapp
 ```
 
 and... that's it, you are good to go! 
@@ -28,7 +28,7 @@ Proceed by starting a developemnt server and playing with included Tutorial app.
 To run both the built-in PHP development web server and Vite development server, just run the following command:
 
 ```
-$ npm run dev
+npm run dev
 ```
 
 You can now open http://localhost:5173 in your browser and proceed with the included Tutorial app.
@@ -38,8 +38,8 @@ You can now open http://localhost:5173 in your browser and proceed with the incl
 The command above has the same effect as running these two commands concurrently:
 
 ```
-$ composer run serve
-$ vite
+composer run serve
+vite
 ```
 
 By default, `composer run serve` uses `local` environment configuration (note that the concept of F4 environments is explained below), which starts the PHP dev server at `http://localhost:8080`.
@@ -99,7 +99,7 @@ Copying an environment configuration can be done with a special command explaine
 This command:
 
 ```
-$ composer run create-config
+composer run create-config
 ```
 
 will use `default` environment as source, locate and parse its configuration file from the environment definition, strip all the sensitive data, substitute values if necessary and output a PHP-readable file to stdout.
@@ -107,7 +107,7 @@ will use `default` environment as source, locate and parse its configuration fil
 To get started with this tool, you may want to redirect such output and create or overwrite a `config/local.php` file. The following command will generate a configuration file for your `local` environment without stripping anything:
 
 ```
-$ composer run create-config -- --keep-sensitive > config/local.php
+composer run create-config -- --keep-sensitive > config/local.php
 ```
 
 In fact, this is the recommended way to start working on your local configuration parameters, but strictly speaking isn't required because a basic `config/default.php` file is shipped in this distribution and would be used by the loader.
@@ -117,7 +117,7 @@ In fact, this is the recommended way to start working on your local configuratio
 Let's assume you have added a `custom` environment to your `composer.json` and want to use it as a template on a production server. Here's the command to do it:
 
 ```
-$ composer run create-config custom > config/production.php
+composer run create-config custom > config/production.php
 ```
 But what if you want to automate your deployment without pushing sensitive data to git?
 
@@ -184,7 +184,7 @@ Here's an example of how this could be achieved when using Apache web server:
 Building for production is only required for static resources, and the default command is:
 
 ```
-$ npm run build
+npm run build
 ```
 **IMPORTANT NOTE:** `public/assets` directory gets completely erased during build process, so make sure not to keep anything important there.
 
