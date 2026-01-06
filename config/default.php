@@ -25,6 +25,6 @@ class Config extends AbstractConfig
             'extensions'    => ['.ru'],
             'resources'     => ['../templates/locales/get_started.ru.ftl'],
             'weight'        => 0.5
-        ]
+        ],
     ];
 }
