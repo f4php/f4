@@ -25,8 +25,11 @@ Proceed by starting a developemnt server and playing with included Tutorial app.
 
 # Development Server
 
-To run both the built-in PHP development web server and Vite development server, just run the following command:
+To run both the built-in PHP development web server and Vite development server, just enter the app folder and run the `npm run dev` command:
 
+```
+cd myapp
+```
 ```
 npm run dev
 ```
