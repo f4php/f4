@@ -715,24 +715,24 @@ block content
     pre
       code.language-pug.
         head
-          //- Tell Vite to include .vue SFC and mount it to the specified element
+          //- Tell Vite to include .vue single-file component and mount it to the specified DOM element
           vite:resource(bundle="my_bundle" src="module.vue" element="my-module")
           vite:bundle(name="my_bundle")
         body
-          //- F4 will automatically create and mount vue app here
-          my-module
+          //- F4 will automatically create and mount vue app here and pass data attributes as props
+          my-module(data-prop-one="prop-value")
 
     h4 Using Web Components
 
     pre
       code.language-pug.
         head
-          //- Tell Vite to include .ce.vue SFC and initialize it as a web component
+          //- Tell Vite to include .ce.vue single-file component and initialize it as a web component
           vite:resource(bundle="my_bundle" src="module.ce.vue" custom-element="my-module")
           vite:bundle(name="my_bundle")
         body
-          //- F4 will automatically use this element as a shadow DOM root
-          my-module
+          //- F4 will automatically use this element as a shadow DOM root and pass regular attributes as props
+          my-module(prop-one="prop-value")
     .warning-box
       strong Web Components Support:
       |  
