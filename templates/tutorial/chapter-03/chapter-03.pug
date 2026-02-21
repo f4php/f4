@@ -722,6 +722,62 @@ block content
           //- F4 will automatically create and mount vue app here and pass data attributes as props
           my-module(data-prop-one="prop-value")
 
+    h4 Advanced component setup
+
+    p
+      | Sometimes your vue components may require more complex setup than just calling 
+      code createApp
+      | , which F4 does by default.
+      | In such advanced cases you may want to specify additional setup code to be injected between 
+      code createApp()
+      |  and 
+      code mount()
+      | calls:
+    pre
+      code.language-pug.
+        head
+          //- Call setup code before mounting the component
+          vite:resource(bundle="my_bundle" src="module.vue" element="my-module" setup="primevue-setup.js")
+          vite:bundle(name="my_bundle")
+        body
+          my-module(data-prop-one="prop-value")
+    pre
+      code.language-js.
+        // primevue-setup.js
+        import PrimeVue from 'primevue/config';
+        import Aura from '@primevue/themes/aura';
+
+        export default (app) =>
+          app.use(PrimeVue, {
+            theme: { preset: Aura }
+          });
+
+    h4 Chaining component setups
+    p
+      | If you want to apply multiple setups or use them in multiple components routinely, the following alternative comma-separated syntax is also supported,
+      | requiring you to provide setup name-to-filepath mapping in vite config:
+    pre
+      code.language-pug.
+        head
+          //- Call setup code before mounting the component
+          vite:resource(bundle="my_bundle" src="module.vue" element="my-module" setup="primevue,i18n")
+          vite:bundle(name="my_bundle")
+        body
+          my-module(data-prop-one="prop-value")
+    pre
+      code.language-js.
+        // vite.config.js
+        export default defineConfig({
+          plugins: [
+            f4({
+              //...
+              setups: {
+                'primevue': 'primevue.setup.js',
+                'i18n': 'i18n.setup.js'
+              }
+            })
+        })
+
     h4 Using Web Components
 
     pre
