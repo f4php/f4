@@ -17,7 +17,7 @@ export default defineConfig({
   clearScreen: false,
   build: {
     // assetsInlineLimit: 512000,
-    rollupOptions: {
-    }
+    // rolldownOptions: {
+    // }
   },
 });
