@@ -26,10 +26,7 @@
   },
   "config": {
     "optimize-autoloader": true,
-    "process-timeout": 0,
-    "allow-plugins": {
-      "cweagans/composer-patches": true
-    }
+    "process-timeout": 0
   },
   "scripts": {
     "post-update-cmd": "npm update",
