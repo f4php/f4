@@ -19,10 +19,10 @@
     }
   ],
   "require": {
-    "php": "^8.4.1",
+    "php": "^8.4.27",
     "symfony/console": "^7.1",
     "composer-runtime-api": "*",
-    "f4php/framework": "^0.2.0"
+    "f4php/framework": "^0.2.14"
   },
   "config": {
     "optimize-autoloader": true,
