@@ -1,8 +1,8 @@
 import { defineConfig } from 'vite';
 import vue from '@vitejs/plugin-vue';
 import f4 from 'vite-plugin-f4';
-import { extra as composerExtra } from './composer.json';
-import packageJson from './package.json';
+import composerJson from './composer.json' with { type: 'json' };
+import packageJson from './package.json' with { type: 'json' };
 
 export default defineConfig({
   plugins: [
@@ -10,7 +10,7 @@ export default defineConfig({
     }),
     f4({
       debug: false,
-      backendUrl: `http://${composerExtra.f4.environments.local.server}`,
+      backendUrl: `http://${composerJson.extra.f4.environments.local.server}`,
       dependencies: Object.keys(packageJson.dependencies),
     })
   ],
